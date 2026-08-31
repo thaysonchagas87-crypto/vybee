@@ -1,18 +1,20 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#080909"><title>VYBEE</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080909">
+<title>VYBEE</title>
 <style>
 :root{--n:#39ff14;--o:#ff7417;--bg:#080909;--p:#111315;--p2:#181b1e;--p3:#202428;--line:#2b3035;--txt:#f7f8f8;--mut:#969da5}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
 button,input{font:inherit}button{cursor:pointer}.app{min-height:100vh;display:grid;grid-template-rows:62px 1fr}
 header{border-bottom:1px solid var(--line);background:#0c0e0f;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:20}
-.logo{font-size:27px;font-weight:950;letter-spacing:1px}.logo b{color:var(--o)}.online{font-size:11px;color:var(--n);font-weight:900}.layout{display:grid;grid-template-columns:70px 250px minmax(0,1fr) 300px;min-height:0}
+.logo{font-size:27px;font-weight:950;letter-spacing:1px}.online{font-size:11px;color:var(--n);font-weight:900}.layout{display:grid;grid-template-columns:70px 250px minmax(0,1fr) 300px;min-height:0}
 .rail{background:#0d0f10;border-right:1px solid var(--line);padding:12px 9px}.rail button{width:52px;height:52px;border:0;border-radius:16px;background:var(--p);color:#aeb4ba;margin-bottom:9px;font-size:21px}.rail button.active{color:var(--n);outline:2px solid var(--n)}
 .side{background:#101214;border-right:1px solid var(--line);padding:15px;overflow:auto}.side h3{margin:0 0 14px;font-size:14px}.section{font-size:10px;color:#727981;font-weight:900;margin:19px 8px 7px}.channel{padding:9px;border-radius:10px;color:#b8bec5;margin:2px 0}.channel.active{background:var(--p2);color:#fff}.channel:hover{background:var(--p2)}
 .main{overflow:auto;padding:18px;min-width:0}.topline{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}.topline h1{font-size:25px;margin:0}.muted{color:var(--mut);font-size:13px}.btn{border:0;border-radius:11px;background:var(--p3);color:#fff;padding:10px 13px}.green{background:var(--n);color:#061006;font-weight:900}.orange{background:var(--o);color:#160b00;font-weight:900}.danger{background:#531b1b}.card{background:var(--p);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:14px}.livebox{background:linear-gradient(135deg,#171a1d,#0e1011)}.livebar{display:flex;justify-content:space-between;align-items:center}.badge{background:#a70000;border-radius:7px;padding:5px 8px;font-size:10px;font-weight:950}.video{aspect-ratio:16/9;background:#030404;border-radius:14px;margin-top:13px;display:grid;place-items:center;overflow:hidden;position:relative}.video video{width:100%;height:100%;object-fit:contain}.video .placeholder{color:#555;font-size:14px}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.feature{background:var(--p2);border:1px solid var(--line);border-radius:14px;padding:13px;min-height:105px}.feature .ico{font-size:24px}.feature strong{display:block;margin-top:7px}.feature span{font-size:12px;color:var(--mut)}
-.chat{background:#0f1113;display:flex;flex-direction:column;min-width:0}.chathead{padding:15px;border-bottom:1px solid var(--line);font-weight:900}.msgs{flex:1;overflow:auto;padding:15px}.msg{margin-bottom:14px}.msg b{font-size:12px;color:var(--n)}.msg p{margin:4px 0;font-size:13px;color:#ddd}.form{display:flex;gap:7px;padding:12px;border-top:1px solid var(--line)}.form input{flex:1;min-width:0;background:var(--p2);border:1px solid var(--line);color:#fff;border-radius:10px;padding:10px}.modal{position:fixed;inset:0;background:#000c;display:none;place-items:center;padding:18px;z-index:50}.modal.on{display:grid}.modalbox{width:min(520px,100%);max-height:90vh;overflow:auto;background:var(--p);border:1px solid var(--line);border-radius:20px;padding:18px}.modalbox h2{margin:0 0 5px}.choice{width:100%;text-align:left;border:1px solid var(--line);background:var(--p2);color:#fff;border-radius:12px;padding:14px;margin-top:8px}.choice strong{display:block}.settings{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:var(--n);color:#061006;font-weight:900;padding:11px 15px;border-radius:11px;z-index:90}
+.chat{background:#0f1113;display:flex;flex-direction:column;min-width:0}.chathead{padding:15px;border-bottom:1px solid var(--line);font-weight:900}.msgs{flex:1;overflow:auto;padding:15px}.msg{margin-bottom:14px}.msg b{font-size:12px;color:var(--n)}.msg p{margin:4px 0;font-size:13px;color:#ddd}.form{display:flex;gap:7px;padding:12px;border-top:1px solid var(--line)}.form input{flex:1;min-width:0;background:var(--p2);border:1px solid var(--line);color:#fff;border-radius:10px;padding:10px}.modal{position:fixed;inset:0;background:#000c;display:none;place-items:center;padding:18px;z-index:50}.modal.on{display:grid}.modalbox{width:min(520px,100%);max-height:90vh;overflow:auto;background:var(--p);border:1px solid var(--line);border-radius:20px;padding:18px}.modalbox h2{margin:0 0 5px}.choice{width:100%;text-align:left;border:1px solid var(--line);background:var(--p2);color:#fff;border-radius:12px;padding:14px;margin-top:8px}.choice strong{display:block}.settings{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:var(--n);color:#061006;font-weight:900;padding:11px 15px;border-radius:11px;z-index:90;max-width:90%;text-align:center}
 .bottom{display:none}
 @media(max-width:1100px){.layout{grid-template-columns:65px 220px minmax(0,1fr)}.chat{display:none}}
 @media(max-width:700px){.app{grid-template-rows:60px 1fr}.layout{display:block}.rail,.side{display:none}.main{padding:13px 12px 82px}.grid{grid-template-columns:1fr 1fr}.bottom{display:flex;position:fixed;bottom:0;left:0;right:0;height:68px;background:#0d0f10;border-top:1px solid var(--line);z-index:30;justify-content:space-around;align-items:center}.bottom button{background:none;border:0;color:#aeb4ba;font-size:20px}.bottom .active{color:var(--n)}.topline{align-items:flex-start}}
@@ -42,26 +44,165 @@ header{border-bottom:1px solid var(--line);background:#0c0e0f;display:flex;align
 <nav class="bottom"><button class="active">🏠</button><button>💬</button><button onclick="openLive()">🔴</button><button onclick="openGame()">🎮</button><button onclick="openSettings()">⚙️</button></nav>
 </div>
 
-<div class="modal" id="liveModal"><div class="modalbox"><h2>🔴 Criar Live</h2><div class="muted">Escolha o que deseja transmitir.</div><button class="choice" onclick="useCamera()"><strong>📹 Câmera + microfone</strong>Use câmera e áudio do dispositivo</button><button class="choice" onclick="useScreen()"><strong>🖥️ Espelhar minha tela</strong>Compartilhe a tela para seus amigos assistirem</button><button class="choice" onclick="useCamera()"><strong>📹 + 🖥️ Câmera + tela</strong>Modo criador/Gamecast — combinação de fontes</button><div class="video"><video id="preview" autoplay muted playsinline></video><div class="placeholder" id="ptext">Pré-visualização</div></div><div class="settings" style="margin-top:10px"><button class="btn" onclick="micOnly()">🎤 Microfone</button><button class="btn" onclick="stopAll()">⏹ Parar</button><button class="btn green" onclick="toast('Live pronta para conectar ao servidor de mídia')">🔴 Iniciar Live</button><button class="btn orange" onclick="closeLive()">Fechar</button></div><div class="muted" id="status" style="margin-top:10px">Nenhuma fonte ativa.</div></div></div>
+<div class="modal" id="liveModal"><div class="modalbox"><h2>🔴 Criar Live</h2><div class="muted">Escolha o que deseja transmitir.</div>
+<button class="choice" onclick="useCamera()"><strong>📹 Câmera + microfone</strong>Use câmera e áudio do dispositivo</button>
+<button class="choice" onclick="useScreen()"><strong>🖥️ Espelhar minha tela</strong>Compartilhe a tela para seus amigos assistirem</button>
+<button class="choice" onclick="useCameraAndScreen()"><strong>📹 + 🖥️ Câmera + tela</strong>Modo criador/Gamecast — combinação de fontes</button>
+<div class="video"><video id="preview" autoplay muted playsinline></video><div class="placeholder" id="ptext">Pré-visualização</div></div>
+<div class="settings" style="margin-top:10px">
+<button class="btn" onclick="micOnly()">🎤 Microfone</button>
+<button class="btn" onclick="stopAll()">⏹ Parar</button>
+<button class="btn green" id="startBtn" onclick="startLive()">🔴 Iniciar Live</button>
+<button class="btn orange" onclick="closeLive()">Fechar</button>
+</div>
+<div class="muted" id="status" style="margin-top:10px">Nenhuma fonte ativa.</div></div></div>
 
-<div class="modal" id="gameModal"><div class="modalbox"><h2>🎮 VYBEE Gamecast</h2><div class="muted">Compartilhe a tela do celular ou PC. O navegador pedirá autorização quando suportar captura.</div><button class="choice" onclick="useScreen()"><strong>🖥️ Compartilhar tela</strong>Espelhamento em tempo real no navegador compatível</button><button class="choice" onclick="useCamera()"><strong>📹 Câmera + 🎤 microfone</strong>Modo facecam</button><div class="video"><video id="gamePreview" autoplay muted playsinline></video><div class="placeholder" id="gtext">Gamecast</div></div><div class="controls"><button class="btn orange" onclick="closeGame()">Fechar</button><button class="btn" onclick="stopAll()">⏹ Parar</button></div></div></div>
+<div class="modal" id="gameModal"><div class="modalbox"><h2>🎮 VYBEE Gamecast</h2><div class="muted">Compartilhe a tela do celular ou PC.</div>
+<button class="choice" onclick="useScreen()"><strong>🖥️ Compartilhar tela</strong>Espelhamento em tempo real no navegador compatível</button>
+<button class="choice" onclick="useCamera()"><strong>📹 Câmera + 🎤 microfone</strong>Modo facecam</button>
+<div class="video"><video id="gamePreview" autoplay muted playsinline></video><div class="placeholder" id="gtext">Gamecast</div></div>
+<div class="controls"><button class="btn orange" onclick="closeGame()">Fechar</button><button class="btn" onclick="stopAll()">⏹ Parar</button></div></div></div>
 
 <div class="modal" id="settingsModal"><div class="modalbox"><h2>🌎 Idioma</h2><div class="muted">A arquitetura do VYBEE será multilíngue.</div><div class="controls"><button class="choice" onclick="setLang('Português — Brasil')">🇧🇷 Português — Brasil</button><button class="choice" onclick="setLang('English — United States')">🇺🇸 English — United States</button><button class="choice" onclick="setLang('Español')">🇪🇸 Español</button><button class="choice" onclick="setLang('Français')">🇫🇷 Français</button><button class="choice" onclick="setLang('Deutsch')">🇩🇪 Deutsch</button><button class="choice" onclick="setLang('日本語')">🇯🇵 日本語</button></div><button class="btn orange" onclick="closeSettings()">Fechar</button></div></div>
-<script>
-let stream=null;
-function toast(t){let x=document.createElement('div');x.className='toast';x.textContent=t;document.body.appendChild(x);setTimeout(()=>x.remove(),1900)}
-function openLive(){document.getElementById('liveModal').classList.add('on')}
-function closeLive(){document.getElementById('liveModal').classList.remove('on');stopAll()}
-function openGame(){document.getElementById('gameModal').classList.add('on')}
-function closeGame(){document.getElementById('gameModal').classList.remove('on');stopAll()}
-function openSettings(){document.getElementById('settingsModal').classList.add('on')}
-function closeSettings(){document.getElementById('settingsModal').classList.remove('on')}
-function attach(s){stream=s;document.getElementById('preview').srcObject=s;document.getElementById('gamePreview').srcObject=s;document.getElementById('ptext').style.display='none';document.getElementById('gtext').style.display='none';document.getElementById('status').textContent='Fonte ativa neste dispositivo.'}
-async function useCamera(){try{stopAll();attach(await navigator.mediaDevices.getUserMedia({video:true,audio:true}));toast('Câmera e microfone autorizados')}catch(e){toast('O navegador bloqueou a câmera/microfone')}}
-async function micOnly(){try{stopAll();attach(await navigator.mediaDevices.getUserMedia({audio:true}));toast('Microfone autorizado')}catch(e){toast('O navegador bloqueou o microfone')}}
-async function useScreen(){try{stopAll();attach(await navigator.mediaDevices.getDisplayMedia({video:true,audio:true}));toast('Espelhamento de tela ativo')}catch(e){toast('Captura de tela cancelada ou não suportada')}}
-function stopAll(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}document.getElementById('preview').srcObject=null;document.getElementById('gamePreview').srcObject=null;document.getElementById('ptext').style.display='grid';document.getElementById('gtext').style.display='grid';document.getElementById('status').textContent='Nenhuma fonte ativa.'}
-function send(e){e.preventDefault();let i=document.getElementById('text'),v=i.value.trim();if(!v)return;let d=document.createElement('div');d.className='msg';d.innerHTML='<b>Você</b><p>'+v.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))+'</p>';document.getElementById('msgs').appendChild(d);i.value='';document.getElementById('msgs').scrollTop=99999}
-function setLang(x){toast('Idioma selecionado: '+x);closeSettings()}
+
+<script type="module">
+import { Room, LocalVideoTrack, LocalAudioTrack } from "https://cdn.jsdelivr.net/npm/livekit-client@2/+esm";
+
+let sourceStreams=[];
+let liveRoom=null;
+let liveTracks=[];
+
+function toast(t){let x=document.createElement('div');x.className='toast';x.textContent=t;document.body.appendChild(x);setTimeout(()=>x.remove(),2500)}
+window.toast=toast;
+
+window.openLive=()=>document.getElementById('liveModal').classList.add('on');
+window.closeLive=()=>{document.getElementById('liveModal').classList.remove('on');stopAll()};
+window.openGame=()=>document.getElementById('gameModal').classList.add('on');
+window.closeGame=()=>{document.getElementById('gameModal').classList.remove('on');stopAll()};
+window.openSettings=()=>document.getElementById('settingsModal').classList.add('on');
+window.closeSettings=()=>document.getElementById('settingsModal').classList.remove('on');
+
+function allTracks(){
+  return sourceStreams.flatMap(s=>[...s.getTracks()]);
+}
+
+function attachStreams(){
+  const tracks=allTracks();
+  const combined=new MediaStream(tracks);
+  document.getElementById('preview').srcObject=combined;
+  document.getElementById('gamePreview').srcObject=combined;
+  document.getElementById('ptext').style.display='none';
+  document.getElementById('gtext').style.display='none';
+  document.getElementById('status').textContent=`Fonte ativa neste dispositivo. ${tracks.length} faixa(s) pronta(s) para transmissão.`;
+}
+
+async function setSources(getter){
+  try{
+    stopLocalOnly();
+    const s=await getter();
+    sourceStreams=Array.isArray(s)?s:[s];
+    attachStreams();
+    toast('Fonte autorizada. Agora toque em Iniciar Live.');
+  }catch(e){
+    console.error(e);
+    toast('Não foi possível acessar a câmera/microfone/tela.');
+  }
+}
+
+window.useCamera=()=>setSources(()=>navigator.mediaDevices.getUserMedia({video:true,audio:true}));
+window.micOnly=()=>setSources(()=>navigator.mediaDevices.getUserMedia({audio:true}));
+window.useScreen=()=>setSources(()=>navigator.mediaDevices.getDisplayMedia({video:true,audio:true}));
+window.useCameraAndScreen=()=>setSources(async()=>{
+  const cam=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  try{
+    const screen=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});
+    return [cam,screen];
+  }catch(e){
+    cam.getTracks().forEach(t=>t.stop());
+    throw e;
+  }
+});
+
+function stopLocalOnly(){
+  sourceStreams.forEach(s=>s.getTracks().forEach(t=>t.stop()));
+  sourceStreams=[];
+  document.getElementById('preview').srcObject=null;
+  document.getElementById('gamePreview').srcObject=null;
+}
+
+window.stopAll=async()=>{
+  stopLocalOnly();
+  if(liveRoom){
+    try{await liveRoom.disconnect()}catch(e){}
+    liveRoom=null;
+    liveTracks=[];
+  }
+  document.getElementById('ptext').style.display='grid';
+  document.getElementById('gtext').style.display='grid';
+  document.getElementById('status').textContent='Nenhuma fonte ativa.';
+};
+
+async function getToken(room,identity){
+  const r=await fetch('/api/token',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({room,identity})
+  });
+  const data=await r.json();
+  if(!r.ok) throw new Error(data.error||'Falha ao gerar token');
+  return data;
+}
+
+window.startLive=async()=>{
+  if(!allTracks().length){
+    toast('Primeiro escolha câmera, microfone ou tela.');
+    return;
+  }
+  const btn=document.getElementById('startBtn');
+  btn.disabled=true;
+  btn.textContent='⏳ Conectando...';
+  try{
+    const identity='user-'+crypto.randomUUID().slice(0,8);
+    const room='vybee-live-main';
+    const data=await getToken(room,identity);
+    liveRoom=new Room({adaptiveStream:true,dynacast:true});
+    liveRoom.on('disconnected',()=>{document.getElementById('status').textContent='Live desconectada.'});
+    await liveRoom.connect(data.url,data.token);
+
+    for(const s of sourceStreams){
+      const video=s.getVideoTracks()[0];
+      const audio=s.getAudioTracks()[0];
+      if(video){
+        const vt=new LocalVideoTrack(video);
+        await liveRoom.localParticipant.publishTrack(vt,{name:s===sourceStreams[1]?'screen':'camera'});
+        liveTracks.push(vt);
+      }
+      if(audio){
+        const at=new LocalAudioTrack(audio);
+        await liveRoom.localParticipant.publishTrack(at,{name:'microphone'});
+        liveTracks.push(at);
+      }
+    }
+    document.getElementById('status').textContent='🔴 LIVE ATIVA — conectado ao servidor de mídia.';
+    btn.textContent='🔴 Live ativa';
+    toast('Live conectada ao LiveKit com sucesso!');
+  }catch(e){
+    console.error(e);
+    document.getElementById('status').textContent='Erro ao conectar: '+e.message;
+    toast('Erro ao iniciar a Live: '+e.message);
+    btn.disabled=false;
+    btn.textContent='🔴 Iniciar Live';
+  }
+};
+
+window.send=(e)=>{
+  e.preventDefault();
+  let i=document.getElementById('text'),v=i.value.trim();if(!v)return;
+  let d=document.createElement('div');d.className='msg';
+  d.innerHTML='<b>Você</b><p>'+v.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))+'</p>';
+  document.getElementById('msgs').appendChild(d);i.value='';document.getElementById('msgs').scrollTop=99999;
+};
+window.setLang=x=>{toast('Idioma selecionado: '+x);closeSettings()};
 </script>
-</body></html>
+</body>
+</html>
