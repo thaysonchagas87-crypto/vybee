@@ -1,9 +1,11 @@
-const { AccessToken } = require('livekit-server-sdk');
+const { AccessToken } = require("livekit-server-sdk");
 
 module.exports = async (req, res) => {
   try {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Método não permitido' });
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        error: "Método não permitido"
+      });
     }
 
     const {
@@ -12,35 +14,46 @@ module.exports = async (req, res) => {
       LIVEKIT_API_SECRET
     } = process.env;
 
-    if (!LIVEKIT_URL || !LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) {
+    if (
+      !LIVEKIT_URL ||
+      !LIVEKIT_API_KEY ||
+      !LIVEKIT_API_SECRET
+    ) {
       return res.status(500).json({
-        error: 'Variáveis do LiveKit não configuradas na Vercel'
+        error: "Variáveis do LiveKit não configuradas na Vercel"
       });
     }
 
-    const { room, identity } = req.body || {};
+    const {
+      room,
+      identity,
+      role = "viewer"
+    } = req.body || {};
 
     if (!room || !identity) {
       return res.status(400).json({
-        error: 'room e identity são obrigatórios'
+        error: "room e identity são obrigatórios"
       });
     }
+
+    const creator = role === "creator";
 
     const token = new AccessToken(
       LIVEKIT_API_KEY,
       LIVEKIT_API_SECRET,
       {
         identity: String(identity),
-        ttl: '6h'
+        ttl: "6h"
       }
     );
 
     token.addGrant({
       roomJoin: true,
       room: String(room),
-      canPublish: true,
+
+      canPublish: creator,
       canSubscribe: true,
-      canPublishData: true
+      canPublishData: creator
     });
 
     const jwt = await token.toJwt();
@@ -51,10 +64,14 @@ module.exports = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Erro ao gerar token:', error);
+
+    console.error(
+      "Erro ao gerar token:",
+      error
+    );
 
     return res.status(500).json({
-      error: 'Erro ao gerar token LiveKit'
+      error: "Erro ao gerar token LiveKit"
     });
   }
 };
