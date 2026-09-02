@@ -1415,6 +1415,822 @@ RESPONSIVE
 </div>
 
 
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  /*
+   * ==========================================================
+   * VYBEE WEB + SUPABASE
+   * ==========================================================
+   * Cole a Publishable key do seu projeto nesta constante.
+   * NUNCA use a secret/service_role key aqui.
+   */
+  const SUPABASE_URL = "https://nrnegwytltdaxresquzz.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_cF60nM8TX2ddGBOZy68RQw_rU9wAew9";
+
+  const supabaseConfigured =
+    SUPABASE_PUBLISHABLE_KEY &&
+    !SUPABASE_PUBLISHABLE_KEY.includes("COLE_SUA_");
+
+  const supabase = createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+  let currentUser = null;
+  let currentProfile = null;
+  let currentCommunity = null;
+  let currentTextChannel = null;
+  let realtimeMessages = null;
+
+  const originalSend = window.send;
+
+  function esc(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function showWebAuth() {
+    let modal = document.getElementById("supabaseAuthModal");
+
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "supabaseAuthModal";
+      modal.className = "modal on";
+      modal.innerHTML = `
+        <div class="modalbox" style="max-width:460px">
+          <h2 id="webAuthTitle">🐝 Entrar no VYBEE</h2>
+          <div class="muted" style="margin-bottom:12px">
+            Use a mesma conta criada no aplicativo.
+          </div>
+
+          <input id="webAuthEmail"
+            placeholder="E-mail"
+            style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--p2);color:#fff;margin-top:8px">
+
+          <input id="webAuthPassword"
+            type="password"
+            placeholder="Senha"
+            style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--p2);color:#fff;margin-top:8px">
+
+          <input id="webAuthName"
+            placeholder="Nome (somente para criar conta)"
+            style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--p2);color:#fff;margin-top:8px">
+
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn green" id="webAuthSubmit" style="flex:1">
+              ENTRAR
+            </button>
+            <button class="btn" id="webAuthToggle" style="flex:1">
+              CRIAR CONTA
+            </button>
+          </div>
+
+          <div id="webAuthStatus" class="muted" style="margin-top:12px"></div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      let signupMode = false;
+
+      const title = modal.querySelector("#webAuthTitle");
+      const submit = modal.querySelector("#webAuthSubmit");
+      const toggle = modal.querySelector("#webAuthToggle");
+      const name = modal.querySelector("#webAuthName");
+      const status = modal.querySelector("#webAuthStatus");
+
+      function renderMode() {
+        title.textContent = signupMode
+          ? "🐝 Criar conta no VYBEE"
+          : "🐝 Entrar no VYBEE";
+
+        submit.textContent = signupMode
+          ? "CRIAR CONTA"
+          : "ENTRAR";
+
+        toggle.textContent = signupMode
+          ? "JÁ TENHO CONTA"
+          : "CRIAR CONTA";
+
+        name.style.display = signupMode
+          ? "block"
+          : "none";
+      }
+
+      toggle.addEventListener("click", () => {
+        signupMode = !signupMode;
+        status.textContent = "";
+        renderMode();
+      });
+
+      submit.addEventListener("click", async () => {
+        if (!supabaseConfigured) {
+          status.textContent =
+            "Configure a Publishable key no index.html.";
+          return;
+        }
+
+        const email =
+          modal.querySelector("#webAuthEmail").value.trim();
+
+        const password =
+          modal.querySelector("#webAuthPassword").value;
+
+        const displayName =
+          modal.querySelector("#webAuthName").value.trim();
+
+        if (!email || password.length < 6) {
+          status.textContent =
+            "Informe e-mail e uma senha com pelo menos 6 caracteres.";
+          return;
+        }
+
+        submit.disabled = true;
+        status.textContent = "Conectando...";
+
+        try {
+          if (signupMode) {
+            const { data, error } =
+              await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                  data: {
+                    display_name: displayName || "Usuário VYBEE",
+                    full_name: displayName || "Usuário VYBEE"
+                  }
+                }
+              });
+
+            if (error) throw error;
+
+            if (!data.session) {
+              status.textContent =
+                "Conta criada. Confirme o e-mail e depois entre.";
+              return;
+            }
+          } else {
+            const { error } =
+              await supabase.auth.signInWithPassword({
+                email,
+                password
+              });
+
+            if (error) throw error;
+          }
+
+          modal.classList.remove("on");
+          await initSupabaseApp();
+
+        } catch (error) {
+          status.textContent =
+            error?.message || "Não foi possível autenticar.";
+        } finally {
+          submit.disabled = false;
+        }
+      });
+
+      renderMode();
+    } else {
+      modal.classList.add("on");
+    }
+  }
+
+  function ensureWebUserButton() {
+    const header = document.querySelector("header");
+    if (!header || document.getElementById("webUserButton")) return;
+
+    const button = document.createElement("button");
+    button.id = "webUserButton";
+    button.className = "btn";
+    button.style.marginLeft = "12px";
+
+    const online = header.querySelector(".online");
+
+    if (online) {
+      online.parentNode.insertBefore(button, online);
+    } else {
+      header.appendChild(button);
+    }
+
+    button.addEventListener("click", async () => {
+      if (currentUser) {
+        await supabase.auth.signOut();
+        currentUser = null;
+        currentProfile = null;
+        currentCommunity = null;
+        currentTextChannel = null;
+        if (realtimeMessages) {
+          await supabase.removeChannel(realtimeMessages);
+          realtimeMessages = null;
+        }
+        location.reload();
+      } else {
+        showWebAuth();
+      }
+    });
+  }
+
+  async function loadProfile() {
+    if (!currentUser) return;
+
+    const { data, error } =
+      await supabase
+        .from("profiles")
+        .select("id,username,display_name,avatar_url,bio")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+    if (error) {
+      console.warn("VYBEE: perfil:", error);
+      return;
+    }
+
+    currentProfile = data;
+
+    const button =
+      document.getElementById("webUserButton");
+
+    if (button) {
+      button.textContent =
+        "👤 " +
+        (data?.display_name ||
+          currentUser.email ||
+          "Conta");
+    }
+  }
+
+  function getCommunitySidebar() {
+    return document.querySelector(".side");
+  }
+
+  async function loadCommunities() {
+    if (!currentUser) return;
+
+    const side = getCommunitySidebar();
+    if (!side) return;
+
+    const communitySection =
+      [...side.querySelectorAll(".section")]
+        .find(el =>
+          el.textContent.trim() === "COMUNIDADES"
+        );
+
+    if (!communitySection) return;
+
+    side.querySelectorAll(
+      ".vybee-real-community"
+    ).forEach(el => el.remove());
+
+    const { data, error } =
+      await supabase
+        .from("communities")
+        .select(
+          "id,name,description,owner_id,is_public"
+        )
+        .order("created_at", {
+          ascending: false
+        });
+
+    if (error) {
+      console.error(
+        "VYBEE: comunidades:",
+        error
+      );
+      toast(
+        "Não foi possível carregar as comunidades."
+      );
+      return;
+    }
+
+    (data || []).forEach(community => {
+      const item =
+        document.createElement("div");
+
+      item.className =
+        "channel vybee-real-community";
+
+      item.innerHTML =
+        "🐝 " + esc(community.name);
+
+      item.addEventListener(
+        "click",
+        () => openCommunity(community)
+      );
+
+      communitySection.after(item);
+    });
+
+    if (!data || data.length === 0) {
+      const empty =
+        document.createElement("div");
+
+      empty.className =
+        "channel vybee-real-community";
+
+      empty.textContent =
+        "Nenhuma comunidade ainda.";
+
+      communitySection.after(empty);
+    }
+  }
+
+  async function ensureMembership(communityId) {
+    if (!currentUser) return false;
+
+    const { data } =
+      await supabase
+        .from("community_members")
+        .select("id,role")
+        .eq("community_id", communityId)
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+
+    if (data) return true;
+
+    const { error } =
+      await supabase
+        .from("community_members")
+        .insert({
+          community_id: communityId,
+          user_id: currentUser.id,
+          role: "member"
+        });
+
+    return !error;
+  }
+
+  async function openCommunity(community) {
+    currentCommunity = community;
+
+    const ok =
+      await ensureMembership(community.id);
+
+    if (!ok) {
+      toast(
+        "Você ainda não possui acesso a esta comunidade."
+      );
+      return;
+    }
+
+    const { data: channels, error } =
+      await supabase
+        .from("channels")
+        .select(
+          "id,name,channel_type,position"
+        )
+        .eq(
+          "community_id",
+          community.id
+        )
+        .order("position", {
+          ascending: true
+        });
+
+    if (error) {
+      console.error(
+        "VYBEE: canais:",
+        error
+      );
+      toast(
+        "Não foi possível carregar os canais."
+      );
+      return;
+    }
+
+    const textChannels =
+      (channels || [])
+        .filter(c =>
+          c.channel_type === "text"
+        );
+
+    const first =
+      textChannels.find(c =>
+        c.name.toLowerCase() === "geral"
+      ) || textChannels[0];
+
+    renderRealCommunityChannels(
+      channels || []
+    );
+
+    if (first) {
+      await openTextChannel(first);
+    }
+
+    const title =
+      document.querySelector(".chathead");
+
+    if (title) {
+      title.textContent =
+        "💬 " +
+        community.name +
+        (first ? "  •  # " + first.name : "");
+    }
+  }
+
+  function renderRealCommunityChannels(channels) {
+    const side = getCommunitySidebar();
+    if (!side) return;
+
+    side.querySelectorAll(
+      ".vybee-real-channel"
+    ).forEach(el => el.remove());
+
+    const communityChannelsTitle =
+      [...side.querySelectorAll(".section")]
+        .find(el =>
+          el.textContent.trim() === "SALAS DE VOZ"
+        );
+
+    const anchor =
+      communityChannelsTitle ||
+      side.querySelector(".section");
+
+    const list =
+      channels.filter(c =>
+        c.channel_type === "text"
+      );
+
+    list.reverse().forEach(channel => {
+      const item =
+        document.createElement("div");
+
+      item.className =
+        "channel vybee-real-channel";
+
+      item.textContent =
+        "💬 " + channel.name;
+
+      item.addEventListener(
+        "click",
+        () => openTextChannel(channel)
+      );
+
+      if (anchor) {
+        anchor.before(item);
+      } else {
+        side.appendChild(item);
+      }
+    });
+  }
+
+  async function openTextChannel(channel) {
+    currentTextChannel = channel;
+
+    const title =
+      document.querySelector(".chathead");
+
+    if (title && currentCommunity) {
+      title.textContent =
+        "💬 " +
+        currentCommunity.name +
+        "  •  # " +
+        channel.name;
+    }
+
+    await loadMessages();
+
+    subscribeMessages();
+  }
+
+  async function loadMessages() {
+    if (!currentTextChannel) return;
+
+    const { data, error } =
+      await supabase
+        .from("messages")
+        .select(
+          "id,user_id,content,created_at"
+        )
+        .eq(
+          "channel_id",
+          currentTextChannel.id
+        )
+        .order("created_at", {
+          ascending: true
+        })
+        .limit(200);
+
+    if (error) {
+      console.error(
+        "VYBEE: mensagens:",
+        error
+      );
+      return;
+    }
+
+    const messages =
+      document.getElementById("msgs");
+
+    if (!messages) return;
+
+    messages.innerHTML = "";
+
+    if (!data || data.length === 0) {
+      messages.innerHTML =
+        `<div class="msg">
+           <b>VYBEE Bot</b>
+           <p>Nenhuma mensagem ainda. Seja o primeiro! 🐝</p>
+         </div>`;
+    } else {
+      await renderMessageRows(data);
+    }
+
+    messages.scrollTop =
+      messages.scrollHeight;
+  }
+
+  async function renderMessageRows(rows) {
+    const messages =
+      document.getElementById("msgs");
+
+    if (!messages) return;
+
+    const ids =
+      [...new Set(
+        rows
+          .map(r => r.user_id)
+          .filter(Boolean)
+      )];
+
+    let profiles = [];
+
+    if (ids.length) {
+      const { data } =
+        await supabase
+          .from("profiles")
+          .select(
+            "id,display_name,username"
+          )
+          .in("id", ids);
+
+      profiles = data || [];
+    }
+
+    const profileMap =
+      new Map(
+        profiles.map(p => [
+          p.id,
+          p
+        ])
+      );
+
+    messages.innerHTML = "";
+
+    rows.forEach(row => {
+      appendMessageToUi(
+        row,
+        profileMap.get(row.user_id)
+      );
+    });
+  }
+
+  function appendMessageToUi(row, profile) {
+    const messages =
+      document.getElementById("msgs");
+
+    if (!messages) return;
+
+    if (
+      messages.querySelector(
+        `[data-message-id="${CSS.escape(row.id)}"]`
+      )
+    ) {
+      return;
+    }
+
+    const message =
+      document.createElement("div");
+
+    message.className = "msg";
+    message.dataset.messageId =
+      row.id;
+
+    const author =
+      row.user_id === currentUser?.id
+        ? "Você"
+        : (
+            profile?.display_name ||
+            profile?.username ||
+            "Usuário"
+          );
+
+    message.innerHTML =
+      "<b>" + esc(author) + "</b>" +
+      "<p>" + esc(row.content) + "</p>";
+
+    messages.appendChild(message);
+    messages.scrollTop =
+      messages.scrollHeight;
+  }
+
+  function subscribeMessages() {
+    if (realtimeMessages) {
+      supabase.removeChannel(
+        realtimeMessages
+      );
+      realtimeMessages = null;
+    }
+
+    if (!currentTextChannel) return;
+
+    realtimeMessages =
+      supabase
+        .channel(
+          "vybee-messages-" +
+          currentTextChannel.id
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
+            filter:
+              "channel_id=eq." +
+              currentTextChannel.id
+          },
+          async payload => {
+            const row = payload.new;
+
+            let profile = null;
+
+            if (row.user_id) {
+              const { data } =
+                await supabase
+                  .from("profiles")
+                  .select(
+                    "id,display_name,username"
+                  )
+                  .eq(
+                    "id",
+                    row.user_id
+                  )
+                  .maybeSingle();
+
+              profile = data;
+            }
+
+            appendMessageToUi(
+              row,
+              profile
+            );
+          }
+        )
+        .subscribe(status => {
+          console.log(
+            "VYBEE Realtime:",
+            status
+          );
+        });
+  }
+
+  async function sendRealMessage() {
+    if (!currentUser) {
+      showWebAuth();
+      return;
+    }
+
+    if (!currentTextChannel) {
+      toast(
+        "Abra um canal de texto primeiro."
+      );
+      return;
+    }
+
+    const input =
+      document.getElementById("text");
+
+    const value =
+      input?.value.trim();
+
+    if (!value) return;
+
+    const { error } =
+      await supabase
+        .from("messages")
+        .insert({
+          channel_id:
+            currentTextChannel.id,
+          user_id:
+            currentUser.id,
+          content: value
+        });
+
+    if (error) {
+      console.error(
+        "VYBEE: envio:",
+        error
+      );
+      toast(
+        error.message ||
+        "Não foi possível enviar."
+      );
+      return;
+    }
+
+    input.value = "";
+  }
+
+  function replaceChatSend() {
+    const form =
+      document.querySelector(".form");
+
+    if (!form) return;
+
+    form.onsubmit = async event => {
+      event.preventDefault();
+      await sendRealMessage();
+    };
+
+    const button =
+      form.querySelector("button");
+
+    if (button) {
+      button.onclick = async event => {
+        event.preventDefault();
+        await sendRealMessage();
+      };
+    }
+  }
+
+  async function initSupabaseApp() {
+    if (!supabaseConfigured) {
+      console.warn(
+        "VYBEE: Publishable key não configurada."
+      );
+
+      ensureWebUserButton();
+
+      const button =
+        document.getElementById(
+          "webUserButton"
+        );
+
+      if (button) {
+        button.textContent =
+          "🔐 Configurar acesso";
+        button.onclick =
+          showWebAuth;
+      }
+
+      return;
+    }
+
+    const { data: sessionData } =
+      await supabase.auth.getSession();
+
+    currentUser =
+      sessionData?.session?.user || null;
+
+    ensureWebUserButton();
+
+    if (!currentUser) {
+      const button =
+        document.getElementById(
+          "webUserButton"
+        );
+
+      if (button) {
+        button.textContent =
+          "🔐 Entrar";
+      }
+
+      showWebAuth();
+      return;
+    }
+
+    await loadProfile();
+    await loadCommunities();
+    replaceChatSend();
+  }
+
+  supabase.auth.onAuthStateChange(
+    async (_event, session) => {
+      currentUser =
+        session?.user || null;
+
+      if (currentUser) {
+        await loadProfile();
+        await loadCommunities();
+        replaceChatSend();
+      }
+    }
+  );
+
+  window.vybeeOpenCommunity =
+    openCommunity;
+
+  initSupabaseApp();
+</script>
+
+
 <script type="module">
 
 import {
