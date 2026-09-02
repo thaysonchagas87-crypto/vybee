@@ -4,6 +4,9 @@
 <head>
 
 <meta charset="utf-8">
+<meta name="application-name" content="VYBEE">
+<meta name="description" content="VYBEE — conecte, compartilhe e viva. Comunidades, chat e transmissões ao vivo.">
+<meta name="color-scheme" content="dark">
 
 <meta
   name="viewport"
@@ -865,6 +868,52 @@ RESPONSIVE
 
 }
 
+
+/* =========================
+   VYBEE COMMUNITY SEARCH
+   ========================= */
+.vybee-community-search{
+  width:100%;
+  margin:0 0 10px;
+  padding:9px 11px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--p2);
+  color:#fff;
+  outline:none;
+}
+.vybee-community-search::placeholder{
+  color:#747b82;
+}
+.vybee-community-empty{
+  color:#747b82;
+  font-size:12px;
+  padding:7px 8px;
+}
+.feature{
+  background:var(--p2);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:15px;
+  min-height:120px;
+}
+.feature strong{
+  display:block;
+  margin-top:5px;
+}
+.feature span{
+  display:block;
+  margin-top:4px;
+  color:var(--mut);
+  font-size:12px;
+}
+@media(max-width:700px){
+  .feature{
+    min-height:105px;
+    padding:12px;
+  }
+}
+
 </style>
 
 </head>
@@ -1684,6 +1733,16 @@ RESPONSIVE
 
     if (!communitySection) return;
 
+    let search = side.querySelector("#vybeeCommunitySearch");
+    if (!search) {
+      search = document.createElement("input");
+      search.id = "vybeeCommunitySearch";
+      search.className = "vybee-community-search";
+      search.placeholder = "🔎 Buscar comunidade...";
+      search.autocomplete = "off";
+      communitySection.before(search);
+    }
+
     side.querySelectorAll(
       ".vybee-real-community"
     ).forEach(el => el.remove());
@@ -1709,36 +1768,59 @@ RESPONSIVE
       return;
     }
 
-    (data || []).forEach(community => {
-      const item =
-        document.createElement("div");
+    const communities = Array.isArray(data)
+      ? data
+      : [];
 
-      item.className =
-        "channel vybee-real-community";
+    const render = (term = "") => {
+      side.querySelectorAll(
+        ".vybee-real-community, .vybee-community-empty"
+      ).forEach(el => el.remove());
 
-      item.innerHTML =
-        "🐝 " + esc(community.name);
+      const q = String(term || "").trim().toLocaleLowerCase("pt-BR");
 
-      item.addEventListener(
-        "click",
-        () => openCommunity(community)
-      );
+      const filtered = communities.filter(community => {
+        const name = String(community?.name || "").toLocaleLowerCase("pt-BR");
+        const description = String(community?.description || "").toLocaleLowerCase("pt-BR");
+        return !q || name.includes(q) || description.includes(q);
+      });
 
-      communitySection.after(item);
-    });
+      if (!filtered.length) {
+        const empty = document.createElement("div");
+        empty.className = "channel vybee-community-empty";
+        empty.textContent =
+          q
+            ? "Nenhuma comunidade encontrada."
+            : "Nenhuma comunidade ainda.";
+        communitySection.after(empty);
+        return;
+      }
 
-    if (!data || data.length === 0) {
-      const empty =
-        document.createElement("div");
+      filtered.forEach(community => {
+        const item =
+          document.createElement("div");
 
-      empty.className =
-        "channel vybee-real-community";
+        item.className =
+          "channel vybee-real-community";
 
-      empty.textContent =
-        "Nenhuma comunidade ainda.";
+        item.innerHTML =
+          "🐝 " + esc(community.name);
 
-      communitySection.after(empty);
-    }
+        item.title =
+          community.description ||
+          "Abrir comunidade";
+
+        item.addEventListener(
+          "click",
+          () => openCommunity(community)
+        );
+
+        communitySection.after(item);
+      });
+    };
+
+    search.oninput = () => render(search.value);
+    render(search.value);
   }
 
   async function ensureMembership(communityId) {
@@ -1767,6 +1849,11 @@ RESPONSIVE
   }
 
   async function openCommunity(community) {
+    if (!currentUser) {
+      showWebAuth();
+      return;
+    }
+
     currentCommunity = community;
 
     const ok =
@@ -2228,6 +2315,22 @@ RESPONSIVE
     openCommunity;
 
   initSupabaseApp();
+
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+
+    const liveModal = document.getElementById("liveModal");
+    const watchModal = document.getElementById("watchModal");
+
+    if (watchModal?.classList.contains("on")) {
+      closeWatch();
+      return;
+    }
+
+    if (liveModal?.classList.contains("on")) {
+      closeLive();
+    }
+  });
 </script>
 
 
@@ -2541,6 +2644,21 @@ function generateRoomName(){
 
 window.startCreatorLive =
   async () => {
+
+    try {
+      const { data: sessionData } =
+        await supabase.auth.getSession();
+
+      if (!sessionData?.session?.user) {
+        toast("Entre na sua conta para iniciar uma LIVE.");
+        showWebAuth();
+        return;
+      }
+    } catch (authError) {
+      console.error("VYBEE LIVE: sessão:", authError);
+      toast("Não foi possível validar sua sessão.");
+      return;
+    }
 
     if(
       !creatorStreams.length
