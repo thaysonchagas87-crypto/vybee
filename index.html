@@ -2307,6 +2307,16 @@ RESPONSIVE
         await loadProfile();
         await loadCommunities();
         replaceChatSend();
+      } else {
+        currentProfile = null;
+        currentCommunity = null;
+        currentTextChannel = null;
+        if (realtimeMessages) {
+          try {
+            await supabase.removeChannel(realtimeMessages);
+          } catch (_) {}
+          realtimeMessages = null;
+        }
       }
     }
   );
@@ -2645,18 +2655,15 @@ function generateRoomName(){
 window.startCreatorLive =
   async () => {
 
-    try {
-      const { data: sessionData } =
-        await supabase.auth.getSession();
-
-      if (!sessionData?.session?.user) {
-        toast("Entre na sua conta para iniciar uma LIVE.");
-        showWebAuth();
-        return;
-      }
-    } catch (authError) {
-      console.error("VYBEE LIVE: sessão:", authError);
-      toast("Não foi possível validar sua sessão.");
+    /*
+     * A autenticação já foi validada pelo initSupabaseApp().
+     * Não fazemos uma segunda validação com getSession() aqui,
+     * porque em alguns navegadores ela pode falhar mesmo com
+     * currentUser já carregado e impedir a LIVE.
+     */
+    if (!currentUser) {
+      toast("Entre na sua conta para iniciar uma LIVE.");
+      showWebAuth();
       return;
     }
 
@@ -3772,67 +3779,8 @@ function escapeHTML(
    CHAT
 ========================================== */
 
-window.send =
-  event => {
-
-    event.preventDefault();
-
-
-    const input =
-      document.getElementById(
-        "text"
-      );
-
-
-    const value =
-      input.value.trim();
-
-
-    if(!value){
-
-      return;
-
-    }
-
-
-    const message =
-      document.createElement(
-        "div"
-      );
-
-
-    message.className =
-      "msg";
-
-
-    message.innerHTML =
-      "<b>Você</b><p>" +
-      escapeHTML(value) +
-      "</p>";
-
-
-    document
-      .getElementById(
-        "msgs"
-      )
-      .appendChild(
-        message
-      );
-
-
-    input.value = "";
-
-
-    const msgs =
-      document.getElementById(
-        "msgs"
-      );
-
-
-    msgs.scrollTop =
-      msgs.scrollHeight;
-
-  };
+/* O envio real do chat é definido no módulo Supabase.
+   Não sobrescrevemos window.send aqui. */
 
 
 /* ==========================================
