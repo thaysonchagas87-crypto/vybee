@@ -2496,6 +2496,60 @@ body.vybee-modern-home-active > .app > footer{
 }
 </style>
 
+
+<style id="vybee-activity-style">
+.vybee-home-activity{
+  display:grid;
+  gap:7px;
+}
+.vybee-activity-item{
+  display:flex;
+  gap:9px;
+  align-items:flex-start;
+  padding:9px 0;
+  border-bottom:1px solid #1d2328;
+}
+.vybee-activity-item:last-child{border-bottom:0}
+.vybee-activity-icon{
+  width:30px;height:30px;flex:0 0 30px;
+  display:grid;place-items:center;
+  border-radius:9px;
+  background:#151a1c;
+  border:1px solid #252c30;
+}
+.vybee-activity-main{min-width:0;flex:1}
+.vybee-activity-main strong{
+  display:block;
+  font-size:10px;
+}
+.vybee-activity-main span{
+  display:block;
+  margin-top:2px;
+  color:#737d84;
+  font-size:8px;
+  line-height:1.35;
+}
+.vybee-activity-time{
+  color:#586168;
+  font-size:8px;
+  white-space:nowrap;
+}
+.vybee-activity-empty{
+  padding:15px 0;
+  text-align:center;
+  color:#646c73;
+  font-size:9px;
+}
+.vybee-activity-more{
+  margin-top:7px;
+  border:0;
+  background:transparent;
+  color:#53ff1a;
+  cursor:pointer;
+  font-size:9px;
+}
+</style>
+
 </head>
 
 <body>
@@ -9544,23 +9598,24 @@ if(requestedLive){
 
             <section class="vybee-home-sidecard">
               <div class="vybee-home-side-title">
-                <strong>🔔 Notificações</strong>
-                <span>RECENTES</span>
+                <strong>⚡ Atividade</strong>
+                <span>AGORA</span>
               </div>
-              <div class="vybee-home-person">
-                <div class="vybee-home-person-avatar">💬</div>
-                <div class="vybee-home-person-main">
-                  <strong>Nova mensagem em #geral</strong>
-                  <span>agora</span>
+
+              <div
+                id="vybeeHomeActivity"
+                class="vybee-home-activity"
+              >
+                <div class="vybee-activity-empty">
+                  Carregando atividade...
                 </div>
               </div>
-              <div class="vybee-home-person">
-                <div class="vybee-home-person-avatar">🔴</div>
-                <div class="vybee-home-person-main">
-                  <strong>Nova LIVE iniciada</strong>
-                  <span>há 2 min</span>
-                </div>
-              </div>
+
+              <button
+                type="button"
+                class="vybee-activity-more"
+                id="vybeeHomeActivityMore"
+              >Ver tudo</button>
             </section>
           </aside>
         </div>
@@ -11314,6 +11369,568 @@ if(requestedLive){
   bind();
   waitForUser();
 
+})();
+</script>
+
+
+<script id="vybee-activity-controller">
+(function(){
+  const STORAGE_KEY =
+    "vybee_activity_feed_v1";
+
+  const MAX_ITEMS = 80;
+
+  let feed = [];
+  let messageChannel = null;
+  let presenceChannel = null;
+  let liveSeen = new Set();
+  let initialized = false;
+
+  function sb(){
+    return window.vybeeSupabase || null;
+  }
+
+  function user(){
+    return window.vybeeCurrentUser || null;
+  }
+
+  function esc(value){
+    return String(value ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function load(){
+    try{
+      const value =
+        JSON.parse(
+          localStorage.getItem(
+            STORAGE_KEY
+          ) || "[]"
+        );
+
+      feed =
+        Array.isArray(value)
+          ? value.slice(0,MAX_ITEMS)
+          : [];
+    }catch(_){
+      feed = [];
+    }
+  }
+
+  function save(){
+    try{
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(
+          feed.slice(0,MAX_ITEMS)
+        )
+      );
+    }catch(_){}
+  }
+
+  function timeAgo(value){
+    const when =
+      new Date(value).getTime();
+
+    if(
+      Number.isNaN(when)
+    ) return "";
+
+    const seconds =
+      Math.max(
+        0,
+        Math.floor(
+          (Date.now()-when)/1000
+        )
+      );
+
+    if(seconds < 10) return "agora";
+    if(seconds < 60) return "há "+seconds+"s";
+
+    const minutes =
+      Math.floor(seconds/60);
+
+    if(minutes < 60){
+      return "há "+minutes+"min";
+    }
+
+    const hours =
+      Math.floor(minutes/60);
+
+    if(hours < 24){
+      return "há "+hours+"h";
+    }
+
+    return "há "+
+      Math.floor(hours/24)+
+      "d";
+  }
+
+  function render(){
+    const list =
+      document.getElementById(
+        "vybeeHomeActivity"
+      );
+
+    if(!list) return;
+
+    if(!feed.length){
+      list.innerHTML =
+        `<div class="vybee-activity-empty">
+          Nenhuma atividade recente.
+        </div>`;
+      return;
+    }
+
+    list.innerHTML =
+      feed
+        .slice(0,6)
+        .map(
+          item => `
+            <div
+              class="vybee-activity-item"
+              data-activity-id="${esc(item.id)}"
+            >
+              <div class="vybee-activity-icon">
+                ${esc(item.icon || "⚡")}
+              </div>
+
+              <div class="vybee-activity-main">
+                <strong>
+                  ${esc(item.title || "VYBEE")}
+                </strong>
+                <span>
+                  ${esc(item.text || "")}
+                </span>
+              </div>
+
+              <div class="vybee-activity-time">
+                ${esc(timeAgo(item.createdAt))}
+              </div>
+            </div>
+          `
+        )
+        .join("");
+  }
+
+  function add({
+    id,
+    icon,
+    title,
+    text
+  }){
+    if(!id) return;
+
+    if(
+      feed.some(
+        item =>
+          item.id === id
+      )
+    ){
+      return;
+    }
+
+    feed.unshift({
+      id,
+      icon,
+      title,
+      text,
+      createdAt:
+        new Date().toISOString()
+    });
+
+    feed =
+      feed.slice(0,MAX_ITEMS);
+
+    save();
+    render();
+  }
+
+  async function getProfile(id){
+    const client=sb();
+
+    if(!client || !id){
+      return null;
+    }
+
+    try{
+      const {data}=await client
+        .from("profiles")
+        .select(
+          "id,display_name,username"
+        )
+        .eq("id",id)
+        .maybeSingle();
+
+      return data || null;
+    }catch(_){
+      return null;
+    }
+  }
+
+  async function getChannel(id){
+    const client=sb();
+
+    if(!client || !id){
+      return null;
+    }
+
+    try{
+      const {data}=await client
+        .from("channels")
+        .select(
+          "id,name,channel_type,community_id"
+        )
+        .eq("id",id)
+        .maybeSingle();
+
+      return data || null;
+    }catch(_){
+      return null;
+    }
+  }
+
+  async function onMessage(row){
+    const current=user();
+
+    if(
+      !current ||
+      !row ||
+      row.user_id === current.id
+    ){
+      return;
+    }
+
+    const channel =
+      await getChannel(
+        row.channel_id
+      );
+
+    const profile =
+      await getProfile(
+        row.user_id
+      );
+
+    if(!channel) return;
+
+    add({
+      id:
+        "message:"+row.id,
+      icon:"💬",
+      title:
+        (profile?.display_name ||
+         profile?.username ||
+         "Alguém") +
+        " enviou uma mensagem",
+      text:
+        "#" +
+        channel.name +
+        " • " +
+        String(
+          row.content || ""
+        ).slice(0,120)
+    });
+  }
+
+  async function subscribeMessages(){
+    const client=sb();
+    const current=user();
+
+    if(
+      !client ||
+      !current
+    ){
+      return;
+    }
+
+    if(messageChannel){
+      try{
+        await client.removeChannel(
+          messageChannel
+        );
+      }catch(_){}
+    }
+
+    messageChannel =
+      client
+        .channel(
+          "vybee-activity-messages-" +
+          current.id
+        )
+        .on(
+          "postgres_changes",
+          {
+            event:"INSERT",
+            schema:"public",
+            table:"messages"
+          },
+          payload =>
+            onMessage(
+              payload.new
+            )
+        )
+        .subscribe();
+  }
+
+  function subscribePresence(){
+    const client=sb();
+    const current=user();
+
+    if(
+      !client ||
+      !current
+    ){
+      return;
+    }
+
+    if(presenceChannel){
+      try{
+        client.removeChannel(
+          presenceChannel
+        );
+      }catch(_){}
+    }
+
+    presenceChannel =
+      client.channel(
+        "vybee-activity-presence",
+        {
+          config:{
+            presence:{
+              key:current.id
+            }
+          }
+        }
+      )
+      .on(
+        "presence",
+        {
+          event:"join"
+        },
+        async payload=>{
+          const key =
+            payload?.key ||
+            "";
+
+          if(
+            String(key) ===
+            String(current.id)
+          ){
+            return;
+          }
+
+          const profile =
+            await getProfile(key);
+
+          add({
+            id:
+              "join:"+
+              key+
+              ":"+
+              Date.now(),
+            icon:"🟢",
+            title:
+              (
+                profile?.display_name ||
+                profile?.username ||
+                "Um amigo"
+              ) +
+              " ficou online",
+            text:
+              "Presença em tempo real no VYBEE."
+          });
+        }
+      )
+      .subscribe();
+  }
+
+  async function checkLives(){
+    const current=user();
+
+    if(!current) return;
+
+    try{
+      const response =
+        await fetch(
+          "/api/rooms?t="+
+          Date.now(),
+          {
+            cache:"no-store"
+          }
+        );
+
+      if(!response.ok) return;
+
+      const payload =
+        await response.json();
+
+      const active =
+        (
+          Array.isArray(payload.rooms)
+            ? payload.rooms
+            : []
+        )
+        .filter(
+          room =>
+            room &&
+            room.name &&
+            Number(
+              room.numParticipants || 0
+            ) > 0
+        );
+
+      const names =
+        new Set(
+          active.map(
+            room =>
+              String(room.name)
+          )
+        );
+
+      if(!initialized){
+        liveSeen =
+          names;
+
+        initialized=true;
+        return;
+      }
+
+      active.forEach(
+        room=>{
+          const name =
+            String(room.name);
+
+          if(
+            !liveSeen.has(name)
+          ){
+            add({
+              id:
+                "live:"+
+                name+
+                ":"+
+                Date.now(),
+              icon:"🔴",
+              title:
+                "Nova LIVE no VYBEE",
+              text:
+                name+
+                " • "+
+                Number(
+                  room.numParticipants || 0
+                )+
+                " participante(s)"
+            });
+          }
+        }
+      );
+
+      liveSeen=names;
+
+    }catch(_){}
+  }
+
+  function bind(){
+    document
+      .getElementById(
+        "vybeeHomeActivityMore"
+      )
+      ?.addEventListener(
+        "click",
+        ()=>{
+          if(
+            typeof window.vybeeOpenNotifications ===
+              "function"
+          ){
+            window.vybeeOpenNotifications();
+            return;
+          }
+
+          document
+            .getElementById(
+              "vybeeNotificationButton"
+            )
+            ?.click();
+        }
+      );
+  }
+
+  function start(){
+    load();
+    render();
+    bind();
+
+    subscribeMessages();
+    subscribePresence();
+    checkLives();
+
+    setInterval(
+      checkLives,
+      7000
+    );
+
+    setInterval(
+      render,
+      30000
+    );
+  }
+
+  function wait(){
+    if(
+      sb() &&
+      user()
+    ){
+      start();
+      return;
+    }
+
+    setTimeout(
+      wait,
+      400
+    );
+  }
+
+  wait();
+
+  window.vybeeAddActivity =
+    add;
+
+})();
+</script>
+
+
+<script id="vybee-notification-open-bridge">
+(function(){
+  function bind(){
+    const original =
+      window.vybeeOpenNotificationCenter;
+
+    window.vybeeOpenNotifications =
+      function(){
+        const button =
+          document.getElementById(
+            "vybeeNotificationButton"
+          );
+
+        if(button){
+          button.click();
+          return;
+        }
+
+        const center =
+          document.getElementById(
+            "vybeeNotificationCenter"
+          );
+
+        center?.classList.add("on");
+      };
+  }
+
+  bind();
+  setTimeout(bind,500);
 })();
 </script>
 
