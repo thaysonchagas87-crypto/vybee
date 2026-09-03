@@ -2329,6 +2329,49 @@ body.vybee-modern-home-active > .app{
 }
 </style>
 
+
+<style id="vybee-all-layers-final-fix">
+/* A Dashboard moderna fica abaixo de todas as janelas funcionais. */
+#vybeeHomeDashboard{
+  z-index:200 !important;
+}
+
+/* Janelas/modal do sistema ficam acima da Dashboard. */
+.modal{
+  z-index:300 !important;
+}
+.vybee-profile-panel{
+  z-index:310 !important;
+  visibility:visible !important;
+}
+.vybee-settings-panel{
+  z-index:320 !important;
+  visibility:visible !important;
+}
+.vybee-notification-center{
+  z-index:330 !important;
+}
+.vybee-popup-stack{
+  z-index:340 !important;
+}
+.voice-room{
+  z-index:350 !important;
+}
+.toast{
+  z-index:400 !important;
+}
+
+/* A casca antiga pode ficar invisível, mas nunca os modais. */
+body.vybee-modern-home-active > .app{
+  visibility:visible !important;
+}
+body.vybee-modern-home-active > .app > header,
+body.vybee-modern-home-active > .app > .layout,
+body.vybee-modern-home-active > .app > footer{
+  visibility:hidden !important;
+}
+</style>
+
 </head>
 
 <body>
@@ -9980,9 +10023,14 @@ if(requestedLive){
         ){
           window.vybeeOpenSettings();
         }else{
-          document.getElementById(
-            "vybeeSettingsButton"
-          )?.click();
+          const settingsPanel =
+            document.getElementById(
+              "vybeeSettingsPanel"
+            );
+
+          if(settingsPanel){
+            settingsPanel.classList.add("on");
+          }
         }
         return;
     }
@@ -10328,6 +10376,67 @@ if(requestedLive){
   );
   setTimeout(bindSettings,500);
   setTimeout(bindSettings,1200);
+})();
+</script>
+
+
+<script id="vybee-settings-guaranteed-open">
+(function(){
+  function bind(){
+    const button =
+      document.querySelector(
+        '[data-home-nav="settings"]'
+      );
+
+    if(
+      !button ||
+      button.dataset.vybeeSettingsGuaranteed
+    ){
+      return;
+    }
+
+    button.dataset.vybeeSettingsGuaranteed="1";
+
+    button.addEventListener(
+      "click",
+      function(event){
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        const panel =
+          document.getElementById(
+            "vybeeSettingsPanel"
+          );
+
+        if(!panel){
+          return;
+        }
+
+        panel.classList.add("on");
+        panel.style.display="grid";
+        panel.style.visibility="visible";
+        panel.style.zIndex="320";
+
+        try{
+          window.vybeeOpenSettings?.();
+        }catch(error){
+          console.warn(
+            "VYBEE settings direct:",
+            error
+          );
+        }
+      },
+      true
+    );
+  }
+
+  bind();
+  document.addEventListener(
+    "DOMContentLoaded",
+    bind
+  );
+  setTimeout(bind,300);
+  setTimeout(bind,1000);
 })();
 </script>
 
