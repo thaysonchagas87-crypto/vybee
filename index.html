@@ -2164,6 +2164,9 @@ RESPONSIVE
     const side = getCommunitySidebar();
     if (!side) return;
 
+    side.querySelectorAll(".vybee-static-voice")
+      .forEach(el => { el.style.display = "none"; });
+
     side.querySelectorAll(".vybee-real-voice-channel, .vybee-real-voice-section")
       .forEach(el => el.remove());
 
@@ -2631,6 +2634,9 @@ RESPONSIVE
   window.vybeeGetCurrentCommunity =
     () => currentCommunity;
 
+  window.vybeeGetCurrentProfile =
+    () => currentProfile;
+
   initSupabaseApp();
 
 
@@ -2722,7 +2728,12 @@ function voiceHideModal() {
 
 function voiceUserIdentity() {
   const user = window.vybeeCurrentUser || null;
+  const profile =
+    window.vybeeGetCurrentProfile?.() || null;
+
   const base =
+    profile?.display_name ||
+    profile?.username ||
     user?.user_metadata?.display_name ||
     user?.email ||
     "Usuário VYBEE";
@@ -2989,8 +3000,16 @@ async function showVoiceRoom(info) {
       "-" +
       String(info.channelId);
 
+    const tokenProvider = window.vybeeGetToken;
+
+    if (typeof tokenProvider !== "function") {
+      throw new Error(
+        "Serviço de autenticação da sala de voz não foi carregado."
+      );
+    }
+
     const data =
-      await getToken(
+      await tokenProvider(
         roomName,
         voiceIdentity(),
         "voice"
@@ -3669,6 +3688,9 @@ async function getToken(
   return data;
 
 }
+
+/* Disponibiliza o gerador de token para os outros módulos ES do VYBEE. */
+window.vybeeGetToken = getToken;
 
 
 /* ==========================================
