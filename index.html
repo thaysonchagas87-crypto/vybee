@@ -19,6 +19,7 @@
 >
 
 <title>VYBEE</title>
+<link rel="icon" href="data:,">
 
 <style>
 
@@ -1488,6 +1489,7 @@ RESPONSIVE
   );
 
   let currentUser = null;
+  window.vybeeCurrentUser = null;
   let currentProfile = null;
   let currentCommunity = null;
   let currentTextChannel = null;
@@ -1672,6 +1674,7 @@ RESPONSIVE
       if (currentUser) {
         await supabase.auth.signOut();
         currentUser = null;
+        window.vybeeCurrentUser = null;
         currentProfile = null;
         currentCommunity = null;
         currentTextChannel = null;
@@ -2275,6 +2278,7 @@ RESPONSIVE
 
     currentUser =
       sessionData?.session?.user || null;
+    window.vybeeCurrentUser = currentUser;
 
     ensureWebUserButton();
 
@@ -2302,6 +2306,7 @@ RESPONSIVE
     async (_event, session) => {
       currentUser =
         session?.user || null;
+      window.vybeeCurrentUser = currentUser;
 
       if (currentUser) {
         await loadProfile();
@@ -2661,9 +2666,10 @@ window.startCreatorLive =
      * porque em alguns navegadores ela pode falhar mesmo com
      * currentUser já carregado e impedir a LIVE.
      */
-    if (!currentUser) {
+    const authenticatedUser = window.vybeeCurrentUser || null;
+
+    if (!authenticatedUser) {
       toast("Entre na sua conta para iniciar uma LIVE.");
-      showWebAuth();
       return;
     }
 
