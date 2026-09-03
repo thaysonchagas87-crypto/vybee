@@ -1176,6 +1176,26 @@ RESPONSIVE
   font-weight:700;
 }
 
+
+/* VYBEE V7 — destaque de quem está falando */
+.voice-member.speaking{
+  background:#16220f;
+  outline:1px solid #53ff1a;
+}
+.voice-member.speaking .voice-avatar{
+  box-shadow:0 0 0 3px #53ff1a;
+}
+.voice-speaking-dot{
+  display:inline-block;
+  width:7px;
+  height:7px;
+  margin-left:5px;
+  border-radius:50%;
+  background:#53ff1a;
+  box-shadow:0 0 8px #53ff1a;
+  vertical-align:middle;
+}
+
 </style>
 
 </head>
@@ -2773,6 +2793,7 @@ let voiceScreenEnabled = false;
 let voiceDeafened = false;
 let voiceMediaElements = new Map();
 let voicePresenceChannel = null;
+let voiceActiveSpeakers = new Set();
 let voicePresence = new Map();
 
 const voiceModal = () =>
@@ -3064,6 +3085,78 @@ function updateVoiceSidebarCount() {
   }
 }
 
+function updateVoiceSpeakingState() {
+  if (!voiceRoom) return;
+
+  const list = voiceMembers();
+  if (!list) return;
+
+  const participants = [
+    voiceRoom.localParticipant,
+    ...Array.from(
+      voiceRoom.remoteParticipants.values()
+    )
+  ];
+
+  const items =
+    list.querySelectorAll(
+      ".voice-member"
+    );
+
+  items.forEach(
+    (item, index) => {
+      const participant =
+        participants[index];
+
+      const key =
+        participant?.sid ||
+        participant?.identity;
+
+      const speaking =
+        Boolean(
+          key &&
+          voiceActiveSpeakers.has(key)
+        );
+
+      item.classList.toggle(
+        "speaking",
+        speaking
+      );
+
+      const name =
+        item.querySelector(
+          ".voice-member-name"
+        );
+
+      if (!name) return;
+
+      let dot =
+        name.querySelector(
+          ".voice-speaking-dot"
+        );
+
+      if (speaking && !dot) {
+        dot =
+          document.createElement(
+            "span"
+          );
+
+        dot.className =
+          "voice-speaking-dot";
+
+        dot.title =
+          "Falando agora";
+
+        name.appendChild(dot);
+      }
+
+      if (!speaking && dot) {
+        dot.remove();
+      }
+    }
+  );
+}
+
 function updateVoiceMemberList() {
   const list = voiceMembers();
   if (!list || !voiceRoom) return;
@@ -3213,6 +3306,8 @@ function updateVoiceMemberList() {
 
     list.appendChild(item);
   });
+
+  updateVoiceSpeakingState();
 }
 
 function removeElementSafely(element) {
@@ -3504,6 +3599,23 @@ async function showVoiceRoom(info) {
       });
 
     voiceRoom = room;
+
+    room.on(
+      RoomEvent.ActiveSpeakersChanged,
+      speakers => {
+        voiceActiveSpeakers =
+          new Set(
+            (speakers || [])
+              .map(
+                participant =>
+                  participant.sid ||
+                  participant.identity
+              )
+          );
+
+        updateVoiceSpeakingState();
+      }
+    );
 
     room.on(
       RoomEvent.TrackSubscribed,
@@ -3883,6 +3995,7 @@ async function leaveVoiceRoom(
 
     voicePresenceChannel = null;
     voicePresence = new Map();
+    voiceActiveSpeakers = new Set();
 
     voiceRoom = null;
     voiceMicEnabled = false;
