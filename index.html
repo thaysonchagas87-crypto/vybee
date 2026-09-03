@@ -1332,6 +1332,99 @@ RESPONSIVE
   border-color:#53ff1a;
 }
 
+
+/* =========================================================
+   VYBEE VOICE PERSISTENT DOCK
+   ========================================================= */
+.voice-persistent-dock{
+  position:fixed;
+  left:18px;
+  right:18px;
+  bottom:18px;
+  z-index:75;
+  display:none;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#111416f2;
+  box-shadow:0 18px 60px #0009;
+  backdrop-filter:blur(10px);
+}
+.voice-persistent-dock.on{
+  display:flex;
+}
+.voice-dock-icon{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:#1d2226;
+}
+.voice-dock-info{
+  min-width:0;
+  flex:1;
+}
+.voice-dock-title{
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.voice-dock-sub{
+  color:var(--mut);
+  font-size:10px;
+  margin-top:2px;
+}
+.voice-dock-actions{
+  display:flex;
+  gap:6px;
+}
+.voice-dock-actions button{
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:8px 10px;
+  background:#1a1e21;
+  color:#fff;
+  cursor:pointer;
+}
+.voice-dock-actions button:hover{
+  border-color:#53ff1a;
+}
+.voice-dock-actions .danger:hover{
+  background:#7d1e1e;
+}
+.voice-channel-actions{
+  margin-left:auto;
+  display:none;
+}
+.channel:hover .voice-channel-actions{
+  display:inline-flex;
+}
+.voice-channel-actions button{
+  border:0;
+  background:transparent;
+  color:var(--mut);
+  cursor:pointer;
+  padding:2px 5px;
+}
+.voice-channel-actions button:hover{
+  color:#fff;
+}
+@media(max-width:700px){
+  .voice-persistent-dock{
+    left:8px;
+    right:8px;
+    bottom:8px;
+  }
+  .voice-dock-actions button{
+    padding:8px;
+  }
+}
+
 </style>
 
 </head>
@@ -2983,6 +3076,69 @@ const voiceToast = () =>
     "voiceRoomToast"
   );
 
+function voiceDock() {
+  return document.getElementById(
+    "voicePersistentDock"
+  );
+}
+
+function updateVoiceDock() {
+  const dock = voiceDock();
+  if (!dock) return;
+
+  if (!voiceRoom || !voiceRoomInfo) {
+    dock.classList.remove("on");
+    return;
+  }
+
+  dock.classList.add("on");
+
+  const title =
+    document.getElementById(
+      "voiceDockTitle"
+    );
+
+  const sub =
+    document.getElementById(
+      "voiceDockSub"
+    );
+
+  if (title) {
+    title.textContent =
+      "🎙️ " +
+      (voiceRoomInfo.channelName ||
+        "Sala de voz");
+  }
+
+  if (sub) {
+    const count =
+      voiceRoom.remoteParticipants.size + 1;
+
+    sub.textContent =
+      (voiceRoomInfo.communityName ||
+        "VYBEE") +
+      " • " +
+      count +
+      " participante" +
+      (count === 1 ? "" : "s") +
+      (
+        voiceMicEnabled
+          ? " • 🎙️ ligado"
+          : " • 🔇 mudo"
+      ) +
+      (
+        voiceIsStaff()
+          ? " • 🛡️ " + voiceCurrentRole
+          : ""
+      );
+  }
+}
+
+function minimizeVoiceRoom() {
+  voiceHideModal();
+  updateVoiceDock();
+}
+
 function voiceEscapeHTML(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -3585,6 +3741,7 @@ function updateVoiceMemberList() {
   );
 
   updateVoiceSpeakerUI();
+  updateVoiceDock();
 
   const subtitle =
     document.getElementById(
@@ -4361,6 +4518,7 @@ async function showVoiceRoom(
     await joinVoicePresence();
 
     updateVoiceMemberList();
+    updateVoiceDock();
     updateVoiceSidebarCount();
 
     room.remoteParticipants
@@ -4422,6 +4580,7 @@ async function toggleVoiceMute() {
 
     await updateVoicePresence();
     updateVoiceMemberList();
+    updateVoiceDock();
 
   } catch (error) {
     voiceNotify(
@@ -4488,6 +4647,7 @@ async function toggleVoiceCamera() {
 
     await updateVoicePresence();
     updateVoiceMemberList();
+    updateVoiceDock();
 
   } catch (error) {
     voiceCameraEnabled =
@@ -4527,6 +4687,7 @@ async function toggleVoiceScreen() {
         : "🖥️ Compartilhar tela";
 
     await updateVoicePresence();
+    updateVoiceDock();
 
     voiceSetStatus(
       voiceScreenEnabled
@@ -4937,6 +5098,7 @@ async function leaveVoiceRoom(
     }
 
     updateVoiceSidebarCount();
+    updateVoiceDock();
   }
 }
 
@@ -4996,10 +5158,7 @@ document.getElementById(
   "voiceCloseButton"
 )?.addEventListener(
   "click",
-  () =>
-    leaveVoiceRoom(
-      true
-    )
+  minimizeVoiceRoom
 );
 
 document.addEventListener(
@@ -5012,11 +5171,35 @@ document.addEventListener(
           "on"
         )
     ) {
-      leaveVoiceRoom(
-        true
-      );
+      minimizeVoiceRoom();
     }
   }
+);
+
+
+document.getElementById(
+  "voiceDockOpen"
+)?.addEventListener(
+  "click",
+  () => {
+    voiceShowModal();
+    updateVoiceMemberList();
+    updateVoiceDock();
+  }
+);
+
+document.getElementById(
+  "voiceDockMute"
+)?.addEventListener(
+  "click",
+  toggleVoiceMute
+);
+
+document.getElementById(
+  "voiceDockLeave"
+)?.addEventListener(
+  "click",
+  () => leaveVoiceRoom(true)
 );
 
 window.showVoiceRoom =
@@ -5055,7 +5238,7 @@ window.vybeeVoiceRoomState =
         voiceActiveSpeakers
       )
   });
-</script>
+
 
 <script type="module">
 
@@ -6551,6 +6734,262 @@ if(requestedLive){
 
 }
 
+</script>
+
+
+<!-- =========================================================
+     VYBEE PERSISTENT VOICE DOCK
+     ========================================================= -->
+<div class="voice-persistent-dock" id="voicePersistentDock">
+  <div class="voice-dock-icon">🎙️</div>
+  <div class="voice-dock-info">
+    <div class="voice-dock-title" id="voiceDockTitle">
+      Sala de voz
+    </div>
+    <div class="voice-dock-sub" id="voiceDockSub">
+      Conectando...
+    </div>
+  </div>
+  <div class="voice-dock-actions">
+    <button id="voiceDockOpen">Abrir</button>
+    <button id="voiceDockMute">🎙️</button>
+    <button class="danger" id="voiceDockLeave">Sair</button>
+  </div>
+</div>
+
+
+<script type="module">
+/*
+ * VYBEE — GERENCIADOR DE SALAS DE VOZ
+ * Usa a tabela channels existente.
+ */
+function vybeeVoiceAdminAllowed(role) {
+  return ["owner","admin"].includes(
+    String(role || "").toLowerCase()
+  );
+}
+
+async function vybeeCreateVoiceChannel() {
+  const community =
+    window.vybeeGetCurrentCommunity?.();
+
+  const sb =
+    window.vybeeSupabase;
+
+  const profile =
+    window.vybeeGetCurrentProfile?.();
+
+  const user =
+    window.vybeeCurrentUser;
+
+  if (!community || !sb || !user) {
+    toast(
+      "Abra uma comunidade primeiro."
+    );
+    return;
+  }
+
+  try {
+    const { data: member } =
+      await sb
+        .from("community_members")
+        .select("role")
+        .eq("community_id", community.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if (
+      !vybeeVoiceAdminAllowed(
+        member?.role
+      )
+    ) {
+      toast(
+        "Somente proprietário ou administrador pode criar sala."
+      );
+      return;
+    }
+
+    const name =
+      window.prompt(
+        "Nome da nova sala de voz:"
+      );
+
+    if (!name?.trim()) return;
+
+    const { data: existing } =
+      await sb
+        .from("channels")
+        .select("id")
+        .eq("community_id", community.id)
+        .eq("name", name.trim())
+        .eq("channel_type", "voice")
+        .limit(1);
+
+    if (existing?.length) {
+      toast(
+        "Já existe uma sala com esse nome."
+      );
+      return;
+    }
+
+    const { data: channels } =
+      await sb
+        .from("channels")
+        .select("position")
+        .eq("community_id", community.id)
+        .order("position", {
+          ascending:false
+        })
+        .limit(1);
+
+    const nextPosition =
+      Number(
+        channels?.[0]?.position || 0
+      ) + 1;
+
+    const { error } =
+      await sb
+        .from("channels")
+        .insert({
+          community_id:
+            community.id,
+          name:
+            name.trim(),
+          channel_type:
+            "voice",
+          position:
+            nextPosition
+        });
+
+    if (error) {
+      throw error;
+    }
+
+    toast(
+      "🎙️ Sala criada."
+    );
+
+    if (
+      typeof window.vybeeOpenCommunity ===
+      "function"
+    ) {
+      await window.vybeeOpenCommunity(
+        community,
+        false
+      );
+    }
+
+  } catch (error) {
+    console.error(
+      "VYBEE create voice:",
+      error
+    );
+
+    toast(
+      "Não foi possível criar a sala: " +
+      (error?.message || "erro")
+    );
+  }
+}
+
+window.vybeeCreateVoiceChannel =
+  vybeeCreateVoiceChannel;
+</script>
+
+
+<script type="module">
+async function vybeeMaybeAddVoiceAdminButton() {
+  const community =
+    window.vybeeGetCurrentCommunity?.();
+
+  const sb =
+    window.vybeeSupabase;
+
+  const user =
+    window.vybeeCurrentUser;
+
+  if (!community || !sb || !user) {
+    return;
+  }
+
+  try {
+    const { data: member } =
+      await sb
+        .from("community_members")
+        .select("role")
+        .eq("community_id", community.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    const staff =
+      ["owner","admin"].includes(
+        String(
+          member?.role || ""
+        ).toLowerCase()
+      );
+
+    document
+      .querySelectorAll(
+        ".vybee-real-voice-section"
+      )
+      .forEach(section => {
+        const old =
+          section.querySelector(
+            ".vybee-add-voice-room"
+          );
+
+        if (!staff) {
+          old?.remove();
+          return;
+        }
+
+        if (old) return;
+
+        const btn =
+          document.createElement(
+            "button"
+          );
+
+        btn.className =
+          "vybee-add-voice-room";
+
+        btn.textContent =
+          "＋";
+
+        btn.title =
+          "Criar sala de voz";
+
+        btn.style.cssText =
+          "float:right;border:0;background:transparent;color:#53ff1a;cursor:pointer;font-size:16px;";
+
+        btn.addEventListener(
+          "click",
+          event => {
+            event.stopPropagation();
+            window.vybeeCreateVoiceChannel?.();
+          }
+        );
+
+        section.appendChild(btn);
+      });
+
+  } catch (_) {}
+}
+
+document.addEventListener(
+  "click",
+  () => {
+    setTimeout(
+      vybeeMaybeAddVoiceAdminButton,
+      50
+    );
+  }
+);
+
+setInterval(
+  vybeeMaybeAddVoiceAdminButton,
+  1500
+);
 </script>
 
 </body>
