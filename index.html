@@ -2550,6 +2550,146 @@ body.vybee-modern-home-active > .app > footer{
 }
 </style>
 
+
+<style id="vybee-community-manager-style">
+.vybee-community-manager{
+  position:fixed;
+  inset:0;
+  z-index:380;
+  display:none;
+  place-items:center;
+  padding:16px;
+  background:#000d;
+}
+.vybee-community-manager.on{display:grid}
+.vybee-community-box{
+  width:min(720px,100%);
+  max-height:88vh;
+  overflow:auto;
+  background:#0b0e0f;
+  border:1px solid #293036;
+  border-radius:18px;
+  box-shadow:0 30px 100px #000d;
+}
+.vybee-community-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:16px 18px;
+  border-bottom:1px solid #20262b;
+}
+.vybee-community-head h2{
+  margin:0;
+  font-size:17px;
+}
+.vybee-community-head p{
+  margin:3px 0 0;
+  color:#747d84;
+  font-size:9px;
+}
+.vybee-community-close{
+  margin-left:auto;
+}
+.vybee-community-body{
+  padding:16px 18px 18px;
+}
+.vybee-community-form{
+  display:grid;
+  gap:10px;
+}
+.vybee-community-form label{
+  display:grid;
+  gap:5px;
+  color:#aeb5ba;
+  font-size:9px;
+  font-weight:800;
+}
+.vybee-community-form input,
+.vybee-community-form textarea{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px 11px;
+  border:1px solid #2a3136;
+  border-radius:9px;
+  background:#101415;
+  color:#fff;
+  outline:none;
+  font-family:inherit;
+  font-size:11px;
+}
+.vybee-community-form textarea{
+  min-height:90px;
+  resize:vertical;
+}
+.vybee-community-check{
+  display:flex !important;
+  align-items:center;
+  grid-template-columns:none;
+  gap:8px !important;
+  padding:10px;
+  border:1px solid #252c31;
+  border-radius:9px;
+  background:#0f1314;
+}
+.vybee-community-check input{
+  width:auto !important;
+}
+.vybee-community-footer{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:12px;
+}
+.vybee-community-list{
+  display:grid;
+  gap:8px;
+  margin-top:14px;
+}
+.vybee-community-manage-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border:1px solid #242a2f;
+  border-radius:11px;
+  background:#101415;
+}
+.vybee-community-manage-main{
+  min-width:0;
+  flex:1;
+}
+.vybee-community-manage-main strong{
+  display:block;
+  font-size:11px;
+}
+.vybee-community-manage-main span{
+  display:block;
+  margin-top:2px;
+  color:#727b82;
+  font-size:8px;
+}
+.vybee-community-manage-actions{
+  display:flex;
+  gap:5px;
+}
+.vybee-community-manage-actions button{
+  border:1px solid #2b3237;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:6px 8px;
+  font-size:9px;
+  cursor:pointer;
+}
+.vybee-community-manage-actions button:hover{
+  border-color:#53ff1a;
+}
+.vybee-community-danger:hover{
+  border-color:#ff4d4d !important;
+  background:#241214 !important;
+}
+</style>
+
 </head>
 
 <body>
@@ -11931,6 +12071,570 @@ if(requestedLive){
 
   bind();
   setTimeout(bind,500);
+})();
+</script>
+
+
+<div
+  class="vybee-community-manager"
+  id="vybeeCommunityManager"
+>
+  <div class="vybee-community-box">
+    <div class="vybee-community-head">
+      <div>
+        <h2 id="vybeeCommunityManagerTitle">🏠 Comunidades</h2>
+        <p>Crie, edite e organize suas comunidades.</p>
+      </div>
+      <button
+        type="button"
+        class="btn vybee-community-close"
+        id="vybeeCommunityManagerClose"
+      >✕</button>
+    </div>
+
+    <div class="vybee-community-body">
+      <div class="vybee-community-form">
+        <label>
+          Nome da comunidade
+          <input
+            id="vybeeCommunityName"
+            maxlength="60"
+            placeholder="Ex.: Judô Brasil"
+          >
+        </label>
+
+        <label>
+          Descrição
+          <textarea
+            id="vybeeCommunityDescription"
+            maxlength="300"
+            placeholder="Explique rapidamente do que sua comunidade trata..."
+          ></textarea>
+        </label>
+
+        <label class="vybee-community-check">
+          <input
+            type="checkbox"
+            id="vybeeCommunityPublic"
+            checked
+          >
+          Comunidade pública
+        </label>
+
+        <div
+          id="vybeeCommunityManagerStatus"
+          class="muted"
+        ></div>
+      </div>
+
+      <div class="vybee-community-footer">
+        <button
+          type="button"
+          class="btn"
+          id="vybeeCommunityCancel"
+        >Cancelar</button>
+
+        <button
+          type="button"
+          class="btn green"
+          id="vybeeCommunitySave"
+        >Criar comunidade</button>
+      </div>
+
+      <div class="section" style="margin-top:18px">
+        MINHAS COMUNIDADES
+      </div>
+
+      <div
+        id="vybeeCommunityManageList"
+        class="vybee-community-list"
+      >
+        <div class="vybee-community-empty">
+          Carregando...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script id="vybee-community-manager-controller">
+(function(){
+  let editingId = null;
+
+  function sb(){
+    return window.vybeeSupabase || null;
+  }
+
+  function user(){
+    return window.vybeeCurrentUser || null;
+  }
+
+  function el(id){
+    return document.getElementById(id);
+  }
+
+  function esc(v){
+    return String(v??"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function openManager(){
+    if(!user()){
+      window.showWebAuth?.();
+      return;
+    }
+
+    editingId=null;
+    el("vybeeCommunityManagerTitle").textContent =
+      "🏠 Comunidades";
+    el("vybeeCommunitySave").textContent =
+      "Criar comunidade";
+    el("vybeeCommunityName").value="";
+    el("vybeeCommunityDescription").value="";
+    el("vybeeCommunityPublic").checked=true;
+    el("vybeeCommunityManagerStatus").textContent="";
+
+    el("vybeeCommunityManager")
+      ?.classList.add("on");
+
+    loadManageList();
+  }
+
+  function closeManager(){
+    el("vybeeCommunityManager")
+      ?.classList.remove("on");
+  }
+
+  async function loadManageList(){
+    const client=sb();
+    const current=user();
+    const list=el("vybeeCommunityManageList");
+
+    if(!client||!current||!list){
+      return;
+    }
+
+    list.innerHTML =
+      '<div class="vybee-community-empty">Carregando...</div>';
+
+    try{
+      const {data,error} =
+        await client
+          .from("communities")
+          .select(
+            "id,name,description,owner_id,is_public,created_at"
+          )
+          .eq(
+            "owner_id",
+            current.id
+          )
+          .order(
+            "created_at",
+            {ascending:false}
+          );
+
+      if(error) throw error;
+
+      if(!data?.length){
+        list.innerHTML =
+          '<div class="vybee-community-empty">Você ainda não criou nenhuma comunidade.</div>';
+        return;
+      }
+
+      list.innerHTML =
+        data.map(
+          community => `
+            <div class="vybee-community-manage-row">
+              <div class="vybee-home-comm-logo">🐝</div>
+              <div class="vybee-community-manage-main">
+                <strong>${esc(community.name)}</strong>
+                <span>${community.is_public ? "Pública" : "Privada"}</span>
+              </div>
+              <div class="vybee-community-manage-actions">
+                <button
+                  type="button"
+                  data-community-edit="${esc(community.id)}"
+                >Editar</button>
+                <button
+                  type="button"
+                  class="vybee-community-danger"
+                  data-community-delete="${esc(community.id)}"
+                >Excluir</button>
+              </div>
+            </div>
+          `
+        ).join("");
+
+      list
+        .querySelectorAll(
+          "[data-community-edit]"
+        )
+        .forEach(
+          button => {
+            button.addEventListener(
+              "click",
+              () =>
+                startEdit(
+                  data.find(
+                    item =>
+                      String(item.id) ===
+                      String(
+                        button.dataset.communityEdit
+                      )
+                  )
+                )
+            );
+          }
+        );
+
+      list
+        .querySelectorAll(
+          "[data-community-delete]"
+        )
+        .forEach(
+          button => {
+            button.addEventListener(
+              "click",
+              () =>
+                deleteCommunity(
+                  button.dataset.communityDelete
+                )
+            );
+          }
+        );
+
+    }catch(error){
+      console.error(
+        "VYBEE community manager:",
+        error
+      );
+
+      list.innerHTML =
+        '<div class="vybee-community-empty">Não foi possível carregar suas comunidades.</div>';
+    }
+  }
+
+  function startEdit(community){
+    if(!community) return;
+
+    editingId =
+      community.id;
+
+    el("vybeeCommunityManagerTitle").textContent =
+      "✏️ Editar comunidade";
+
+    el("vybeeCommunitySave").textContent =
+      "Salvar alterações";
+
+    el("vybeeCommunityName").value =
+      community.name ||
+      "";
+
+    el("vybeeCommunityDescription").value =
+      community.description ||
+      "";
+
+    el("vybeeCommunityPublic").checked =
+      community.is_public !== false;
+
+    el("vybeeCommunityManagerStatus").textContent =
+      "";
+  }
+
+  async function saveCommunity(){
+    const client=sb();
+    const current=user();
+
+    if(!client||!current){
+      return;
+    }
+
+    const name =
+      el("vybeeCommunityName")
+        .value.trim();
+
+    const description =
+      el("vybeeCommunityDescription")
+        .value.trim();
+
+    const isPublic =
+      el("vybeeCommunityPublic")
+        .checked;
+
+    const status=
+      el("vybeeCommunityManagerStatus");
+
+    if(name.length < 2){
+      status.textContent =
+        "Digite um nome com pelo menos 2 caracteres.";
+      return;
+    }
+
+    status.textContent =
+      "Salvando...";
+
+    try{
+      if(editingId){
+        const {error} =
+          await client
+            .from("communities")
+            .update({
+              name,
+              description:
+                description ||
+                null,
+              is_public:
+                isPublic
+            })
+            .eq(
+              "id",
+              editingId
+            )
+            .eq(
+              "owner_id",
+              current.id
+            );
+
+        if(error) throw error;
+
+        status.textContent =
+          "✅ Comunidade atualizada.";
+
+      }else{
+        const {data,error} =
+          await client
+            .from("communities")
+            .insert({
+              name,
+              description:
+                description ||
+                null,
+              owner_id:
+                current.id,
+              is_public:
+                isPublic
+            })
+            .select(
+              "id,name,description,owner_id,is_public"
+            )
+            .single();
+
+        if(error) throw error;
+
+        /*
+         * Criador vira administrador da comunidade.
+         */
+        const {error:membershipError} =
+          await client
+            .from("community_members")
+            .insert({
+              community_id:
+                data.id,
+              user_id:
+                current.id,
+              role:
+                "owner"
+            });
+
+        if(membershipError) {
+          console.warn(
+            "VYBEE membership:",
+            membershipError
+          );
+        }
+
+        /*
+         * Criamos canais iniciais para a comunidade.
+         * Se a política do banco impedir a criação, a comunidade
+         * continua criada e o usuário pode configurar canais depois.
+         */
+        try{
+          await client
+            .from("channels")
+            .insert([
+              {
+                community_id:data.id,
+                name:"geral",
+                channel_type:"text",
+                position:0
+              },
+              {
+                community_id:data.id,
+                name:"Geral",
+                channel_type:"voice",
+                position:1
+              }
+            ]);
+        }catch(channelError){
+          console.warn(
+            "VYBEE channels:",
+            channelError
+          );
+        }
+
+        status.textContent =
+          "✅ Comunidade criada.";
+      }
+
+      editingId=null;
+      el("vybeeCommunitySave").textContent =
+        "Criar comunidade";
+
+      el("vybeeCommunityName").value="";
+      el("vybeeCommunityDescription").value="";
+      el("vybeeCommunityPublic").checked=true;
+
+      await loadManageList();
+
+      /*
+       * Atualiza as comunidades que já existem na lateral.
+       */
+      if(
+        typeof window.vybeeRefreshCommunities ===
+          "function"
+      ){
+        await window.vybeeRefreshCommunities();
+      }
+
+    }catch(error){
+      console.error(
+        "VYBEE save community:",
+        error
+      );
+
+      status.textContent =
+        "❌ Não foi possível salvar: " +
+        (error?.message || "erro");
+    }
+  }
+
+  async function deleteCommunity(id){
+    const client=sb();
+    const current=user();
+
+    if(
+      !client ||
+      !current ||
+      !id
+    ){
+      return;
+    }
+
+    const confirmed =
+      window.confirm(
+        "Excluir esta comunidade? Essa ação pode remover os dados relacionados."
+      );
+
+    if(!confirmed){
+      return;
+    }
+
+    try{
+      const {error} =
+        await client
+          .from("communities")
+          .delete()
+          .eq(
+            "id",
+            id
+          )
+          .eq(
+            "owner_id",
+            current.id
+          );
+
+      if(error) throw error;
+
+      await loadManageList();
+
+      if(
+        typeof window.vybeeRefreshCommunities ===
+          "function"
+      ){
+        await window.vybeeRefreshCommunities();
+      }
+
+    }catch(error){
+      console.error(
+        "VYBEE delete community:",
+        error
+      );
+
+      el("vybeeCommunityManagerStatus")
+        .textContent =
+        "❌ Não foi possível excluir a comunidade.";
+    }
+  }
+
+  function bind(){
+    el("vybeeHomeCommunityAdd")
+      ?.addEventListener(
+        "click",
+        openManager
+      );
+
+    el("vybeeCommunityManagerClose")
+      ?.addEventListener(
+        "click",
+        closeManager
+      );
+
+    el("vybeeCommunityCancel")
+      ?.addEventListener(
+        "click",
+        () => {
+          editingId=null;
+          el("vybeeCommunityName").value="";
+          el("vybeeCommunityDescription").value="";
+          closeManager();
+        }
+      );
+
+    el("vybeeCommunitySave")
+      ?.addEventListener(
+        "click",
+        saveCommunity
+      );
+
+    el("vybeeCommunityManager")
+      ?.addEventListener(
+        "click",
+        event => {
+          if(
+            event.target.id ===
+            "vybeeCommunityManager"
+          ){
+            closeManager();
+          }
+        }
+      );
+
+    document.addEventListener(
+      "keydown",
+      event => {
+        if(
+          event.key === "Escape" &&
+          el("vybeeCommunityManager")
+            ?.classList.contains("on")
+        ){
+          closeManager();
+        }
+      }
+    );
+  }
+
+  bind();
+
+  window.vybeeOpenCommunityManager =
+    openManager;
+
+  window.vybeeCloseCommunityManager =
+    closeManager;
 })();
 </script>
 
