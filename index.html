@@ -2284,7 +2284,10 @@ RESPONSIVE
     if (!side) return;
 
     side.querySelectorAll(".vybee-static-voice")
-      .forEach(el => { el.style.display = "none"; });
+      .forEach(el => {
+        el.style.display = "none";
+        el.setAttribute("aria-hidden", "true");
+      });
 
     side.querySelectorAll(".vybee-real-voice-channel, .vybee-real-voice-section")
       .forEach(el => el.remove());
@@ -2799,6 +2802,136 @@ RESPONSIVE
 </script>
 
 
+
+
+<script type="module">
+/*
+ * VYBEE VOICE FALLBACK
+ * Alguns layouts antigos ainda exibem "Geral" e "Squad" no bloco estático.
+ * Em vez de deixar esses itens sem ação, resolvemos o canal real da comunidade
+ * aberta e abrimos a sala LiveKit correspondente.
+ */
+async function vybeeOpenStaticVoiceRoom(channelName) {
+  const user = window.vybeeCurrentUser || null;
+  const community =
+    window.vybeeGetCurrentCommunity?.() || null;
+  const sb = window.vybeeSupabase || null;
+
+  if (!user) {
+    showWebAuth();
+    return;
+  }
+
+  if (!community) {
+    toast(
+      "Abra primeiro uma comunidade para entrar em uma sala de voz."
+    );
+    return;
+  }
+
+  if (
+    !sb ||
+    typeof window.showVoiceRoom !== "function"
+  ) {
+    toast(
+      "A sala de voz ainda está carregando. Tente novamente."
+    );
+    return;
+  }
+
+  try {
+    const { data, error } =
+      await sb
+        .from("channels")
+        .select("id,name,channel_type,position")
+        .eq(
+          "community_id",
+          community.id
+        )
+        .eq(
+          "channel_type",
+          "voice"
+        )
+        .order("position", {
+          ascending: true
+        });
+
+    if (error) {
+      console.error(
+        "VYBEE VOICE fallback:",
+        error
+      );
+      toast(
+        "Não foi possível localizar a sala de voz."
+      );
+      return;
+    }
+
+    const wanted =
+      String(channelName || "")
+        .trim()
+        .toLowerCase();
+
+    const channel =
+      (data || []).find(c =>
+        String(c.name || "")
+          .trim()
+          .toLowerCase() === wanted
+      ) ||
+      (data || [])[0];
+
+    if (!channel) {
+      toast(
+        "Esta comunidade ainda não possui uma sala de voz."
+      );
+      return;
+    }
+
+    window.showVoiceRoom({
+      channelId: channel.id,
+      channelName:
+        channel.name ||
+        channelName ||
+        "Sala de voz",
+      communityId: community.id,
+      communityName: community.name
+    });
+
+  } catch (error) {
+    console.error(
+      "VYBEE VOICE fallback:",
+      error
+    );
+
+    toast(
+      "Não foi possível abrir a sala de voz."
+    );
+  }
+}
+
+document
+  .querySelectorAll(".vybee-static-voice")
+  .forEach(item => {
+    item.addEventListener(
+      "click",
+      () => {
+        const text =
+          item.textContent || "";
+
+        const name =
+          text
+            .replace(/^🎙️/u, "")
+            .replace(/^🎮/u, "")
+            .replace(/·.*$/u, "")
+            .trim();
+
+        vybeeOpenStaticVoiceRoom(
+          name
+        );
+      }
+    );
+  });
+</script>
 
 <script type="module">
 import {
