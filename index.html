@@ -1308,6 +1308,24 @@ RESPONSIVE
   display:block;
 }
 
+
+.voice-moderation-hint{
+  margin:0 0 10px;
+  padding:9px 10px;
+  border-radius:9px;
+  background:#171b1e;
+  border:1px solid var(--line);
+  color:#aab0b6;
+  font-size:11px;
+  line-height:1.4;
+}
+.voice-member-actions button.staff-action{
+  border:1px solid #33393f;
+}
+.voice-member-actions button.staff-action:hover{
+  border-color:#53ff1a;
+}
+
 </style>
 
 </head>
@@ -1875,6 +1893,9 @@ RESPONSIVE
     <div class="voice-layout">
       <aside class="voice-members">
         <h4>Pessoas na sala</h4>
+        <div class="voice-moderation-hint" id="voiceModerationHint">
+          💡 Dono/moderador: passe o mouse sobre uma pessoa para ver controles.
+        </div>
         <div id="voiceMembersList"></div>
       </aside>
 
@@ -2846,6 +2867,17 @@ RESPONSIVE
   window.vybeeGetCurrentProfile =
     () => currentProfile;
 
+  window.vybeeGetAccessToken = async () => {
+    try {
+      const { data } =
+        await supabase.auth.getSession();
+
+      return data?.session?.access_token || null;
+    } catch (_) {
+      return null;
+    }
+  };
+
   initSupabaseApp();
 
 
@@ -3024,6 +3056,198 @@ function voiceIsStaff() {
   );
 }
 
+async function voiceModerationRequest(
+  action,
+  target
+) {
+  if (!voiceIsStaff()) {
+    voiceNotify(
+      "🔒 Apenas dono, admin ou moderador pode usar esse controle."
+    );
+    return null;
+  }
+
+  const accessToken =
+    await window.vybeeGetAccessToken?.();
+
+  if (!accessToken) {
+    voiceNotify(
+      "Sua sessão expirou. Entre novamente no VYBEE."
+    );
+    return null;
+  }
+
+  if (!voiceRoomInfo?.communityId) {
+    voiceNotify(
+      "Comunidade da sala não encontrada."
+    );
+    return null;
+  }
+
+  try {
+    const response =
+      await fetch(
+        "/api/voice-moderation",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+            "Authorization":
+              "Bearer " +
+              accessToken
+          },
+          body: JSON.stringify({
+            action,
+            community_id:
+              voiceRoomInfo.communityId,
+            room_name:
+              "vybee-voice-" +
+              voiceRoomInfo.communityId +
+              "-" +
+              voiceRoomInfo.channelId,
+            target_identity:
+              target.identity,
+            track_sid:
+              target.trackSid || null
+          })
+        }
+      );
+
+    const data =
+      await response.json()
+        .catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error ||
+        "Ação de moderação recusada."
+      );
+    }
+
+    return data;
+
+  } catch (error) {
+    console.error(
+      "VYBEE VOICE MOD:",
+      error
+    );
+
+    voiceNotify(
+      "🔴 " +
+      (
+        error?.message ||
+        "Não foi possível executar a moderação."
+      )
+    );
+
+    return null;
+  }
+}
+
+async function voiceMuteParticipant(
+  participant
+) {
+  const pub =
+    participant.getTrackPublication?.(
+      Track.Source.Microphone
+    );
+
+  if (!pub?.trackSid) {
+    voiceNotify(
+      "Esse participante não publicou um microfone ativo."
+    );
+    return;
+  }
+
+  const result =
+    await voiceModerationRequest(
+      "mute_microphone",
+      {
+        identity:
+          participant.identity,
+        trackSid:
+          pub.trackSid
+      }
+    );
+
+  if (result) {
+    voiceNotify(
+      "🔇 Microfone silenciado."
+    );
+  }
+}
+
+async function voiceStopParticipantScreen(
+  participant
+) {
+  const pub =
+    participant.getTrackPublication?.(
+      Track.Source.ScreenShare
+    );
+
+  if (!pub?.trackSid) {
+    voiceNotify(
+      "Esse participante não está compartilhando tela."
+    );
+    return;
+  }
+
+  const result =
+    await voiceModerationRequest(
+      "stop_screen",
+      {
+        identity:
+          participant.identity,
+        trackSid:
+          pub.trackSid
+      }
+    );
+
+  if (result) {
+    voiceNotify(
+      "🖥️ Compartilhamento encerrado."
+    );
+  }
+}
+
+async function voiceKickParticipant(
+  participant
+) {
+  const name =
+    voiceDisplayName(
+      participant
+    );
+
+  const confirmed =
+    window.confirm(
+      "Expulsar " +
+      name +
+      " da sala?"
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const result =
+    await voiceModerationRequest(
+      "remove_participant",
+      {
+        identity:
+          participant.identity
+      }
+    );
+
+  if (result) {
+    voiceNotify(
+      "🚪 " +
+      name +
+      " foi removido da sala."
+    );
+  }
+}
+
 async function loadVoiceRole() {
   const sb =
     window.vybeeSupabase;
@@ -3086,6 +3310,18 @@ async function loadVoiceRole() {
       "owner",
       staff
     );
+  }
+
+  const hint =
+    document.getElementById(
+      "voiceModerationHint"
+    );
+
+  if (hint) {
+    hint.textContent =
+      voiceIsStaff()
+        ? "🛡️ Passe o mouse sobre uma pessoa para silenciar, encerrar a tela ou expulsar."
+        : "💡 Passe o mouse para ajustar volume. Controles de moderação são restritos à equipe.";
   }
 }
 
@@ -3316,6 +3552,9 @@ function updateVoiceMemberList() {
           pin.title =
             "Fixar vídeo";
 
+          pin.className =
+            "staff-action";
+
           pin.onclick =
             () => {
               voicePinnedParticipant =
@@ -3330,6 +3569,78 @@ function updateVoiceMemberList() {
 
           actions.appendChild(
             pin
+          );
+
+          const mute =
+            document.createElement(
+              "button"
+            );
+
+          mute.textContent =
+            "🔇";
+
+          mute.title =
+            "Silenciar microfone";
+
+          mute.className =
+            "staff-action";
+
+          mute.onclick =
+            () =>
+              voiceMuteParticipant(
+                participant
+              );
+
+          actions.appendChild(
+            mute
+          );
+
+          const stopScreen =
+            document.createElement(
+              "button"
+            );
+
+          stopScreen.textContent =
+            "🖥️";
+
+          stopScreen.title =
+            "Encerrar compartilhamento";
+
+          stopScreen.className =
+            "staff-action";
+
+          stopScreen.onclick =
+            () =>
+              voiceStopParticipantScreen(
+                participant
+              );
+
+          actions.appendChild(
+            stopScreen
+          );
+
+          const kick =
+            document.createElement(
+              "button"
+            );
+
+          kick.textContent =
+            "🚪";
+
+          kick.title =
+            "Expulsar da sala";
+
+          kick.className =
+            "staff-action danger";
+
+          kick.onclick =
+            () =>
+              voiceKickParticipant(
+                participant
+              );
+
+          actions.appendChild(
+            kick
           );
         }
       }
@@ -4637,7 +4948,7 @@ window.vybeeVoiceRoomState =
         voiceActiveSpeakers
       )
   });
-</script>
+
 
 <script type="module">
 
