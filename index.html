@@ -6614,672 +6614,696 @@ await notifSubscribeMessages();
 </div>
 
 
-<script type="module">
-import {
-  createClient
-} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-const PROFILE_URL =
-  "https://nrnegwytltdaxresquzz.supabase.co";
 
-const PROFILE_KEY =
-  "sb_publishable_cF60nM8TX2ddGBOZy68RQw_rU9wAew9";
 
-const profileSupabase =
-  createClient(
-    PROFILE_URL,
-    PROFILE_KEY
-  );
+<script>
+/*
+ * VYBEE PERFIL — implementação global
+ * Usa o mesmo cliente Supabase já inicializado pelo site.
+ * Não importa outro módulo e não toca no login.
+ */
+(function () {
+  const getSupabase = () =>
+    window.vybeeSupabase || null;
 
-let profileUserId = null;
+  const getUser = () =>
+    window.vybeeCurrentUser || null;
 
-function profileEsc(value) {
-  return String(value ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
+  function esc(value) {
+    return String(value ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
 
-async function profileOpen(event) {
-  event?.preventDefault();
-  event?.stopPropagation();
+  function openProfile() {
+    const user = getUser();
 
-  let user =
-    window.vybeeCurrentUser ||
-    null;
-
-  /*
-   * Não dependemos apenas do estado global do outro módulo.
-   * O perfil consulta a sessão atual do próprio cliente Supabase.
-   * Isso evita o clique ser interpretado como "não logado".
-   */
-  if (!user) {
-    try {
-      const { data } =
-        await profileSupabase.auth.getSession();
-
-      user =
-        data?.session?.user ||
-        null;
-
-      if (user) {
-        window.vybeeCurrentUser = user;
+    if (!user) {
+      if (typeof window.showWebAuth === "function") {
+        window.showWebAuth();
+      } else {
+        alert("Faça login no VYBEE para abrir seu perfil.");
       }
-    } catch (error) {
-      console.warn(
-        "VYBEE profile session:",
-        error
-      );
-    }
-  }
-
-  if (!user) {
-    if (
-      typeof window.showWebAuth ===
-      "function"
-    ) {
-      window.showWebAuth();
-    }
-
-    return;
-  }
-
-  profileUserId =
-    user.id;
-
-  document
-    .getElementById(
-      "vybeeProfilePanel"
-    )
-    ?.classList.add("on");
-
-  await profileLoadAll();
-}
-
-function profileClose() {
-  document
-    .getElementById(
-      "vybeeProfilePanel"
-    )
-    ?.classList.remove("on");
-}
-
-async function profileLoadAll() {
-  await Promise.all([
-    profileLoadMe(),
-    profileLoadFriends(),
-    profileLoadRequests()
-  ]);
-}
-
-async function profileLoadMe() {
-  const user =
-    window.vybeeCurrentUser;
-
-  if (!user) return;
-
-  try {
-    const { data, error } =
-      await profileSupabase
-        .from("profiles")
-        .select(
-          "id,display_name,username"
-        )
-        .eq(
-          "id",
-          user.id
-        )
-        .maybeSingle();
-
-    if (error) throw error;
-
-    document.getElementById(
-      "vybeeProfileName"
-    ).textContent =
-      data?.display_name ||
-      user.email ||
-      "Usuário VYBEE";
-
-    document.getElementById(
-      "vybeeProfileUsername"
-    ).textContent =
-      data?.username
-        ? "@" + data.username
-        : "";
-  } catch (error) {
-    console.warn(
-      "VYBEE profile:",
-      error
-    );
-  }
-}
-
-async function getFriendProfiles(ids) {
-  if (!ids?.length) return [];
-
-  const { data, error } =
-    await profileSupabase
-      .from("profiles")
-      .select(
-        "id,display_name,username"
-      )
-      .in(
-        "id",
-        ids
-      );
-
-  if (error) throw error;
-
-  return data || [];
-}
-
-async function profileLoadFriends() {
-  const list =
-    document.getElementById(
-      "vybeeFriendsList"
-    );
-
-  if (!list || !profileUserId) return;
-
-  try {
-    const { data, error } =
-      await profileSupabase
-        .from("friendships")
-        .select(
-          "id,user_a,user_b,status"
-        )
-        .or(
-          `user_a.eq.${profileUserId},user_b.eq.${profileUserId}`
-        )
-        .eq(
-          "status",
-          "accepted"
-        );
-
-    if (error) throw error;
-
-    const rows =
-      data || [];
-
-    if (!rows.length) {
-      list.innerHTML =
-        `<div class="vybee-profile-empty">
-          Você ainda não possui amigos.
-        </div>`;
       return;
     }
 
-    const ids =
-      rows.map(
-        row =>
-          row.user_a ===
-            profileUserId
-            ? row.user_b
-            : row.user_a
+    const panel =
+      document.getElementById(
+        "vybeeProfilePanel"
       );
 
-    const profiles =
-      await getFriendProfiles(ids);
+    if (!panel) {
+      alert("Painel do perfil não foi encontrado.");
+      return;
+    }
 
-    const byId =
-      new Map(
-        profiles.map(
-          p => [p.id, p]
-        )
+    panel.classList.add("on");
+
+    loadProfile();
+  }
+
+  function closeProfile() {
+    document
+      .getElementById(
+        "vybeeProfilePanel"
+      )
+      ?.classList.remove("on");
+  }
+
+  async function loadProfile() {
+    const sb = getSupabase();
+    const user = getUser();
+
+    if (!sb || !user) {
+      return;
+    }
+
+    document.getElementById(
+      "vybeeFriendsList"
+    ).innerHTML =
+      '<div class="vybee-profile-empty">Carregando...</div>';
+
+    document.getElementById(
+      "vybeeFriendRequests"
+    ).innerHTML =
+      '<div class="vybee-profile-empty">Carregando...</div>';
+
+    try {
+      const { data, error } =
+        await sb
+          .from("profiles")
+          .select(
+            "id,display_name,username"
+          )
+          .eq(
+            "id",
+            user.id
+          )
+          .maybeSingle();
+
+      if (error) throw error;
+
+      document.getElementById(
+        "vybeeProfileName"
+      ).textContent =
+        data?.display_name ||
+        user.email ||
+        "Usuário VYBEE";
+
+      document.getElementById(
+        "vybeeProfileUsername"
+      ).textContent =
+        data?.username
+          ? "@" + data.username
+          : "";
+
+    } catch (error) {
+      console.warn(
+        "VYBEE perfil:",
+        error
       );
 
-    list.innerHTML =
-      rows.map(
-        row => {
-          const id =
-            row.user_a ===
-              profileUserId
+      document.getElementById(
+        "vybeeProfileName"
+      ).textContent =
+        user.email ||
+        "Usuário VYBEE";
+    }
+
+    await Promise.all([
+      loadFriends(),
+      loadRequests()
+    ]);
+  }
+
+  async function loadFriends() {
+    const sb = getSupabase();
+    const user = getUser();
+    const list =
+      document.getElementById(
+        "vybeeFriendsList"
+      );
+
+    if (!sb || !user || !list) return;
+
+    try {
+      const { data, error } =
+        await sb
+          .from("friendships")
+          .select(
+            "id,user_a,user_b,status"
+          )
+          .or(
+            `user_a.eq.${user.id},user_b.eq.${user.id}`
+          )
+          .eq(
+            "status",
+            "accepted"
+          );
+
+      if (error) throw error;
+
+      const rows = data || [];
+
+      if (!rows.length) {
+        list.innerHTML =
+          '<div class="vybee-profile-empty">Você ainda não possui amigos.</div>';
+        return;
+      }
+
+      const ids =
+        rows.map(
+          row =>
+            row.user_a === user.id
               ? row.user_b
-              : row.user_a;
+              : row.user_a
+        );
 
-          const p =
-            byId.get(id);
+      const { data: profiles } =
+        await sb
+          .from("profiles")
+          .select(
+            "id,display_name,username"
+          )
+          .in(
+            "id",
+            ids
+          );
 
-          return `
+      const byId =
+        new Map(
+          (profiles || []).map(
+            profile =>
+              [profile.id, profile]
+          )
+        );
+
+      list.innerHTML =
+        rows.map(
+          row => {
+            const id =
+              row.user_a === user.id
+                ? row.user_b
+                : row.user_a;
+
+            const profile =
+              byId.get(id);
+
+            return `
+              <div class="vybee-profile-row">
+                <div class="voice-avatar">👤</div>
+                <div class="vybee-profile-row-main">
+                  <strong>${esc(
+                    profile?.display_name ||
+                    "Usuário"
+                  )}</strong>
+                  <span>${
+                    profile?.username
+                      ? "@" +
+                        esc(
+                          profile.username
+                        )
+                      : ""
+                  }</span>
+                </div>
+              </div>
+            `;
+          }
+        ).join("");
+
+    } catch (error) {
+      console.error(
+        "VYBEE amigos:",
+        error
+      );
+
+      list.innerHTML =
+        '<div class="vybee-profile-empty">Não foi possível carregar os amigos.</div>';
+    }
+  }
+
+  async function loadRequests() {
+    const sb = getSupabase();
+    const user = getUser();
+    const list =
+      document.getElementById(
+        "vybeeFriendRequests"
+      );
+
+    if (!sb || !user || !list) return;
+
+    try {
+      const { data, error } =
+        await sb
+          .from("friendships")
+          .select(
+            "id,user_a,user_b,status"
+          )
+          .eq(
+            "user_b",
+            user.id
+          )
+          .eq(
+            "status",
+            "pending"
+          );
+
+      if (error) throw error;
+
+      if (!data?.length) {
+        list.innerHTML =
+          '<div class="vybee-profile-empty">Nenhuma solicitação pendente.</div>';
+        return;
+      }
+
+      const ids =
+        data.map(
+          row => row.user_a
+        );
+
+      const { data: profiles } =
+        await sb
+          .from("profiles")
+          .select(
+            "id,display_name,username"
+          )
+          .in(
+            "id",
+            ids
+          );
+
+      const byId =
+        new Map(
+          (profiles || []).map(
+            profile =>
+              [profile.id, profile]
+          )
+        );
+
+      list.innerHTML =
+        data.map(
+          row => {
+            const profile =
+              byId.get(
+                row.user_a
+              );
+
+            return `
+              <div class="vybee-profile-row">
+                <div class="voice-avatar">🤝</div>
+                <div class="vybee-profile-row-main">
+                  <strong>${esc(
+                    profile?.display_name ||
+                    "Usuário"
+                  )}</strong>
+                  <span>${
+                    profile?.username
+                      ? "@" +
+                        esc(
+                          profile.username
+                        )
+                      : ""
+                  }</span>
+                </div>
+                <button
+                  type="button"
+                  class="vybee-profile-action"
+                  data-friend-accept="${esc(row.id)}"
+                >Aceitar</button>
+                <button
+                  type="button"
+                  class="vybee-profile-action"
+                  data-friend-reject="${esc(row.id)}"
+                >Recusar</button>
+              </div>
+            `;
+          }
+        ).join("");
+
+      list
+        .querySelectorAll(
+          "[data-friend-accept]"
+        )
+        .forEach(
+          button => {
+            button.addEventListener(
+              "click",
+              () =>
+                updateRequest(
+                  button.dataset.friendAccept,
+                  "accepted"
+                )
+            );
+          }
+        );
+
+      list
+        .querySelectorAll(
+          "[data-friend-reject]"
+        )
+        .forEach(
+          button => {
+            button.addEventListener(
+              "click",
+              () =>
+                updateRequest(
+                  button.dataset.friendReject,
+                  "rejected"
+                )
+            );
+          }
+        );
+
+    } catch (error) {
+      console.error(
+        "VYBEE solicitações:",
+        error
+      );
+
+      list.innerHTML =
+        '<div class="vybee-profile-empty">Não foi possível carregar as solicitações.</div>';
+    }
+  }
+
+  async function updateRequest(
+    friendshipId,
+    status
+  ) {
+    const sb = getSupabase();
+    const user = getUser();
+
+    if (!sb || !user) return;
+
+    try {
+      const { error } =
+        await sb
+          .from("friendships")
+          .update({
+            status
+          })
+          .eq(
+            "id",
+            friendshipId
+          )
+          .eq(
+            "user_b",
+            user.id
+          );
+
+      if (error) throw error;
+
+      await loadFriends();
+      await loadRequests();
+
+    } catch (error) {
+      console.error(
+        "VYBEE atualização amizade:",
+        error
+      );
+
+      toast(
+        "Não foi possível atualizar a solicitação."
+      );
+    }
+  }
+
+  async function searchPeople(
+    value
+  ) {
+    const sb = getSupabase();
+    const user = getUser();
+    const list =
+      document.getElementById(
+        "vybeePeopleList"
+      );
+
+    if (!sb || !user || !list) return;
+
+    const term =
+      String(
+        value || ""
+      ).trim();
+
+    if (term.length < 2) {
+      list.innerHTML =
+        '<div class="vybee-profile-empty">Digite pelo menos 2 caracteres.</div>';
+      return;
+    }
+
+    try {
+      const safe =
+        term
+          .replaceAll("%","\\%")
+          .replaceAll("_","\\_");
+
+      const { data, error } =
+        await sb
+          .from("profiles")
+          .select(
+            "id,display_name,username"
+          )
+          .or(
+            `display_name.ilike.%${safe}%,username.ilike.%${safe}%`
+          )
+          .neq(
+            "id",
+            user.id
+          )
+          .limit(20);
+
+      if (error) throw error;
+
+      if (!data?.length) {
+        list.innerHTML =
+          '<div class="vybee-profile-empty">Nenhuma pessoa encontrada.</div>';
+        return;
+      }
+
+      list.innerHTML =
+        data.map(
+          profile => `
             <div class="vybee-profile-row">
               <div class="voice-avatar">👤</div>
               <div class="vybee-profile-row-main">
-                <strong>${profileEsc(
-                  p?.display_name ||
+                <strong>${esc(
+                  profile.display_name ||
                   "Usuário"
                 )}</strong>
                 <span>${
-                  p?.username
+                  profile.username
                     ? "@" +
-                      profileEsc(
-                        p.username
-                      )
+                      esc(profile.username)
                     : ""
                 }</span>
               </div>
+              <button
+                type="button"
+                class="vybee-profile-action"
+                data-friend-add="${esc(profile.id)}"
+              >Adicionar</button>
             </div>
-          `;
-        }
-      ).join("");
+          `
+        ).join("");
 
-  } catch (error) {
-    console.error(
-      "VYBEE friends:",
-      error
-    );
-
-    list.innerHTML =
-      `<div class="vybee-profile-empty">
-        Não foi possível carregar seus amigos.
-      </div>`;
-  }
-}
-
-async function profileLoadRequests() {
-  const list =
-    document.getElementById(
-      "vybeeFriendRequests"
-    );
-
-  if (!list || !profileUserId) return;
-
-  try {
-    const { data, error } =
-      await profileSupabase
-        .from("friendships")
-        .select(
-          "id,user_a,user_b,status"
+      list
+        .querySelectorAll(
+          "[data-friend-add]"
         )
-        .eq(
-          "user_b",
-          profileUserId
-        )
-        .eq(
-          "status",
-          "pending"
-        );
-
-    if (error) throw error;
-
-    if (!data?.length) {
-      list.innerHTML =
-        `<div class="vybee-profile-empty">
-          Nenhuma solicitação pendente.
-        </div>`;
-      return;
-    }
-
-    const profiles =
-      await getFriendProfiles(
-        data.map(row => row.user_a)
-      );
-
-    const byId =
-      new Map(
-        profiles.map(
-          p => [p.id, p]
-        )
-      );
-
-    list.innerHTML =
-      data.map(
-        row => {
-          const p =
-            byId.get(
-              row.user_a
+        .forEach(
+          button => {
+            button.addEventListener(
+              "click",
+              () =>
+                sendFriendRequest(
+                  button.dataset.friendAdd
+                )
             );
-
-          return `
-            <div class="vybee-profile-row">
-              <div class="voice-avatar">🤝</div>
-              <div class="vybee-profile-row-main">
-                <strong>${profileEsc(
-                  p?.display_name ||
-                  "Usuário"
-                )}</strong>
-                <span>${
-                  p?.username
-                    ? "@" +
-                      profileEsc(
-                        p.username
-                      )
-                    : ""
-                }</span>
-              </div>
-              <button
-                class="vybee-profile-action"
-                data-friend-accept="${profileEsc(row.id)}"
-              >Aceitar</button>
-              <button
-                class="vybee-profile-action"
-                data-friend-reject="${profileEsc(row.id)}"
-              >Recusar</button>
-            </div>
-          `;
-        }
-      ).join("");
-
-    list
-      .querySelectorAll(
-        "[data-friend-accept]"
-      )
-      .forEach(
-        button => {
-          button.addEventListener(
-            "click",
-            async () => {
-              await profileUpdateRequest(
-                button.dataset.friendAccept,
-                "accepted"
-              );
-            }
-          );
-        }
-      );
-
-    list
-      .querySelectorAll(
-        "[data-friend-reject]"
-      )
-      .forEach(
-        button => {
-          button.addEventListener(
-            "click",
-            async () => {
-              await profileUpdateRequest(
-                button.dataset.friendReject,
-                "rejected"
-              );
-            }
-          );
-        }
-      );
-
-  } catch (error) {
-    console.error(
-      "VYBEE requests:",
-      error
-    );
-
-    list.innerHTML =
-      `<div class="vybee-profile-empty">
-        Não foi possível carregar as solicitações.
-      </div>`;
-  }
-}
-
-async function profileUpdateRequest(
-  id,
-  status
-) {
-  try {
-    const { error } =
-      await profileSupabase
-        .from("friendships")
-        .update({
-          status
-        })
-        .eq(
-          "id",
-          id
-        )
-        .eq(
-          "user_b",
-          profileUserId
+          }
         );
 
-    if (error) throw error;
-
-    await profileLoadFriends();
-    await profileLoadRequests();
-
-  } catch (error) {
-    console.error(
-      "VYBEE update friendship:",
-      error
-    );
-
-    toast(
-      "Não foi possível atualizar a solicitação."
-    );
-  }
-}
-
-async function profileSearchPeople(
-  term
-) {
-  const list =
-    document.getElementById(
-      "vybeePeopleList"
-    );
-
-  if (!list) return;
-
-  const q =
-    String(
-      term || ""
-    ).trim();
-
-  if (q.length < 2) {
-    list.innerHTML =
-      `<div class="vybee-profile-empty">
-        Digite pelo menos 2 caracteres.
-      </div>`;
-    return;
-  }
-
-  try {
-    const escaped =
-      q.replaceAll(
-        "%",
-        "\\%"
-      ).replaceAll(
-        "_",
-        "\\_"
+    } catch (error) {
+      console.error(
+        "VYBEE busca:",
+        error
       );
 
-    const { data, error } =
-      await profileSupabase
-        .from("profiles")
-        .select(
-          "id,display_name,username"
-        )
-        .or(
-          `display_name.ilike.%${escaped}%,username.ilike.%${escaped}%`
-        )
-        .neq(
-          "id",
-          profileUserId
-        )
-        .limit(20);
-
-    if (error) throw error;
-
-    if (!data?.length) {
       list.innerHTML =
-        `<div class="vybee-profile-empty">
-          Nenhuma pessoa encontrada.
-        </div>`;
+        '<div class="vybee-profile-empty">Não foi possível pesquisar pessoas.</div>';
+    }
+  }
+
+  async function sendFriendRequest(
+    targetId
+  ) {
+    const sb = getSupabase();
+    const user = getUser();
+
+    if (
+      !sb ||
+      !user ||
+      !targetId ||
+      targetId === user.id
+    ) {
       return;
     }
 
-    list.innerHTML =
-      data.map(
-        profile => `
-          <div class="vybee-profile-row">
-            <div class="voice-avatar">👤</div>
-            <div class="vybee-profile-row-main">
-              <strong>${profileEsc(
-                profile.display_name ||
-                "Usuário"
-              )}</strong>
-              <span>${
-                profile.username
-                  ? "@" +
-                    profileEsc(
-                      profile.username
-                    )
-                  : ""
-              }</span>
-            </div>
-            <button
-              class="vybee-profile-action"
-              data-friend-add="${profileEsc(profile.id)}"
-            >Adicionar</button>
-          </div>
-        `
-      ).join("");
+    try {
+      const { data: existing, error: findError } =
+        await sb
+          .from("friendships")
+          .select(
+            "id,status"
+          )
+          .or(
+            `and(user_a.eq.${user.id},user_b.eq.${targetId}),and(user_a.eq.${targetId},user_b.eq.${user.id})`
+          )
+          .limit(1);
 
-    list
-      .querySelectorAll(
-        "[data-friend-add]"
-      )
-      .forEach(
-        button => {
-          button.addEventListener(
-            "click",
-            async () => {
-              await profileSendRequest(
-                button.dataset.friendAdd
-              );
-            }
-          );
+      if (findError) throw findError;
+
+      if (existing?.length) {
+        toast(
+          "Já existe uma solicitação ou amizade entre vocês."
+        );
+        return;
+      }
+
+      const { error } =
+        await sb
+          .from("friendships")
+          .insert({
+            user_a:
+              user.id,
+            user_b:
+              targetId,
+            status:
+              "pending"
+          });
+
+      if (error) throw error;
+
+      toast(
+        "🤝 Solicitação enviada."
+      );
+
+    } catch (error) {
+      console.error(
+        "VYBEE adicionar amigo:",
+        error
+      );
+
+      toast(
+        "Não foi possível enviar a solicitação."
+      );
+    }
+  }
+
+  function install() {
+    const button =
+      document.getElementById(
+        "vybeeProfileButton"
+      );
+
+    if (button && !button.dataset.vybeeProfileBound) {
+      button.dataset.vybeeProfileBound = "1";
+      button.type = "button";
+
+      button.addEventListener(
+        "click",
+        openProfile,
+        true
+      );
+    }
+
+    const close =
+      document.getElementById(
+        "vybeeProfileClose"
+      );
+
+    if (close && !close.dataset.vybeeProfileBound) {
+      close.dataset.vybeeProfileBound = "1";
+      close.type = "button";
+      close.addEventListener(
+        "click",
+        closeProfile
+      );
+    }
+
+    const panel =
+      document.getElementById(
+        "vybeeProfilePanel"
+      );
+
+    if (panel && !panel.dataset.vybeeProfileOutsideBound) {
+      panel.dataset.vybeeProfileOutsideBound = "1";
+
+      panel.addEventListener(
+        "click",
+        event => {
+          if (
+            event.target === panel
+          ) {
+            closeProfile();
+          }
         }
       );
-
-  } catch (error) {
-    console.error(
-      "VYBEE search people:",
-      error
-    );
-
-    list.innerHTML =
-      `<div class="vybee-profile-empty">
-        Não foi possível pesquisar pessoas.
-      </div>`;
-  }
-}
-
-async function profileSendRequest(
-  targetId
-) {
-  if (
-    !profileUserId ||
-    !targetId ||
-    targetId ===
-      profileUserId
-  ) {
-    return;
-  }
-
-  try {
-    const { data: existing, error: findError } =
-      await profileSupabase
-        .from("friendships")
-        .select(
-          "id,status"
-        )
-        .or(
-          `and(user_a.eq.${profileUserId},user_b.eq.${targetId}),and(user_a.eq.${targetId},user_b.eq.${profileUserId})`
-        )
-        .limit(1);
-
-    if (findError) throw findError;
-
-    if (existing?.length) {
-      toast(
-        "Já existe uma solicitação ou amizade entre vocês."
-      );
-      return;
     }
 
-    const { error } =
-      await profileSupabase
-        .from("friendships")
-        .insert({
-          user_a:
-            profileUserId,
-          user_b:
-            targetId,
-          status:
-            "pending"
-        });
+    const search =
+      document.getElementById(
+        "vybeePeopleSearch"
+      );
 
-    if (error) throw error;
+    if (search && !search.dataset.vybeeProfileSearchBound) {
+      search.dataset.vybeeProfileSearchBound = "1";
 
-    toast(
-      "🤝 Solicitação enviada."
-    );
+      search.addEventListener(
+        "input",
+        event => {
+          clearTimeout(
+            search._vybeeTimer
+          );
 
-  } catch (error) {
-    console.error(
-      "VYBEE send friendship:",
-      error
-    );
-
-    toast(
-      "Não foi possível enviar a solicitação."
-    );
-  }
-}
-
-document.getElementById(
-  "vybeeProfileButton"
-)?.addEventListener(
-  "click",
-  profileOpen
-);
-
-document.getElementById(
-  "vybeeProfileClose"
-)?.addEventListener(
-  "click",
-  profileClose
-);
-
-document.getElementById(
-  "vybeeProfilePanel"
-)?.addEventListener(
-  "click",
-  event => {
-    if (
-      event.target.id ===
-      "vybeeProfilePanel"
-    ) {
-      profileClose();
+          search._vybeeTimer =
+            setTimeout(
+              () =>
+                searchPeople(
+                  event.target.value
+                ),
+              300
+            );
+        }
+      );
     }
   }
-);
 
-document.getElementById(
-  "vybeePeopleSearch"
-)?.addEventListener(
-  "input",
-  event => {
-    clearTimeout(
-      event.target._vybeeTimer
-    );
+  install();
 
-    event.target._vybeeTimer =
-      setTimeout(
-        () =>
-          profileSearchPeople(
-            event.target.value
-          ),
-        300
-      );
-  }
-);
+  document.addEventListener(
+    "DOMContentLoaded",
+    install
+  );
 
-profileSupabase.auth.onAuthStateChange(
-  (_event, session) => {
-    profileUserId =
-      session?.user?.id ||
-      null;
-  }
-);
+  setTimeout(
+    install,
+    500
+  );
+
+  setTimeout(
+    install,
+    1500
+  );
+
+  window.vybeeOpenProfile =
+    openProfile;
+
+  window.vybeeCloseProfile =
+    closeProfile;
+})();
 </script>
 
 </body>
