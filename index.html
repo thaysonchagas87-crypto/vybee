@@ -1178,6 +1178,76 @@ RESPONSIVE
 
 </style>
 
+
+<style>
+/* VYBEE PERFIL — busca e amizades */
+.vybee-profile-search-wrap{
+  margin-top:12px;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--p2);
+}
+.vybee-profile-search{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px 11px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#111416;
+  color:#fff;
+  outline:none;
+}
+.vybee-profile-results{
+  margin-top:9px;
+  display:grid;
+  gap:7px;
+}
+.vybee-profile-result{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#111416;
+}
+.vybee-profile-result-main{
+  min-width:0;
+  flex:1;
+}
+.vybee-profile-result-main strong{
+  display:block;
+  font-size:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.vybee-profile-result-main span{
+  display:block;
+  margin-top:2px;
+  color:var(--mut);
+  font-size:10px;
+}
+.vybee-profile-action{
+  border:1px solid var(--line);
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:6px 8px;
+  cursor:pointer;
+  font-size:10px;
+}
+.vybee-profile-action:hover{
+  border-color:var(--n);
+}
+.vybee-profile-muted{
+  margin-top:8px;
+  color:var(--mut);
+  font-size:10px;
+}
+</style>
+
 </head>
 
 <body>
@@ -5641,6 +5711,27 @@ if(requestedLive){
         </div>
       </div>
 
+      <div class="vybee-profile-search-wrap">
+        <b>🔎 Encontrar pessoas</b>
+
+        <input
+          type="search"
+          id="vybeeProfileSearch"
+          class="vybee-profile-search"
+          placeholder="Digite um nome ou @usuário..."
+          autocomplete="off"
+        >
+
+        <div
+          id="vybeeProfileSearchResults"
+          class="vybee-profile-results"
+        ></div>
+
+        <div class="vybee-profile-muted">
+          Procure outros usuários do VYBEE e envie uma solicitação de amizade.
+        </div>
+      </div>
+
       <div
         style="
           margin-top:12px;
@@ -5662,20 +5753,26 @@ if(requestedLive){
 </div>
 
 
+
 <script>
 (function(){
-  function getUser(){
-    return window.vybeeCurrentUser || null;
+  const getSB = () =>
+    window.vybeeSupabase || null;
+
+  const getUser = () =>
+    window.vybeeCurrentUser || null;
+
+  function esc(v){
+    return String(v ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
   }
 
-  function getProfile(){
-    return window.vybeeGetCurrentProfile?.() || null;
-  }
-
-  async function loadProfilePanel(){
+  function openProfile(){
     const user = getUser();
-    const profile = getProfile();
-
     if(!user){
       if(typeof window.showWebAuth === "function"){
         window.showWebAuth();
@@ -5683,82 +5780,499 @@ if(requestedLive){
       return;
     }
 
-    const panel = document.getElementById("vybeeProfilePanel");
+    const panel =
+      document.getElementById(
+        "vybeeProfilePanel"
+      );
+
     if(!panel) return;
 
     panel.style.display = "grid";
+    loadMe();
+    loadFriends();
+    loadRequests();
+  }
 
-    document.getElementById("vybeeProfileName").textContent =
-      profile?.display_name ||
-      user.user_metadata?.display_name ||
+  function closeProfile(){
+    document
+      .getElementById(
+        "vybeeProfilePanel"
+      )
+      ?.style.setProperty(
+        "display",
+        "none"
+      );
+  }
+
+  async function loadMe(){
+    const sb = getSB();
+    const user = getUser();
+    if(!sb || !user) return;
+
+    const { data } =
+      await sb
+        .from("profiles")
+        .select("id,display_name,username")
+        .eq("id",user.id)
+        .maybeSingle()
+        .catch(() => ({data:null}));
+
+    document.getElementById(
+      "vybeeProfileName"
+    ).textContent =
+      data?.display_name ||
       user.email ||
       "Usuário VYBEE";
 
-    document.getElementById("vybeeProfileUsername").textContent =
-      profile?.username
-        ? "@" + profile.username
+    document.getElementById(
+      "vybeeProfileUsername"
+    ).textContent =
+      data?.username
+        ? "@" + data.username
         : "";
 
-    document.getElementById("vybeeProfileEmail").textContent =
+    document.getElementById(
+      "vybeeProfileEmail"
+    ).textContent =
       user.email || "";
-
-    /*
-     * Nesta primeira etapa, somente mostramos dados já carregados.
-     * Não fazemos nenhuma consulta extra nem mexemos na autenticação.
-     */
-    document.getElementById("vybeeFriendsList").innerHTML =
-      '<div class="muted">Amigos: módulo será conectado na próxima etapa.</div>';
-
-    document.getElementById("vybeeFriendRequests").innerHTML =
-      '<div class="muted">Solicitações: módulo será conectado na próxima etapa.</div>';
   }
 
-  function closeProfilePanel(){
-    const panel = document.getElementById("vybeeProfilePanel");
-    if(panel){
-      panel.style.display = "none";
+  async function loadFriends(){
+    const sb = getSB();
+    const user = getUser();
+    const list =
+      document.getElementById(
+        "vybeeFriendsList"
+      );
+
+    if(!sb || !user || !list) return;
+
+    try{
+      const {data,error} =
+        await sb
+          .from("friendships")
+          .select("id,user_a,user_b,status")
+          .or(
+            `user_a.eq.${user.id},user_b.eq.${user.id}`
+          )
+          .eq("status","accepted");
+
+      if(error) throw error;
+
+      const rows = data || [];
+
+      if(!rows.length){
+        list.innerHTML =
+          '<div class="muted">Você ainda não possui amigos.</div>';
+        return;
+      }
+
+      const ids =
+        rows.map(r =>
+          r.user_a === user.id
+            ? r.user_b
+            : r.user_a
+        );
+
+      const {data:profiles} =
+        await sb
+          .from("profiles")
+          .select("id,display_name,username")
+          .in("id",ids);
+
+      const byId =
+        new Map(
+          (profiles || []).map(p => [p.id,p])
+        );
+
+      list.innerHTML =
+        rows.map(r => {
+          const id =
+            r.user_a === user.id
+              ? r.user_b
+              : r.user_a;
+
+          const p = byId.get(id);
+
+          return `
+            <div class="vybee-profile-result">
+              <div class="voice-avatar">👤</div>
+              <div class="vybee-profile-result-main">
+                <strong>${esc(p?.display_name || "Usuário")}</strong>
+                <span>${p?.username ? "@" + esc(p.username) : ""}</span>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+    }catch(error){
+      console.error("VYBEE friends:",error);
+      list.innerHTML =
+        '<div class="muted">Tabela de amizades ainda não disponível.</div>';
+    }
+  }
+
+  async function loadRequests(){
+    const sb = getSB();
+    const user = getUser();
+    const list =
+      document.getElementById(
+        "vybeeFriendRequests"
+      );
+
+    if(!sb || !user || !list) return;
+
+    try{
+      const {data,error} =
+        await sb
+          .from("friendships")
+          .select("id,user_a,user_b,status")
+          .eq("user_b",user.id)
+          .eq("status","pending");
+
+      if(error) throw error;
+
+      if(!data?.length){
+        list.innerHTML =
+          '<div class="muted">Nenhuma solicitação.</div>';
+        return;
+      }
+
+      const ids =
+        data.map(r => r.user_a);
+
+      const {data:profiles} =
+        await sb
+          .from("profiles")
+          .select("id,display_name,username")
+          .in("id",ids);
+
+      const byId =
+        new Map(
+          (profiles || []).map(p => [p.id,p])
+        );
+
+      list.innerHTML =
+        data.map(r => {
+          const p = byId.get(r.user_a);
+
+          return `
+            <div class="vybee-profile-result">
+              <div class="voice-avatar">🤝</div>
+              <div class="vybee-profile-result-main">
+                <strong>${esc(p?.display_name || "Usuário")}</strong>
+                <span>${p?.username ? "@" + esc(p.username) : ""}</span>
+              </div>
+              <button
+                type="button"
+                class="vybee-profile-action"
+                data-accept="${esc(r.id)}"
+              >Aceitar</button>
+              <button
+                type="button"
+                class="vybee-profile-action"
+                data-reject="${esc(r.id)}"
+              >Recusar</button>
+            </div>
+          `;
+        }).join("");
+
+      list.querySelectorAll(
+        "[data-accept]"
+      ).forEach(btn =>
+        btn.addEventListener(
+          "click",
+          () => updateFriendship(
+            btn.dataset.accept,
+            "accepted"
+          )
+        )
+      );
+
+      list.querySelectorAll(
+        "[data-reject]"
+      ).forEach(btn =>
+        btn.addEventListener(
+          "click",
+          () => updateFriendship(
+            btn.dataset.reject,
+            "rejected"
+          )
+        )
+      );
+
+    }catch(error){
+      console.error("VYBEE requests:",error);
+      list.innerHTML =
+        '<div class="muted">Não foi possível carregar solicitações.</div>';
+    }
+  }
+
+  async function updateFriendship(
+    friendshipId,
+    status
+  ){
+    const sb = getSB();
+    const user = getUser();
+    if(!sb || !user) return;
+
+    try{
+      const {error} =
+        await sb
+          .from("friendships")
+          .update({status})
+          .eq("id",friendshipId)
+          .eq("user_b",user.id);
+
+      if(error) throw error;
+
+      await loadRequests();
+      await loadFriends();
+
+    }catch(error){
+      console.error("VYBEE friendship update:",error);
+      toast(
+        "Não foi possível atualizar a solicitação."
+      );
+    }
+  }
+
+  async function searchPeople(term){
+    const sb = getSB();
+    const user = getUser();
+    const results =
+      document.getElementById(
+        "vybeeProfileSearchResults"
+      );
+
+    if(!sb || !user || !results) return;
+
+    const q =
+      String(term || "").trim();
+
+    if(q.length < 2){
+      results.innerHTML = "";
+      return;
+    }
+
+    results.innerHTML =
+      '<div class="muted">🔎 Buscando...</div>';
+
+    try{
+      const safe =
+        q
+          .replaceAll("%","\\%")
+          .replaceAll("_","\\_");
+
+      const {data,error} =
+        await sb
+          .from("profiles")
+          .select("id,display_name,username")
+          .or(
+            `display_name.ilike.%${safe}%,username.ilike.%${safe}%`
+          )
+          .neq("id",user.id)
+          .limit(20);
+
+      if(error) throw error;
+
+      if(!data?.length){
+        results.innerHTML =
+          '<div class="muted">Nenhuma pessoa encontrada.</div>';
+        return;
+      }
+
+      results.innerHTML =
+        data.map(p => `
+          <div class="vybee-profile-result">
+            <div class="voice-avatar">👤</div>
+            <div class="vybee-profile-result-main">
+              <strong>${esc(p.display_name || "Usuário")}</strong>
+              <span>${p.username ? "@" + esc(p.username) : ""}</span>
+            </div>
+            <button
+              type="button"
+              class="vybee-profile-action"
+              data-add-friend="${esc(p.id)}"
+            >🤝 Adicionar</button>
+          </div>
+        `).join("");
+
+      results
+        .querySelectorAll(
+          "[data-add-friend]"
+        )
+        .forEach(btn =>
+          btn.addEventListener(
+            "click",
+            () =>
+              sendRequest(
+                btn.dataset.addFriend
+              )
+          )
+        );
+
+    }catch(error){
+      console.error(
+        "VYBEE search:",
+        error
+      );
+
+      results.innerHTML =
+        '<div class="muted">Não foi possível realizar a busca.</div>';
+    }
+  }
+
+  async function sendRequest(targetId){
+    const sb = getSB();
+    const user = getUser();
+
+    if(!sb || !user || !targetId) return;
+
+    try{
+      const {data:existing,error:findError} =
+        await sb
+          .from("friendships")
+          .select("id,status")
+          .or(
+            `and(user_a.eq.${user.id},user_b.eq.${targetId}),and(user_a.eq.${targetId},user_b.eq.${user.id})`
+          )
+          .limit(1);
+
+      if(findError) throw findError;
+
+      if(existing?.length){
+        toast(
+          "Já existe uma solicitação ou amizade."
+        );
+        return;
+      }
+
+      const {error} =
+        await sb
+          .from("friendships")
+          .insert({
+            user_a:user.id,
+            user_b:targetId,
+            status:"pending"
+          });
+
+      if(error) throw error;
+
+      toast(
+        "🤝 Solicitação enviada."
+      );
+
+    }catch(error){
+      console.error(
+        "VYBEE send request:",
+        error
+      );
+
+      toast(
+        "Não foi possível enviar a solicitação."
+      );
     }
   }
 
   function bind(){
-    const button = document.getElementById("vybeeProfileButton");
-    if(button && !button.dataset.vybeeBound){
-      button.dataset.vybeeBound = "1";
-      button.addEventListener("click", function(event){
-        event.preventDefault();
-        event.stopPropagation();
-        loadProfilePanel();
-      }, true);
+    const button =
+      document.getElementById(
+        "vybeeProfileButton"
+      );
+
+    if(button && !button.dataset.vybeeProfileBound){
+      button.dataset.vybeeProfileBound = "1";
+
+      button.addEventListener(
+        "click",
+        function(event){
+          event.preventDefault();
+          event.stopPropagation();
+          openProfile();
+        },
+        true
+      );
     }
 
-    const close = document.getElementById("vybeeProfileClose");
-    if(close && !close.dataset.vybeeBound){
-      close.dataset.vybeeBound = "1";
-      close.addEventListener("click", function(event){
-        event.preventDefault();
-        closeProfilePanel();
-      });
+    const close =
+      document.getElementById(
+        "vybeeProfileClose"
+      );
+
+    if(close && !close.dataset.vybeeProfileBound){
+      close.dataset.vybeeProfileBound = "1";
+
+      close.addEventListener(
+        "click",
+        function(event){
+          event.preventDefault();
+          event.stopPropagation();
+          closeProfile();
+        },
+        true
+      );
     }
 
-    const panel = document.getElementById("vybeeProfilePanel");
-    if(panel && !panel.dataset.vybeeOutsideBound){
-      panel.dataset.vybeeOutsideBound = "1";
-      panel.addEventListener("click", function(event){
-        if(event.target === panel){
-          closeProfilePanel();
+    const panel =
+      document.getElementById(
+        "vybeeProfilePanel"
+      );
+
+    if(panel && !panel.dataset.vybeeProfileOutsideBound){
+      panel.dataset.vybeeProfileOutsideBound = "1";
+
+      panel.addEventListener(
+        "click",
+        event => {
+          if(event.target === panel){
+            closeProfile();
+          }
         }
-      });
+      );
+    }
+
+    const search =
+      document.getElementById(
+        "vybeeProfileSearch"
+      );
+
+    if(search && !search.dataset.vybeeSearchBound){
+      search.dataset.vybeeSearchBound = "1";
+
+      search.addEventListener(
+        "input",
+        event => {
+          clearTimeout(
+            search._vybeeTimer
+          );
+
+          search._vybeeTimer =
+            setTimeout(
+              () =>
+                searchPeople(
+                  event.target.value
+                ),
+              300
+            );
+        }
+      );
     }
   }
 
   bind();
-  document.addEventListener("DOMContentLoaded", bind);
-  setTimeout(bind, 300);
-  setTimeout(bind, 1000);
+  document.addEventListener(
+    "DOMContentLoaded",
+    bind
+  );
+  setTimeout(bind,300);
+  setTimeout(bind,1000);
 
-  window.vybeeOpenProfile = loadProfilePanel;
+  window.vybeeOpenProfile =
+    openProfile;
 })();
 </script>
+
 
 </body>
 
