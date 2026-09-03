@@ -1460,6 +1460,192 @@ RESPONSIVE
 }
 </style>
 
+
+<style id="vybee-settings-style">
+.vybee-settings-panel{
+  position:fixed;
+  inset:0;
+  z-index:145;
+  display:none;
+  place-items:center;
+  padding:16px;
+  background:#000c;
+}
+.vybee-settings-panel.on{
+  display:grid;
+}
+.vybee-settings-box{
+  width:min(760px,100%);
+  max-height:88vh;
+  overflow:auto;
+  background:var(--p);
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:0 30px 100px #000c;
+  padding:18px;
+}
+.vybee-settings-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding-bottom:14px;
+  border-bottom:1px solid var(--line);
+}
+.vybee-settings-head h2{
+  margin:0;
+  font-size:18px;
+}
+.vybee-settings-head .muted{
+  margin-top:3px;
+  font-size:10px;
+}
+.vybee-settings-close{
+  margin-left:auto;
+}
+.vybee-settings-grid{
+  display:grid;
+  grid-template-columns:220px 1fr;
+  gap:14px;
+  margin-top:14px;
+}
+.vybee-settings-nav{
+  display:grid;
+  align-content:start;
+  gap:6px;
+}
+.vybee-settings-nav button{
+  text-align:left;
+  border:1px solid var(--line);
+  background:var(--p2);
+  color:#fff;
+  border-radius:10px;
+  padding:10px 11px;
+  cursor:pointer;
+  font-size:11px;
+}
+.vybee-settings-nav button.active,
+.vybee-settings-nav button:hover{
+  border-color:var(--n);
+}
+.vybee-settings-content{
+  min-width:0;
+}
+.vybee-settings-section{
+  display:none;
+}
+.vybee-settings-section.on{
+  display:block;
+}
+.vybee-settings-card{
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:var(--p2);
+  margin-bottom:10px;
+}
+.vybee-settings-card h3{
+  margin:0 0 9px;
+  font-size:13px;
+}
+.vybee-settings-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:9px 0;
+  border-bottom:1px solid #202326;
+}
+.vybee-settings-row:last-child{
+  border-bottom:0;
+}
+.vybee-settings-row-main{
+  min-width:0;
+  flex:1;
+}
+.vybee-settings-row-main strong{
+  display:block;
+  font-size:11px;
+}
+.vybee-settings-row-main span{
+  display:block;
+  margin-top:2px;
+  color:var(--mut);
+  font-size:9px;
+  line-height:1.35;
+}
+.vybee-settings-btn{
+  border:1px solid var(--line);
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:7px 9px;
+  cursor:pointer;
+  font-size:10px;
+}
+.vybee-settings-btn:hover{
+  border-color:var(--n);
+}
+.vybee-settings-btn.danger:hover{
+  background:#7d1e1e;
+}
+.vybee-settings-input{
+  width:100%;
+  box-sizing:border-box;
+  padding:9px 10px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#111416;
+  color:#fff;
+  margin-top:7px;
+  outline:none;
+}
+.vybee-settings-status{
+  margin-top:8px;
+  color:var(--mut);
+  font-size:10px;
+}
+.vybee-toggle{
+  position:relative;
+  width:38px;
+  height:22px;
+  flex:0 0 38px;
+}
+.vybee-toggle input{
+  opacity:0;
+  width:0;
+  height:0;
+}
+.vybee-toggle-track{
+  position:absolute;
+  inset:0;
+  border-radius:999px;
+  background:#34383c;
+  cursor:pointer;
+}
+.vybee-toggle-track::after{
+  content:"";
+  position:absolute;
+  width:16px;
+  height:16px;
+  left:3px;
+  top:3px;
+  border-radius:50%;
+  background:#fff;
+  transition:.15s;
+}
+.vybee-toggle input:checked + .vybee-toggle-track{
+  background:#53ff1a;
+}
+.vybee-toggle input:checked + .vybee-toggle-track::after{
+  transform:translateX(16px);
+  background:#071005;
+}
+@media(max-width:700px){
+  .vybee-settings-grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -1485,6 +1671,16 @@ RESPONSIVE
       class="vybee-notification-badge"
     >0</span>
   </button>
+
+<button
+  type="button"
+  class="vybee-notification-button"
+  id="vybeeSettingsButton"
+  title="Configurações"
+  aria-label="Configurações"
+>
+  ⚙️
+</button>
 
 <div class="online">
     ● ONLINE
@@ -7377,6 +7573,703 @@ if(requestedLive){
 
   window.vybeeShowNotification =
     addNotification;
+})();
+</script>
+
+
+<div
+  class="vybee-settings-panel"
+  id="vybeeSettingsPanel"
+>
+  <div class="vybee-settings-box">
+    <div class="vybee-settings-head">
+      <div>
+        <h2>⚙️ Configurações do VYBEE</h2>
+        <div class="muted">
+          Conta, segurança, notificações e privacidade.
+        </div>
+      </div>
+      <button
+        type="button"
+        class="btn vybee-settings-close"
+        id="vybeeSettingsClose"
+      >✕</button>
+    </div>
+
+    <div class="vybee-settings-grid">
+      <nav class="vybee-settings-nav">
+        <button
+          type="button"
+          class="active"
+          data-settings-tab="account"
+        >👤 Minha conta</button>
+
+        <button
+          type="button"
+          data-settings-tab="security"
+        >🔐 Segurança</button>
+
+        <button
+          type="button"
+          data-settings-tab="notifications"
+        >🔔 Notificações</button>
+
+        <button
+          type="button"
+          data-settings-tab="privacy"
+        >🛡️ Privacidade</button>
+      </nav>
+
+      <main class="vybee-settings-content">
+
+        <section
+          class="vybee-settings-section on"
+          data-settings-section="account"
+        >
+          <div class="vybee-settings-card">
+            <h3>Dados da conta</h3>
+
+            <div class="vybee-settings-row">
+              <div class="vybee-settings-row-main">
+                <strong>Nome</strong>
+                <span id="vybeeSettingsName">—</span>
+              </div>
+            </div>
+
+            <div class="vybee-settings-row">
+              <div class="vybee-settings-row-main">
+                <strong>@usuário</strong>
+                <span id="vybeeSettingsUsername">—</span>
+              </div>
+            </div>
+
+            <div class="vybee-settings-row">
+              <div class="vybee-settings-row-main">
+                <strong>E-mail</strong>
+                <span id="vybeeSettingsEmail">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="vybee-settings-card">
+            <h3>Editar perfil</h3>
+
+            <input
+              id="vybeeSettingsDisplayName"
+              class="vybee-settings-input"
+              placeholder="Nome de exibição"
+            >
+
+            <input
+              id="vybeeSettingsUsername"
+              class="vybee-settings-input"
+              placeholder="username"
+            >
+
+            <button
+              type="button"
+              class="vybee-settings-btn"
+              id="vybeeSettingsSaveProfile"
+              style="margin-top:8px"
+            >Salvar alterações</button>
+
+            <div
+              class="vybee-settings-status"
+              id="vybeeSettingsProfileStatus"
+            ></div>
+          </div>
+        </section>
+
+        <section
+          class="vybee-settings-section"
+          data-settings-section="security"
+        >
+          <div class="vybee-settings-card">
+            <h3>🔐 Senha</h3>
+
+            <div class="vybee-settings-row">
+              <div class="vybee-settings-row-main">
+                <strong>Enviar link para redefinir a senha</strong>
+                <span>O link será enviado para o e-mail da conta.</span>
+              </div>
+              <button
+                type="button"
+                class="vybee-settings-btn"
+                id="vybeeSettingsResetPassword"
+              >Enviar</button>
+            </div>
+          </div>
+
+          <div class="vybee-settings-card">
+            <h3>🟢 Sessão atual</h3>
+
+            <div class="vybee-settings-row">
+              <div class="vybee-settings-row-main">
+                <strong>Status</strong>
+                <span id="vybeeSettingsSessionStatus">
+                  Verificando...
+                </span>
+              </div>
+            </div>
+
+            <div class="vybee-settings-row">
+              <div class="vybee-settings-row-main">
+                <strong>Sair da conta</strong>
+                <span>Encerra a sessão neste navegador.</span>
+              </div>
+
+              <button
+                type="button"
+                class="vybee-settings-btn danger"
+                id="vybeeSettingsSignOut"
+              >Sair</button>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="vybee-settings-section"
+          data-settings-section="notifications"
+        >
+          <div class="vybee-settings-card">
+            <h3>🔔 Preferências de notificação</h3>
+
+            <div class="vybee-settings-row">
+              <div class="vybee-settings-row-main">
+                <strong>Popup na tela</strong>
+                <span>Mostrar avisos flutuantes de novas mensagens e LIVE.</span>
+              </div>
+
+              <label class="vybee-toggle">
+                <input
+                  type="checkbox"
+                  id="vybeeSettingsPopupToggle"
+                  checked
+                >
+                <span class="vybee-toggle-track"></span>
+              </label>
+            </div>
+
+            <div class="vybee-settings-row">
+              <div class="vybee-settings-row-main">
+                <strong>Notificação do navegador</strong>
+                <span>Permite aviso mesmo fora da aba.</span>
+              </div>
+
+              <label class="vybee-toggle">
+                <input
+                  type="checkbox"
+                  id="vybeeSettingsBrowserToggle"
+                >
+                <span class="vybee-toggle-track"></span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="vybee-settings-section"
+          data-settings-section="privacy"
+        >
+          <div class="vybee-settings-card">
+            <h3>🛡️ Privacidade</h3>
+
+            <div class="vybee-settings-row">
+              <div class="vybee-settings-row-main">
+                <strong>Perfil pesquisável</strong>
+                <span>Permite que outras pessoas encontrem seu nome ou @usuário.</span>
+              </div>
+
+              <label class="vybee-toggle">
+                <input
+                  type="checkbox"
+                  id="vybeeSettingsDiscoverable"
+                  checked
+                >
+                <span class="vybee-toggle-track"></span>
+              </label>
+            </div>
+
+            <div
+              class="vybee-settings-status"
+              id="vybeeSettingsPrivacyStatus"
+            >
+              A preferência será armazenada neste navegador nesta primeira etapa.
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  const POPUP_KEY =
+    "vybee_popup_notifications_enabled_v1";
+
+  const BROWSER_KEY =
+    "vybee_browser_notifications_enabled_v1";
+
+  const DISCOVERABLE_KEY =
+    "vybee_profile_discoverable_v1";
+
+  function sb(){
+    return window.vybeeSupabase || null;
+  }
+
+  function user(){
+    return window.vybeeCurrentUser || null;
+  }
+
+  function toastSafe(message){
+    if(typeof window.toast === "function"){
+      window.toast(message);
+    }else{
+      console.log(message);
+    }
+  }
+
+  function openSettings(){
+    const panel =
+      document.getElementById(
+        "vybeeSettingsPanel"
+      );
+
+    if(!panel) return;
+
+    panel.classList.add("on");
+    loadSettingsData();
+  }
+
+  function closeSettings(){
+    document
+      .getElementById(
+        "vybeeSettingsPanel"
+      )
+      ?.classList.remove("on");
+  }
+
+  function switchTab(name){
+    document
+      .querySelectorAll(
+        "[data-settings-tab]"
+      )
+      .forEach(button => {
+        button.classList.toggle(
+          "active",
+          button.dataset.settingsTab === name
+        );
+      });
+
+    document
+      .querySelectorAll(
+        "[data-settings-section]"
+      )
+      .forEach(section => {
+        section.classList.toggle(
+          "on",
+          section.dataset.settingsSection === name
+        );
+      });
+  }
+
+  async function loadSettingsData(){
+    const current =
+      user();
+
+    if(!current){
+      return;
+    }
+
+    const profile =
+      window.vybeeGetCurrentProfile?.() ||
+      null;
+
+    document.getElementById(
+      "vybeeSettingsName"
+    ).textContent =
+      profile?.display_name ||
+      current.email ||
+      "Usuário";
+
+    document.getElementById(
+      "vybeeSettingsUsername"
+    ).textContent =
+      profile?.username
+        ? "@" + profile.username
+        : "—";
+
+    document.getElementById(
+      "vybeeSettingsEmail"
+    ).textContent =
+      current.email ||
+      "—";
+
+    document.getElementById(
+      "vybeeSettingsDisplayName"
+    ).value =
+      profile?.display_name ||
+      "";
+
+    document.getElementById(
+      "vybeeSettingsUsername"
+    ).textContent =
+      profile?.username
+        ? "@" + profile.username
+        : "—";
+
+    document.getElementById(
+      "vybeeSettingsSessionStatus"
+    ).textContent =
+      "Sessão ativa neste navegador.";
+
+    const popupStored =
+      localStorage.getItem(
+        POPUP_KEY
+      );
+
+    if(popupStored !== null){
+      document.getElementById(
+        "vybeeSettingsPopupToggle"
+      ).checked =
+        popupStored !== "0";
+    }
+
+    const browserStored =
+      localStorage.getItem(
+        BROWSER_KEY
+      );
+
+    if(browserStored !== null){
+      document.getElementById(
+        "vybeeSettingsBrowserToggle"
+      ).checked =
+        browserStored === "1";
+    }
+
+    const discoverableStored =
+      localStorage.getItem(
+        DISCOVERABLE_KEY
+      );
+
+    if(discoverableStored !== null){
+      document.getElementById(
+        "vybeeSettingsDiscoverable"
+      ).checked =
+        discoverableStored !== "0";
+    }
+  }
+
+  async function saveProfile(){
+    const client =
+      sb();
+
+    const current =
+      user();
+
+    if(!client || !current){
+      return;
+    }
+
+    const name =
+      document.getElementById(
+        "vybeeSettingsDisplayName"
+      ).value.trim();
+
+    let username =
+      document.getElementById(
+        "vybeeSettingsUsernameInput"
+      )?.value?.trim() || "";
+
+    /*
+     * A V6 usa o username como dado carregado; o campo de edição
+     * pode ser incluído futuramente sem alterar o schema atual.
+     */
+    const status =
+      document.getElementById(
+        "vybeeSettingsProfileStatus"
+      );
+
+    try{
+      const { error } =
+        await client
+          .from("profiles")
+          .update({
+            display_name:
+              name || null
+          })
+          .eq(
+            "id",
+            current.id
+          );
+
+      if(error) throw error;
+
+      status.textContent =
+        "✅ Nome atualizado.";
+
+      await window.vybeeRefreshProfile?.();
+
+    }catch(error){
+      console.error(
+        "VYBEE settings profile:",
+        error
+      );
+
+      status.textContent =
+        "❌ Não foi possível salvar. " +
+        (error?.message || "");
+    }
+  }
+
+  async function resetPassword(){
+    const client =
+      sb();
+
+    const current =
+      user();
+
+    if(!client || !current?.email){
+      return;
+    }
+
+    try{
+      const { error } =
+        await client.auth.resetPasswordForEmail(
+          current.email,
+          {
+            redirectTo:
+              window.location.origin
+          }
+        );
+
+      if(error) throw error;
+
+      toastSafe(
+        "📧 Link de redefinição enviado para " +
+        current.email
+      );
+
+    }catch(error){
+      console.error(
+        "VYBEE reset password:",
+        error
+      );
+
+      toastSafe(
+        "Não foi possível enviar o link."
+      );
+    }
+  }
+
+  async function signOut(){
+    const client =
+      sb();
+
+    if(!client){
+      return;
+    }
+
+    try{
+      await client.auth.signOut();
+    }catch(error){
+      console.error(
+        "VYBEE signout:",
+        error
+      );
+    }
+
+    closeSettings();
+
+    /*
+     * A V6 já possui o fluxo oficial de atualização da interface
+     * após o signOut; não duplicamos esse mecanismo.
+     */
+    setTimeout(
+      () => location.reload(),
+      100
+    );
+  }
+
+  async function requestBrowserNotifications(){
+    if(
+      !("Notification" in window)
+    ){
+      toastSafe(
+        "Seu navegador não oferece notificações."
+      );
+      return false;
+    }
+
+    if(
+      Notification.permission ===
+      "granted"
+    ){
+      return true;
+    }
+
+    const permission =
+      await Notification
+        .requestPermission();
+
+    return permission ===
+      "granted";
+  }
+
+  function bind(){
+    document.getElementById(
+      "vybeeSettingsButton"
+    )?.addEventListener(
+      "click",
+      event => {
+        event.preventDefault();
+        event.stopPropagation();
+        openSettings();
+      },
+      true
+    );
+
+    document.getElementById(
+      "vybeeSettingsClose"
+    )?.addEventListener(
+      "click",
+      closeSettings
+    );
+
+    document
+      .querySelectorAll(
+        "[data-settings-tab]"
+      )
+      .forEach(
+        button => {
+          button.addEventListener(
+            "click",
+            () =>
+              switchTab(
+                button.dataset.settingsTab
+              )
+          );
+        }
+      );
+
+    document.getElementById(
+      "vybeeSettingsPanel"
+    )?.addEventListener(
+      "click",
+      event => {
+        if(
+          event.target.id ===
+          "vybeeSettingsPanel"
+        ){
+          closeSettings();
+        }
+      }
+    );
+
+    document.getElementById(
+      "vybeeSettingsResetPassword"
+    )?.addEventListener(
+      "click",
+      resetPassword
+    );
+
+    document.getElementById(
+      "vybeeSettingsSignOut"
+    )?.addEventListener(
+      "click",
+      signOut
+    );
+
+    document.getElementById(
+      "vybeeSettingsSaveProfile"
+    )?.addEventListener(
+      "click",
+      saveProfile
+    );
+
+    const popup =
+      document.getElementById(
+        "vybeeSettingsPopupToggle"
+      );
+
+    popup?.addEventListener(
+      "change",
+      () => {
+        localStorage.setItem(
+          POPUP_KEY,
+          popup.checked
+            ? "1"
+            : "0"
+        );
+      }
+    );
+
+    const browser =
+      document.getElementById(
+        "vybeeSettingsBrowserToggle"
+      );
+
+    browser?.addEventListener(
+      "change",
+      async () => {
+        if(
+          browser.checked
+        ){
+          const allowed =
+            await requestBrowserNotifications();
+
+          if(!allowed){
+            browser.checked =
+              false;
+            localStorage.setItem(
+              BROWSER_KEY,
+              "0"
+            );
+            return;
+          }
+        }
+
+        localStorage.setItem(
+          BROWSER_KEY,
+          browser.checked
+            ? "1"
+            : "0"
+        );
+      }
+    );
+
+    const discoverable =
+      document.getElementById(
+        "vybeeSettingsDiscoverable"
+      );
+
+    discoverable?.addEventListener(
+      "change",
+      () => {
+        localStorage.setItem(
+          DISCOVERABLE_KEY,
+          discoverable.checked
+            ? "1"
+            : "0"
+        );
+      }
+    );
+  }
+
+  bind();
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    bind
+  );
+
+  setTimeout(
+    bind,
+    500
+  );
 })();
 </script>
 
