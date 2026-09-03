@@ -2372,6 +2372,130 @@ body.vybee-modern-home-active > .app > footer{
 }
 </style>
 
+
+<style id="vybee-presence-style">
+.vybee-presence-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-width:0;
+  padding:6px 9px;
+  border:1px solid #2a3035;
+  border-radius:10px;
+  background:#101314;
+  color:#dce1e4;
+  font-size:9px;
+  font-weight:800;
+}
+.vybee-presence-dot{
+  width:8px;
+  height:8px;
+  flex:0 0 8px;
+  border-radius:50%;
+  background:#6b7379;
+}
+.vybee-presence-dot.online{
+  background:#39ff14;
+  box-shadow:0 0 9px #39ff14;
+}
+.vybee-presence-dot.away{
+  background:#ffb300;
+  box-shadow:0 0 7px #ffb30066;
+}
+.vybee-presence-dot.busy{
+  background:#ff3d3d;
+  box-shadow:0 0 7px #ff3d3d66;
+}
+.vybee-presence-status{
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.vybee-presence-menu{
+  position:fixed;
+  top:74px;
+  right:18px;
+  z-index:370;
+  display:none;
+  width:220px;
+  padding:9px;
+  border:1px solid #2a3035;
+  border-radius:13px;
+  background:#0e1112;
+  box-shadow:0 20px 55px #000b;
+}
+.vybee-presence-menu.on{
+  display:block;
+}
+.vybee-presence-menu-head{
+  padding:6px 7px 8px;
+  color:#737c83;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+.vybee-presence-option{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px;
+  border:1px solid transparent;
+  border-radius:9px;
+  background:transparent;
+  color:#fff;
+  text-align:left;
+  cursor:pointer;
+  font-size:10px;
+}
+.vybee-presence-option:hover{
+  background:#171b1e;
+  border-color:#2f363b;
+}
+.vybee-presence-option.active{
+  border-color:#39ff1455;
+  background:#121a12;
+}
+.vybee-presence-option small{
+  display:block;
+  margin-top:2px;
+  color:#737c83;
+  font-size:8px;
+}
+.vybee-presence-person-dot{
+  width:8px;
+  height:8px;
+  flex:0 0 8px;
+  border-radius:50%;
+  background:#6b7379;
+}
+.vybee-presence-person-dot.online{
+  background:#39ff14;
+  box-shadow:0 0 8px #39ff14;
+}
+.vybee-presence-person-dot.away{
+  background:#ffb300;
+}
+.vybee-presence-person-dot.busy{
+  background:#ff3d3d;
+}
+.vybee-presence-person-state{
+  color:#6f787e;
+  font-size:8px;
+}
+.vybee-dashboard-friend-online{
+  color:#6f787e;
+  font-size:8px;
+}
+@media(max-width:700px){
+  .vybee-presence-menu{
+    top:64px;
+    right:8px;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -9147,6 +9271,22 @@ if(requestedLive){
           title="Perfil"
         >👤</button>
 
+        <button
+          type="button"
+          class="vybee-presence-chip"
+          id="vybeeHomePresenceButton"
+          title="Alterar status"
+        >
+          <span
+            class="vybee-presence-dot online"
+            id="vybeeHomePresenceDot"
+          ></span>
+          <span
+            class="vybee-presence-status"
+            id="vybeeHomePresenceText"
+          >Online</span>
+        </button>
+
         <div class="vybee-home-account">
           <div class="vybee-home-account-avatar">👤</div>
           <div class="vybee-home-account-main">
@@ -10632,6 +10772,547 @@ if(requestedLive){
     },
     true
   );
+
+})();
+</script>
+
+
+<div
+  class="vybee-presence-menu"
+  id="vybeePresenceMenu"
+>
+  <div class="vybee-presence-menu-head">
+    SEU STATUS
+  </div>
+
+  <button
+    type="button"
+    class="vybee-presence-option active"
+    data-presence-status="online"
+  >
+    <span class="vybee-presence-person-dot online"></span>
+    <span>
+      Online
+      <small>Disponível para conversar</small>
+    </span>
+  </button>
+
+  <button
+    type="button"
+    class="vybee-presence-option"
+    data-presence-status="away"
+  >
+    <span class="vybee-presence-person-dot away"></span>
+    <span>
+      Ausente
+      <small>Você está temporariamente ausente</small>
+    </span>
+  </button>
+
+  <button
+    type="button"
+    class="vybee-presence-option"
+    data-presence-status="busy"
+  >
+    <span class="vybee-presence-person-dot busy"></span>
+    <span>
+      Ocupado
+      <small>Não interromper</small>
+    </span>
+  </button>
+</div>
+
+
+<script id="vybee-presence-controller">
+(function(){
+  const STATUS_KEY = "vybee_presence_status_v1";
+
+  let presenceChannel = null;
+  let presenceTimer = null;
+  let currentStatus = "online";
+  let active = false;
+  let lastProfile = null;
+
+  function sb(){
+    return window.vybeeSupabase || null;
+  }
+
+  function user(){
+    return window.vybeeCurrentUser || null;
+  }
+
+  function safeStatus(value){
+    return ["online","away","busy"].includes(value)
+      ? value
+      : "online";
+  }
+
+  function statusLabel(value){
+    if(value === "away") return "Ausente";
+    if(value === "busy") return "Ocupado";
+    return "Online";
+  }
+
+  function statusColorClass(value){
+    return safeStatus(value);
+  }
+
+  function loadStatus(){
+    try{
+      currentStatus =
+        safeStatus(
+          localStorage.getItem(
+            STATUS_KEY
+          )
+        );
+    }catch(_){
+      currentStatus = "online";
+    }
+  }
+
+  function saveStatus(){
+    try{
+      localStorage.setItem(
+        STATUS_KEY,
+        currentStatus
+      );
+    }catch(_){}
+  }
+
+  function updateOwnUI(){
+    const text =
+      document.getElementById(
+        "vybeeHomePresenceText"
+      );
+
+    const dot =
+      document.getElementById(
+        "vybeeHomePresenceDot"
+      );
+
+    if(text){
+      text.textContent =
+        statusLabel(
+          currentStatus
+        );
+    }
+
+    if(dot){
+      dot.className =
+        "vybee-presence-dot " +
+        statusColorClass(
+          currentStatus
+        );
+    }
+
+    document
+      .querySelectorAll(
+        "[data-presence-status]"
+      )
+      .forEach(
+        button => {
+          button.classList.toggle(
+            "active",
+            button.dataset.presenceStatus ===
+              currentStatus
+          );
+        }
+      );
+  }
+
+  function metadata(){
+    const current = user();
+    const profile =
+      window.vybeeGetCurrentProfile?.() ||
+      lastProfile ||
+      null;
+
+    return {
+      user_id:
+        current?.id ||
+        null,
+      name:
+        profile?.display_name ||
+        current?.email?.split("@")[0] ||
+        "Usuário",
+      username:
+        profile?.username ||
+        null,
+      status:
+        currentStatus,
+      state:
+        "online",
+      last_seen:
+        new Date().toISOString()
+    };
+  }
+
+  async function track(){
+    if(
+      !presenceChannel ||
+      !active
+    ){
+      return;
+    }
+
+    try{
+      await presenceChannel.track(
+        metadata()
+      );
+    }catch(error){
+      console.warn(
+        "VYBEE presence track:",
+        error
+      );
+    }
+  }
+
+  function presenceState(){
+    if(!presenceChannel){
+      return {};
+    }
+
+    try{
+      return presenceChannel.presenceState();
+    }catch(_){
+      return {};
+    }
+  }
+
+  function updateDashboardFriendPresence(){
+    const list =
+      document.getElementById(
+        "vybeeRealFriendsList"
+      );
+
+    if(!list){
+      return;
+    }
+
+    const state =
+      presenceState();
+
+    const onlineIds =
+      new Set();
+
+    Object.values(
+      state
+    ).forEach(
+      entries => {
+        (entries || []).forEach(
+          entry => {
+            const id =
+              entry?.user_id;
+
+            if(id){
+              onlineIds.add(
+                String(id)
+              );
+            }
+          }
+        );
+      }
+    );
+
+    list
+      .querySelectorAll(
+        "[data-friend-user-id]"
+      )
+      .forEach(
+        row => {
+          const id =
+            String(
+              row.dataset.friendUserId
+            );
+
+          const dot =
+            row.querySelector(
+              ".vybee-presence-person-dot"
+            );
+
+          const label =
+            row.querySelector(
+              ".vybee-dashboard-friend-online"
+            );
+
+          if(
+            onlineIds.has(id)
+          ){
+            dot?.classList.add(
+              "online"
+            );
+
+            if(label){
+              label.textContent =
+                "Online agora";
+            }
+          }else{
+            dot?.classList.remove(
+              "online"
+            );
+
+            if(label){
+              label.textContent =
+                "Offline";
+            }
+          }
+        }
+      );
+  }
+
+  function updateVoiceParticipants(){
+    /*
+     * A lista de participantes da sala de voz já é controlada
+     * pelo módulo LiveKit. O Presence global apenas sinaliza
+     * disponibilidade no restante do site.
+     */
+  }
+
+  async function start(){
+    const client =
+      sb();
+
+    const current =
+      user();
+
+    if(
+      !client ||
+      !current ||
+      active
+    ){
+      return;
+    }
+
+    active = true;
+    lastProfile =
+      window.vybeeGetCurrentProfile?.() ||
+      null;
+
+    loadStatus();
+    updateOwnUI();
+
+    presenceChannel =
+      client.channel(
+        "vybee-global-presence",
+        {
+          config:{
+            presence:{
+              key:
+                current.id
+            }
+          }
+        }
+      );
+
+    presenceChannel
+      .on(
+        "presence",
+        {
+          event:
+            "sync"
+        },
+        () => {
+          updateDashboardFriendPresence();
+          updateVoiceParticipants();
+        }
+      )
+      .on(
+        "presence",
+        {
+          event:
+            "join"
+        },
+        () => {
+          updateDashboardFriendPresence();
+        }
+      )
+      .on(
+        "presence",
+        {
+          event:
+            "leave"
+        },
+        () => {
+          updateDashboardFriendPresence();
+        }
+      );
+
+    presenceChannel.subscribe(
+      async status => {
+        console.log(
+          "VYBEE Presence:",
+          status
+        );
+
+        if(
+          status === "SUBSCRIBED"
+        ){
+          await track();
+          updateDashboardFriendPresence();
+        }
+      }
+    );
+
+    if(
+      presenceTimer
+    ){
+      clearInterval(
+        presenceTimer
+      );
+    }
+
+    /*
+     * Atualiza last_seen periodicamente.
+     * A frequência é moderada para não gerar carga desnecessária.
+     */
+    presenceTimer =
+      setInterval(
+        track,
+        30000
+      );
+
+    document.addEventListener(
+      "visibilitychange",
+      async () => {
+        if(
+          document.visibilityState ===
+          "visible"
+        ){
+          await track();
+        }
+      }
+    );
+
+    window.addEventListener(
+      "beforeunload",
+      () => {
+        try{
+          presenceChannel?.untrack();
+        }catch(_){}
+      }
+    );
+  }
+
+  async function setStatus(
+    status
+  ){
+    currentStatus =
+      safeStatus(
+        status
+      );
+
+    saveStatus();
+    updateOwnUI();
+    await track();
+
+    document
+      .getElementById(
+        "vybeePresenceMenu"
+      )
+      ?.classList.remove(
+        "on"
+      );
+  }
+
+  function bind(){
+    document.getElementById(
+      "vybeeHomePresenceButton"
+    )?.addEventListener(
+      "click",
+      event => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        document
+          .getElementById(
+            "vybeePresenceMenu"
+          )
+          ?.classList.toggle(
+            "on"
+          );
+      }
+    );
+
+    document
+      .querySelectorAll(
+        "[data-presence-status]"
+      )
+      .forEach(
+        button => {
+          button.addEventListener(
+            "click",
+            () =>
+              setStatus(
+                button.dataset.presenceStatus
+              )
+          );
+        }
+      );
+
+    document.addEventListener(
+      "click",
+      event => {
+        const menu =
+          document.getElementById(
+            "vybeePresenceMenu"
+          );
+
+        const button =
+          document.getElementById(
+            "vybeeHomePresenceButton"
+          );
+
+        if(
+          menu?.classList.contains(
+            "on"
+          ) &&
+          !menu.contains(
+            event.target
+          ) &&
+          !button?.contains(
+            event.target
+          )
+        ){
+          menu.classList.remove(
+            "on"
+          );
+        }
+      }
+    );
+  }
+
+  function waitForUser(){
+    if(
+      user() &&
+      sb()
+    ){
+      start();
+      return;
+    }
+
+    setTimeout(
+      waitForUser,
+      500
+    );
+  }
+
+  window.vybeeSetPresence =
+    setStatus;
+
+  window.vybeeGetPresence =
+    () => ({
+      status:
+        currentStatus,
+      state:
+        active
+          ? "online"
+          : "offline"
+    });
+
+  loadStatus();
+  updateOwnUI();
+  bind();
+  waitForUser();
 
 })();
 </script>
