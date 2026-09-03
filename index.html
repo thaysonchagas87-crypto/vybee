@@ -1176,6 +1176,143 @@ RESPONSIVE
   font-weight:700;
 }
 
+
+/* =========================================================
+   VYBEE NOTIFICAÇÕES
+   ========================================================= */
+.vybee-notif-button{
+  position:relative;
+  border:1px solid var(--line);
+  background:var(--p2);
+  color:#fff;
+  border-radius:10px;
+  padding:9px 11px;
+  cursor:pointer;
+  font-size:14px;
+}
+.vybee-notif-button:hover{
+  border-color:var(--n);
+}
+.vybee-notif-badge{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  min-width:18px;
+  height:18px;
+  padding:0 5px;
+  display:none;
+  place-items:center;
+  border-radius:999px;
+  background:#e53935;
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  border:2px solid var(--p);
+}
+.vybee-notif-badge.on{
+  display:grid;
+}
+.vybee-notif-panel{
+  position:fixed;
+  top:72px;
+  right:18px;
+  z-index:120;
+  width:min(380px,calc(100vw - 24px));
+  max-height:70vh;
+  overflow:auto;
+  display:none;
+  background:var(--p);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 24px 70px #000b;
+}
+.vybee-notif-panel.on{
+  display:block;
+}
+.vybee-notif-head{
+  position:sticky;
+  top:0;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:12px 14px;
+  background:var(--p);
+  border-bottom:1px solid var(--line);
+}
+.vybee-notif-head strong{
+  font-size:13px;
+}
+.vybee-notif-actions{
+  display:flex;
+  gap:6px;
+}
+.vybee-notif-actions button{
+  border:1px solid var(--line);
+  background:var(--p2);
+  color:#fff;
+  border-radius:8px;
+  padding:6px 8px;
+  font-size:10px;
+  cursor:pointer;
+}
+.vybee-notif-item{
+  display:flex;
+  gap:10px;
+  padding:11px 14px;
+  border-bottom:1px solid #202326;
+  cursor:pointer;
+}
+.vybee-notif-item:hover{
+  background:var(--p2);
+}
+.vybee-notif-item.unread{
+  background:#151b12;
+}
+.vybee-notif-icon{
+  width:30px;
+  height:30px;
+  flex:0 0 30px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:var(--p2);
+}
+.vybee-notif-body{
+  min-width:0;
+  flex:1;
+}
+.vybee-notif-title{
+  font-size:12px;
+  font-weight:800;
+}
+.vybee-notif-text{
+  margin-top:3px;
+  color:#aab0b6;
+  font-size:11px;
+  line-height:1.35;
+}
+.vybee-notif-time{
+  margin-top:4px;
+  color:#666;
+  font-size:9px;
+}
+.vybee-notif-empty{
+  padding:28px 16px;
+  text-align:center;
+  color:#70777e;
+  font-size:12px;
+}
+@media(max-width:700px){
+  .vybee-notif-panel{
+    top:64px;
+    right:8px;
+    width:calc(100vw - 16px);
+    max-height:75vh;
+  }
+}
+
 </style>
 
 </head>
@@ -1321,6 +1458,19 @@ RESPONSIVE
 
   </div>
 
+
+  <button
+    class="vybee-notif-button"
+    id="vybeeNotifButton"
+    title="Notificações"
+    aria-label="Notificações"
+  >
+    🔔
+    <span
+      class="vybee-notif-badge"
+      id="vybeeNotifBadge"
+    >0</span>
+  </button>
 
   <button
     class="btn orange"
@@ -2708,6 +2858,8 @@ RESPONSIVE
 
   window.vybeeGetCurrentCommunity =
     () => currentCommunity;
+  window.vybeeGetCurrentTextChannel =
+    () => currentTextChannel?.id || null;
 
   window.vybeeGetCurrentProfile =
     () => currentProfile;
@@ -5517,6 +5669,759 @@ if(requestedLive){
 
 }
 
+</script>
+
+
+<!-- =========================================================
+     VYBEE NOTIFICATIONS
+     ========================================================= -->
+<div class="vybee-notif-panel" id="vybeeNotifPanel">
+  <div class="vybee-notif-head">
+    <strong>🔔 Notificações</strong>
+    <div class="vybee-notif-actions">
+      <button id="vybeeNotifReadAll">Marcar lidas</button>
+      <button id="vybeeNotifClear">Limpar</button>
+      <button id="vybeeNotifClose">✕</button>
+    </div>
+  </div>
+  <div id="vybeeNotifList">
+    <div class="vybee-notif-empty">
+      Nenhuma notificação.
+    </div>
+  </div>
+</div>
+
+
+<script type="module">
+import {
+  createClient
+} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+/*
+ * VYBEE — NOTIFICAÇÕES
+ * Não altera o módulo de voz.
+ * Usa somente o Realtime e os dados já existentes.
+ */
+
+const NOTIF_SUPABASE_URL =
+  "https://nrnegwytltdaxresquzz.supabase.co";
+
+const NOTIF_SUPABASE_KEY =
+  "sb_publishable_cF60nM8TX2ddGBOZy68RQw_rU9wAew9";
+
+const notifSupabase =
+  createClient(
+    NOTIF_SUPABASE_URL,
+    NOTIF_SUPABASE_KEY
+  );
+
+const STORAGE_KEY =
+  "vybee_notifications_v1";
+
+const MAX_NOTIFICATIONS =
+  80;
+
+let notifItems = [];
+let notifReadIds =
+  new Set();
+
+let notifUserId = null;
+let notifMessagesChannel = null;
+
+function notifLoadLocal() {
+  try {
+    const raw =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+
+    const parsed =
+      raw
+        ? JSON.parse(raw)
+        : {};
+
+    notifItems =
+      Array.isArray(
+        parsed.items
+      )
+        ? parsed.items.slice(
+            0,
+            MAX_NOTIFICATIONS
+          )
+        : [];
+
+    notifReadIds =
+      new Set(
+        Array.isArray(
+          parsed.readIds
+        )
+          ? parsed.readIds
+          : []
+      );
+
+  } catch (error) {
+    console.warn(
+      "VYBEE notifications:",
+      error
+    );
+
+    notifItems = [];
+    notifReadIds =
+      new Set();
+  }
+}
+
+function notifSaveLocal() {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        items:
+          notifItems.slice(
+            0,
+            MAX_NOTIFICATIONS
+          ),
+        readIds:
+          [...notifReadIds]
+            .slice(0, MAX_NOTIFICATIONS)
+      })
+    );
+  } catch (_) {}
+}
+
+function notifEsc(value) {
+  return String(
+    value ?? ""
+  )
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function notifTime(value) {
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return "";
+  }
+
+  return date.toLocaleString(
+    "pt-BR",
+    {
+      day:"2-digit",
+      month:"2-digit",
+      hour:"2-digit",
+      minute:"2-digit"
+    }
+  );
+}
+
+function notifUnreadCount() {
+  return notifItems
+    .filter(
+      item =>
+        !notifReadIds.has(
+          item.id
+        )
+    )
+    .length;
+}
+
+function notifUpdateBadge() {
+  const badge =
+    document.getElementById(
+      "vybeeNotifBadge"
+    );
+
+  if (!badge) return;
+
+  const count =
+    notifUnreadCount();
+
+  badge.textContent =
+    count > 99
+      ? "99+"
+      : String(count);
+
+  badge.classList.toggle(
+    "on",
+    count > 0
+  );
+}
+
+function notifRender() {
+  const list =
+    document.getElementById(
+      "vybeeNotifList"
+    );
+
+  if (!list) return;
+
+  if (
+    notifItems.length === 0
+  ) {
+    list.innerHTML = `
+      <div class="vybee-notif-empty">
+        Nenhuma notificação.
+      </div>
+    `;
+
+    notifUpdateBadge();
+    return;
+  }
+
+  list.innerHTML =
+    notifItems
+      .map(
+        item => {
+          const unread =
+            !notifReadIds.has(
+              item.id
+            );
+
+          return `
+            <div
+              class="vybee-notif-item ${unread ? "unread" : ""}"
+              data-notif-id="${notifEsc(item.id)}"
+            >
+              <div class="vybee-notif-icon">
+                ${notifEsc(item.icon || "🔔")}
+              </div>
+
+              <div class="vybee-notif-body">
+                <div class="vybee-notif-title">
+                  ${notifEsc(item.title)}
+                </div>
+
+                <div class="vybee-notif-text">
+                  ${notifEsc(item.text)}
+                </div>
+
+                <div class="vybee-notif-time">
+                  ${notifEsc(notifTime(item.created_at))}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      )
+      .join("");
+
+  list
+    .querySelectorAll(
+      ".vybee-notif-item"
+    )
+    .forEach(
+      element => {
+        element.addEventListener(
+          "click",
+          () =>
+            notifOpenItem(
+              element.dataset.notifId
+            )
+        );
+      }
+    );
+
+  notifUpdateBadge();
+}
+
+function notifAdd({
+  id,
+  type,
+  icon,
+  title,
+  text,
+  target
+}) {
+  if (!id) return;
+
+  if (
+    notifItems.some(
+      item =>
+        item.id === id
+    )
+  ) {
+    return;
+  }
+
+  notifItems.unshift({
+    id,
+    type,
+    icon:
+      icon || "🔔",
+    title:
+      title || "VYBEE",
+    text:
+      text || "",
+    target:
+      target || null,
+    created_at:
+      new Date()
+        .toISOString()
+  });
+
+  notifItems =
+    notifItems.slice(
+      0,
+      MAX_NOTIFICATIONS
+    );
+
+  notifSaveLocal();
+  notifRender();
+}
+
+function notifOpenItem(id) {
+  const item =
+    notifItems.find(
+      entry =>
+        entry.id === id
+    );
+
+  if (!item) return;
+
+  notifReadIds.add(id);
+  notifSaveLocal();
+  notifRender();
+
+  if (
+    item.type === "message" &&
+    item.target?.channel_id
+  ) {
+    window.vybeeOpenNotificationChannel?.(
+      item.target.channel_id,
+      item.target.community_id
+    );
+
+    return;
+  }
+
+  if (
+    item.type === "live" &&
+    item.target?.room
+  ) {
+    window.watchLive?.(
+      item.target.room,
+      item.target.title ||
+        "VYBEE Live"
+    );
+
+    return;
+  }
+}
+
+function notifMarkAllRead() {
+  notifItems.forEach(
+    item =>
+      notifReadIds.add(
+        item.id
+      )
+  );
+
+  notifSaveLocal();
+  notifRender();
+}
+
+function notifClear() {
+  notifItems = [];
+  notifReadIds =
+    new Set();
+
+  notifSaveLocal();
+  notifRender();
+}
+
+function notifToggle() {
+  document
+    .getElementById(
+      "vybeeNotifPanel"
+    )
+    ?.classList.toggle(
+      "on"
+    );
+}
+
+function notifClose() {
+  document
+    .getElementById(
+      "vybeeNotifPanel"
+    )
+    ?.classList.remove(
+      "on"
+    );
+}
+
+async function notifLoadUser() {
+  const {
+    data
+  } =
+    await notifSupabase.auth
+      .getSession();
+
+  notifUserId =
+    data?.session?.user?.id ||
+    null;
+
+  return notifUserId;
+}
+
+async function notifGetChannelInfo(
+  channelId
+) {
+  try {
+    const {
+      data
+    } =
+      await notifSupabase
+        .from("channels")
+        .select(
+          "id,name,community_id"
+        )
+        .eq(
+          "id",
+          channelId
+        )
+        .maybeSingle();
+
+    return data || null;
+
+  } catch (_) {
+    return null;
+  }
+}
+
+async function notifHandleMessage(
+  row
+) {
+  if (
+    !row ||
+    !row.id ||
+    !notifUserId ||
+    row.user_id ===
+      notifUserId
+  ) {
+    return;
+  }
+
+  const channel =
+    await notifGetChannelInfo(
+      row.channel_id
+    );
+
+  if (!channel) {
+    return;
+  }
+
+  /*
+   * Não gera alerta para o canal que o usuário
+   * está visualizando no momento.
+   */
+  const currentChannelId =
+    window.vybeeGetCurrentTextChannel?.();
+
+  if (
+    currentChannelId &&
+    String(
+      currentChannelId
+    ) ===
+      String(
+        channel.id
+      )
+  ) {
+    return;
+  }
+
+  notifAdd({
+    id:
+      "message:" +
+      row.id,
+    type:
+      "message",
+    icon:
+      "💬",
+    title:
+      "#" +
+      channel.name,
+    text:
+      String(
+        row.content || ""
+      ).slice(
+        0,
+        140
+      ),
+    target: {
+      channel_id:
+        channel.id,
+      community_id:
+        channel.community_id
+    }
+  });
+}
+
+async function notifSubscribeMessages() {
+  if (
+    notifMessagesChannel
+  ) {
+    try {
+      await notifSupabase
+        .removeChannel(
+          notifMessagesChannel
+        );
+    } catch (_) {}
+
+    notifMessagesChannel =
+      null;
+  }
+
+  if (!notifUserId) {
+    return;
+  }
+
+  notifMessagesChannel =
+    notifSupabase
+      .channel(
+        "vybee-notifications-" +
+        notifUserId
+      )
+      .on(
+        "postgres_changes",
+        {
+          event:"INSERT",
+          schema:"public",
+          table:"messages"
+        },
+        payload => {
+          notifHandleMessage(
+            payload.new
+          );
+        }
+      )
+      .subscribe();
+}
+
+function notifLiveSnapshot(
+  lives
+) {
+  const activeRooms =
+    new Set(
+      (lives || []).map(
+        live =>
+          String(
+            live.room ||
+              ""
+          )
+      )
+    );
+
+  try {
+    const previous =
+      JSON.parse(
+        localStorage.getItem(
+          "vybee_live_rooms_seen"
+        ) ||
+        "[]"
+      );
+
+    const previousSet =
+      new Set(
+        Array.isArray(
+          previous
+        )
+          ? previous
+          : []
+      );
+
+    activeRooms.forEach(
+      room => {
+        if (
+          !previousSet.has(
+            room
+          )
+        ) {
+          const live =
+            (lives || [])
+              .find(
+                item =>
+                  String(
+                    item.room
+                  ) === room
+              );
+
+          notifAdd({
+            id:
+              "live:" +
+              room,
+            type:
+              "live",
+            icon:
+              "🔴",
+            title:
+              "LIVE no VYBEE",
+            text:
+              live?.title ||
+              "Uma nova transmissão começou.",
+            target: {
+              room,
+              title:
+                live?.title ||
+                "VYBEE Live"
+            }
+          });
+        }
+      }
+    );
+
+    localStorage.setItem(
+      "vybee_live_rooms_seen",
+      JSON.stringify(
+        [...activeRooms]
+          .slice(
+            0,
+            30
+          )
+      )
+    );
+
+  } catch (_) {}
+}
+
+window.vybeeNotifyLiveSnapshot =
+  notifLiveSnapshot;
+
+window.vybeeOpenNotificationChannel =
+  async (
+    channelId,
+    communityId
+  ) => {
+    /*
+     * O V6 expõe openTextChannel apenas internamente.
+     * Para segurança, navegamos pela comunidade e deixamos
+     * a camada Supabase atual selecionar o canal.
+     */
+    const openCommunity =
+      window.vybeeOpenCommunity;
+
+    const current =
+      window.vybeeGetCurrentCommunity?.();
+
+    if (
+      current &&
+      String(
+        current.id
+      ) ===
+        String(
+          communityId
+        )
+    ) {
+      /*
+       * Fallback: o usuário pode abrir manualmente o canal.
+       * Não forçamos uma segunda implementação de navegação.
+       */
+      notifClose();
+      return;
+    }
+
+    notifClose();
+  };
+
+window.vybeeGetCurrentTextChannel =
+  () => null;
+
+document.getElementById(
+  "vybeeNotifButton"
+)?.addEventListener(
+  "click",
+  event => {
+    event.stopPropagation();
+    notifToggle();
+  }
+);
+
+document.getElementById(
+  "vybeeNotifReadAll"
+)?.addEventListener(
+  "click",
+  notifMarkAllRead
+);
+
+document.getElementById(
+  "vybeeNotifClear"
+)?.addEventListener(
+  "click",
+  notifClear
+);
+
+document.getElementById(
+  "vybeeNotifClose"
+)?.addEventListener(
+  "click",
+  notifClose
+);
+
+document.addEventListener(
+  "click",
+  event => {
+    const panel =
+      document.getElementById(
+        "vybeeNotifPanel"
+      );
+
+    const button =
+      document.getElementById(
+        "vybeeNotifButton"
+      );
+
+    if (
+      panel?.classList.contains(
+        "on"
+      ) &&
+      !panel.contains(
+        event.target
+      ) &&
+      !button?.contains(
+        event.target
+      )
+    ) {
+      panel.classList.remove(
+        "on"
+      );
+    }
+  }
+);
+
+document.addEventListener(
+  "keydown",
+  event => {
+    if (
+      event.key === "Escape"
+    ) {
+      notifClose();
+    }
+  }
+);
+
+notifLoadLocal();
+notifRender();
+
+notifSupabase.auth.onAuthStateChange(
+  async (_event, session) => {
+    notifUserId =
+      session?.user?.id ||
+      null;
+
+    await notifSubscribeMessages();
+  }
+);
+
+await notifLoadUser();
+await notifSubscribeMessages();
 </script>
 
 </body>
