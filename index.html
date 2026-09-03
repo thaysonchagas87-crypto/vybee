@@ -595,7 +595,7 @@ MODAL
 
   padding:18px;
 
-  z-index:50;
+  z-index:300;
 }
 
 .modal.on{
@@ -749,7 +749,7 @@ TOAST
 
   border-radius:11px;
 
-  z-index:100;
+  z-index:400;
 
   max-width:90%;
 
@@ -922,7 +922,7 @@ RESPONSIVE
 .voice-room{
   position:fixed;
   inset:0;
-  z-index:80;
+  z-index:350;
   display:none;
   place-items:center;
   padding:18px;
@@ -2093,6 +2093,28 @@ RESPONSIVE
   .vybee-home-livecards{grid-template-columns:1fr}
   .vybee-home-voicecards{grid-template-columns:1fr}
 }
+</style>
+
+
+<style id="vybee-global-layer-style">
+/* Hierarquia global das camadas:
+   Dashboard 200
+   Perfil     310
+   Config     320
+   Notif      330
+   Popup      340
+   Voz        350
+   Modal/LIVE/Watch/Auth 300
+   Toast      400
+*/
+.modal{z-index:300 !important}
+.voice-room{z-index:350 !important}
+.vybee-home{z-index:200 !important}
+.vybee-profile-panel{z-index:310 !important}
+.vybee-settings-panel{z-index:320 !important}
+.vybee-notification-center{z-index:330 !important}
+.vybee-popup-stack{z-index:340 !important}
+.toast{z-index:400 !important}
 </style>
 
 </head>
@@ -9238,7 +9260,14 @@ if(requestedLive){
     }
 
     if(action === "lives"){
-      clickLegacy(".live-grid");
+      /*
+       * A área de LIVE abre por cima da Dashboard.
+       */
+      document
+        .getElementById("liveGrid")
+        ?.scrollIntoView({
+          behavior:"smooth"
+        });
       return;
     }
 
@@ -9338,7 +9367,6 @@ if(requestedLive){
   )?.addEventListener(
     "click",
     () => {
-      closeHome();
       window.openLive?.();
     }
   );
@@ -9348,7 +9376,6 @@ if(requestedLive){
   )?.addEventListener(
     "click",
     () => {
-      closeHome();
       document.querySelector(
         ".vybee-static-voice"
       )?.click();
@@ -9367,7 +9394,6 @@ if(requestedLive){
   )?.addEventListener(
     "click",
     () => {
-      closeHome();
       document.querySelector(
         ".vybee-static-voice"
       )?.click();
@@ -9379,7 +9405,6 @@ if(requestedLive){
   )?.addEventListener(
     "click",
     () => {
-      closeHome();
       document.querySelector(
         ".vybee-static-voice"
       )?.click();
@@ -9393,8 +9418,6 @@ if(requestedLive){
       card.addEventListener(
         "click",
         () => {
-          closeHome();
-
           const wanted =
             card.dataset.homeVoice;
 
@@ -9414,7 +9437,6 @@ if(requestedLive){
   )?.addEventListener(
     "click",
     () => {
-      closeHome();
       document.querySelector(
         ".vybee-static-voice"
       )?.click();
@@ -9557,6 +9579,65 @@ if(requestedLive){
 
   window.vybeeCloseDashboard =
     closeHome;
+})();
+</script>
+
+
+<script>
+(function(){
+  const home =
+    document.getElementById(
+      "vybeeHomeDashboard"
+    );
+
+  const voice =
+    document.getElementById(
+      "voiceRoomModal"
+    );
+
+  if(!home || !voice) return;
+
+  const wasHomeOpen =
+    () =>
+      home.classList.contains(
+        "on"
+      );
+
+  let keepHome =
+    wasHomeOpen();
+
+  const observer =
+    new MutationObserver(
+      () => {
+        if(
+          voice.classList.contains("on")
+        ){
+          if(
+            wasHomeOpen()
+          ){
+            keepHome = true;
+          }
+          return;
+        }
+
+        if(
+          keepHome &&
+          !wasHomeOpen()
+        ){
+          home.classList.add("on");
+        }
+
+        keepHome = false;
+      }
+    );
+
+  observer.observe(
+    voice,
+    {
+      attributes:true,
+      attributeFilter:["class"]
+    }
+  );
 })();
 </script>
 
