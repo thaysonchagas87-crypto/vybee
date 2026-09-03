@@ -8573,6 +8573,9 @@ if(requestedLive){
     if(!panel) return;
 
     panel.classList.add("on");
+    panel.style.display = "grid";
+    panel.style.visibility = "visible";
+    panel.style.zIndex = "320";
     loadSettingsData();
   }
 
@@ -8580,11 +8583,16 @@ if(requestedLive){
   window.vybeeCloseSettings = closeSettings;
 
   function closeSettings(){
-    document
-      .getElementById(
+    const panel =
+      document.getElementById(
         "vybeeSettingsPanel"
-      )
-      ?.classList.remove("on");
+      );
+
+    if(!panel) return;
+
+    panel.classList.remove("on");
+    panel.style.display = "none";
+    panel.style.visibility = "hidden";
   }
 
   function switchTab(name){
@@ -10437,6 +10445,57 @@ if(requestedLive){
   );
   setTimeout(bind,300);
   setTimeout(bind,1000);
+})();
+</script>
+
+
+<script id="vybee-settings-close-final-fix">
+(function(){
+  function bindClose(){
+    const button =
+      document.getElementById(
+        "vybeeSettingsClose"
+      );
+
+    if(
+      !button ||
+      button.dataset.vybeeCloseFinal
+    ){
+      return;
+    }
+
+    button.dataset.vybeeCloseFinal="1";
+
+    button.addEventListener(
+      "click",
+      function(event){
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        const panel =
+          document.getElementById(
+            "vybeeSettingsPanel"
+          );
+
+        if(!panel) return;
+
+        panel.classList.remove("on");
+        panel.style.display="none";
+        panel.style.visibility="hidden";
+
+        document.body.style.overflow="";
+      },
+      true
+    );
+  }
+
+  bindClose();
+  document.addEventListener(
+    "DOMContentLoaded",
+    bindClose
+  );
+  setTimeout(bindClose,300);
+  setTimeout(bindClose,1000);
 })();
 </script>
 
