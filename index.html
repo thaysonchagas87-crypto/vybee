@@ -8533,6 +8533,9 @@ if(requestedLive){
     loadSettingsData();
   }
 
+  window.vybeeOpenSettings = openSettings;
+  window.vybeeCloseSettings = closeSettings;
+
   function closeSettings(){
     document
       .getElementById(
@@ -9971,9 +9974,16 @@ if(requestedLive){
         return;
 
       case "settings":
-        document.getElementById(
-          "vybeeSettingsButton"
-        )?.click();
+        if(
+          typeof window.vybeeOpenSettings ===
+            "function"
+        ){
+          window.vybeeOpenSettings();
+        }else{
+          document.getElementById(
+            "vybeeSettingsButton"
+          )?.click();
+        }
         return;
     }
   }
@@ -10096,9 +10106,18 @@ if(requestedLive){
     "vybeeHomeSettings"
   )?.addEventListener(
     "click",
-    () => document.getElementById(
-      "vybeeSettingsButton"
-    )?.click()
+    () => {
+      if(
+        typeof window.vybeeOpenSettings ===
+          "function"
+      ){
+        window.vybeeOpenSettings();
+      }else{
+        document.getElementById(
+          "vybeeSettingsButton"
+        )?.click();
+      }
+    }
   );
 
   document.getElementById(
@@ -10257,6 +10276,58 @@ if(requestedLive){
 
   setTimeout(sync,500);
   setInterval(sync,800);
+})();
+</script>
+
+
+<script id="vybee-settings-direct-fix">
+(function(){
+  function bindSettings(){
+    const navButton =
+      document.querySelector(
+        '[data-home-nav="settings"]'
+      );
+
+    if(
+      navButton &&
+      !navButton.dataset.vybeeSettingsDirect
+    ){
+      navButton.dataset.vybeeSettingsDirect = "1";
+
+      navButton.addEventListener(
+        "click",
+        function(event){
+          event.preventDefault();
+          event.stopPropagation();
+
+          if(
+            typeof window.vybeeOpenSettings ===
+              "function"
+          ){
+            window.vybeeOpenSettings();
+          }else{
+            const panel =
+              document.getElementById(
+                "vybeeSettingsPanel"
+              );
+
+            if(panel){
+              panel.classList.add("on");
+            }
+          }
+        },
+        true
+      );
+    }
+  }
+
+  bindSettings();
+  document.addEventListener(
+    "DOMContentLoaded",
+    bindSettings
+  );
+  setTimeout(bindSettings,500);
+  setTimeout(bindSettings,1200);
 })();
 </script>
 
