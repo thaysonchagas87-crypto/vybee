@@ -2764,6 +2764,17 @@ const voiceScreen = () =>
 const voiceAudio = () =>
   document.getElementById("voiceAudioContainer");
 
+/* escapeHTML está em outro módulo; a sala de voz usa sua própria versão
+   para não depender de escopo de outro módulo ES. */
+function voiceEscapeHTML(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function voiceSetStatus(text) {
   const el = voiceStatus();
   if (el) el.textContent = text;
@@ -2870,7 +2881,7 @@ function updateVoiceMemberList() {
         ${cameraOn ? "📷" : "👤"}
       </div>
       <div class="voice-member-name">
-        ${escapeHTML(displayName)}
+        ${voiceEscapeHTML(displayName)}
       </div>
       <div class="voice-member-state">
         ${micOn ? "🎙️" : "🔇"}
