@@ -10499,6 +10499,143 @@ if(requestedLive){
 })();
 </script>
 
+
+<script id="vybee-global-esc-close">
+(function(){
+  function isVisible(el){
+    if(!el) return false;
+    const style = window.getComputedStyle(el);
+    return style.display !== "none" &&
+           style.visibility !== "hidden";
+  }
+
+  function closeTopWindow(){
+    /*
+     * Fecha somente a janela aberta mais relevante.
+     * A ordem acompanha a hierarquia visual do VYBEE.
+     */
+    const candidates = [
+      {
+        id:"voiceRoomModal",
+        close:function(el){
+          document.getElementById(
+            "voiceLeaveButton"
+          )?.click();
+        }
+      },
+      {
+        id:"watchModal",
+        close:function(el){
+          el.classList.remove("on");
+          el.style.display="none";
+        }
+      },
+      {
+        id:"liveModal",
+        close:function(el){
+          window.closeLive?.();
+        }
+      },
+      {
+        id:"vybeeSettingsPanel",
+        close:function(el){
+          window.vybeeCloseSettings?.();
+
+          el.classList.remove("on");
+          el.style.display="none";
+          el.style.visibility="hidden";
+        }
+      },
+      {
+        id:"vybeeProfilePanel",
+        close:function(el){
+          window.vybeeCloseProfile?.();
+
+          el.classList.remove("on");
+          el.style.display="none";
+          el.style.visibility="hidden";
+        }
+      },
+      {
+        id:"vybeeNotificationCenter",
+        close:function(el){
+          el.classList.remove("on");
+        }
+      },
+      {
+        id:"supabaseAuthModal",
+        close:function(el){
+          el.classList.remove("on");
+          el.remove();
+        }
+      }
+    ];
+
+    for(
+      const item of candidates
+    ){
+      const el =
+        document.getElementById(
+          item.id
+        );
+
+      if(
+        isVisible(el) &&
+        (
+          el.classList.contains("on") ||
+          window.getComputedStyle(el).position === "fixed"
+        )
+      ){
+        item.close(el);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /*
+   * Um único listener global.
+   * Não interfere com campos de texto, textarea ou select.
+   */
+  document.addEventListener(
+    "keydown",
+    function(event){
+      if(
+        event.key !== "Escape"
+      ){
+        return;
+      }
+
+      const tag =
+        event.target?.tagName;
+
+      if(
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT"
+      ){
+        /*
+         * No campo de busca/input, ESC limpa o foco
+         * em vez de fechar uma janela por acidente.
+         */
+        event.target.blur?.();
+        return;
+      }
+
+      if(
+        closeTopWindow()
+      ){
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    },
+    true
+  );
+
+})();
+</script>
+
 </body>
 
 </html>
