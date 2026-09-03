@@ -1155,6 +1155,27 @@ RESPONSIVE
   font-weight:700;
 }
 
+
+.voice-member-controls{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  margin-left:auto;
+}
+.voice-member-volume{
+  width:72px;
+  accent-color:#53ff1a;
+}
+.voice-deafen.active{
+  outline:2px solid #ff3b30;
+}
+.voice-count-pill{
+  display:inline-block;
+  margin-left:6px;
+  color:var(--n);
+  font-weight:700;
+}
+
 </style>
 
 </head>
@@ -1741,6 +1762,7 @@ RESPONSIVE
     <div class="voice-footer">
       <span class="voice-status" id="voiceStatus">Conectando...</span>
       <button class="btn" id="voiceMuteButton">🎙️ Microfone</button>
+      <button class="btn" id="voiceDeafenButton">🔊 Áudio</button>
       <button class="btn" id="voiceCameraButton">📷 Câmera</button>
       <button class="btn" id="voiceScreenButton">🖥️ Compartilhar tela</button>
       <button class="btn red" id="voiceLeaveButton">🚪 Sair da sala</button>
@@ -2826,6 +2848,23 @@ function updateVoiceMemberList() {
 
   list.innerHTML = "";
 
+  const remoteCount =
+    voiceRoom.remoteParticipants.size;
+
+  const subtitle =
+    document.getElementById(
+      "voiceRoomSubtitle"
+    );
+
+  if (subtitle) {
+    subtitle.textContent =
+      (voiceRoomInfo?.communityName || "VYBEE") +
+      " • " +
+      (remoteCount + 1) +
+      " participante" +
+      (remoteCount === 0 ? "" : "s");
+  }
+
   const participants = [
     voiceRoom.localParticipant,
     ...Array.from(voiceRoom.remoteParticipants.values())
@@ -2876,18 +2915,79 @@ function updateVoiceMemberList() {
         ? !screenPublication.isMuted
         : false;
 
-    item.innerHTML = `
-      <div class="voice-avatar">
-        ${cameraOn ? "📷" : "👤"}
-      </div>
-      <div class="voice-member-name">
-        ${voiceEscapeHTML(displayName)}
-      </div>
-      <div class="voice-member-state">
-        ${micOn ? "🎙️" : "🔇"}
-        ${sharing ? " 🖥️" : ""}
-      </div>
-    `;
+    const mediaKey =
+      participant.identity + "::audio";
+
+    const audioElement =
+      voiceMediaElements.get(mediaKey);
+
+    const controls =
+      document.createElement("div");
+    controls.className =
+      "voice-member-controls";
+
+    const state =
+      document.createElement("span");
+    state.className =
+      "voice-member-state";
+    state.textContent =
+      (micOn ? "🎙️" : "🔇") +
+      (sharing ? " 🖥️" : "");
+
+    controls.appendChild(state);
+
+    if (
+      participant !== voiceRoom.localParticipant &&
+      audioElement
+    ) {
+      const volume =
+        document.createElement("input");
+
+      volume.type = "range";
+      volume.min = "0";
+      volume.max = "1";
+      volume.step = "0.05";
+      volume.value =
+        String(
+          audioElement.volume ?? 1
+        );
+      volume.className =
+        "voice-member-volume";
+      volume.title =
+        "Volume de " + displayName;
+
+      volume.addEventListener(
+        "input",
+        () => {
+          audioElement.volume =
+            Number(volume.value);
+        }
+      );
+
+      controls.appendChild(volume);
+    }
+
+    item.innerHTML = "";
+
+    const avatar =
+      document.createElement("div");
+    avatar.className =
+      "voice-avatar";
+    avatar.textContent =
+      cameraOn ? "📷" : "👤";
+
+    const name =
+      document.createElement("div");
+    name.className =
+      "voice-member-name";
+    name.textContent =
+      displayName;
+
+    item.append(
+      avatar,
+      name,
+      controls
+    );
 
     list.appendChild(item);
   });
@@ -3369,6 +3469,46 @@ async function toggleVoiceMute() {
   }
 }
 
+async function toggleVoiceDeafen() {
+  voiceDeafened =
+    !voiceDeafened;
+
+  const button =
+    document.getElementById(
+      "voiceDeafenButton"
+    );
+
+  if (button) {
+    button.textContent =
+      voiceDeafened
+        ? "🔇 Áudio desligado"
+        : "🔊 Áudio";
+    button.classList.toggle(
+      "active",
+      voiceDeafened
+    );
+  }
+
+  voiceMediaElements.forEach(
+    (element, key) => {
+      if (!key.endsWith("::audio")) {
+        return;
+      }
+
+      try {
+        element.muted =
+          voiceDeafened;
+      } catch (_) {}
+    }
+  );
+
+  voiceSetStatus(
+    voiceDeafened
+      ? "🔇 Áudio das pessoas desligado"
+      : "🔊 Áudio das pessoas ligado"
+  );
+}
+
 async function toggleVoiceCamera() {
   if (!voiceRoom) return;
 
@@ -3532,6 +3672,19 @@ async function leaveVoiceRoom(
         "🎙️ Microfone";
     }
 
+    const deafen =
+      document.getElementById(
+        "voiceDeafenButton"
+      );
+
+    if (deafen) {
+      deafen.textContent =
+        "🔊 Áudio";
+      deafen.classList.remove(
+        "active"
+      );
+    }
+
     const camera =
       document.getElementById(
         "voiceCameraButton"
@@ -3559,6 +3712,13 @@ document.getElementById(
 )?.addEventListener(
   "click",
   toggleVoiceMute
+);
+
+document.getElementById(
+  "voiceDeafenButton"
+)?.addEventListener(
+  "click",
+  toggleVoiceDeafen
 );
 
 document.getElementById(
