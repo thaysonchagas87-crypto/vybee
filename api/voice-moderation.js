@@ -1,23 +1,12 @@
 /**
  * VYBEE — /api/voice-moderation.js
  *
- * Coloque este arquivo em:
- * /api/voice-moderation.js
- *
- * Variáveis de ambiente esperadas na Vercel:
- * LIVEKIT_URL
+ * Vercel env:
+ * URL_LIVEKIT
  * LIVEKIT_API_KEY
  * LIVEKIT_API_SECRET
  * SUPABASE_URL
  * SUPABASE_SERVICE_ROLE_KEY
- *
- * Dependências:
- * @livekit/server-sdk
- * @supabase/supabase-js
- *
- * ATENÇÃO:
- * SUPABASE_SERVICE_ROLE_KEY e LIVEKIT_API_SECRET são SEGREDOS.
- * Nunca coloque essas chaves no index.html ou no navegador.
  */
 
 const {
@@ -28,16 +17,24 @@ const {
   createClient
 } = require("@supabase/supabase-js");
 
-function json(res, status, body) {
+function reply(
+  res,
+  status,
+  body
+) {
   return res
     .status(status)
-    .setHeader("Content-Type", "application/json")
+    .setHeader(
+      "Content-Type",
+      "application/json"
+    )
     .json(body);
 }
 
-function getBearer(req) {
+function bearer(req) {
   const header =
-    req.headers?.authorization || "";
+    req.headers?.authorization ||
+    "";
 
   if (
     !header
@@ -52,25 +49,41 @@ function getBearer(req) {
     .trim();
 }
 
-module.exports = async (req, res) => {
-  if (req.method !== "POST") {
-    return json(res, 405, {
-      error: "Método não permitido."
-    });
+module.exports = async (
+  req,
+  res
+) => {
+  if (
+    req.method !==
+    "POST"
+  ) {
+    return reply(
+      res,
+      405,
+      {
+        error:
+          "Método não permitido."
+      }
+    );
   }
 
   try {
     const accessToken =
-      getBearer(req);
+      bearer(req);
 
     if (!accessToken) {
-      return json(res, 401, {
-        error: "Sessão não encontrada."
-      });
+      return reply(
+        res,
+        401,
+        {
+          error:
+            "Sessão não encontrada."
+        }
+      );
     }
 
     const {
-      LIVEKIT_URL,
+      URL_LIVEKIT,
       LIVEKIT_API_KEY,
       LIVEKIT_API_SECRET,
       SUPABASE_URL,
@@ -78,16 +91,20 @@ module.exports = async (req, res) => {
     } = process.env;
 
     if (
-      !LIVEKIT_URL ||
+      !URL_LIVEKIT ||
       !LIVEKIT_API_KEY ||
       !LIVEKIT_API_SECRET ||
       !SUPABASE_URL ||
       !SUPABASE_SERVICE_ROLE_KEY
     ) {
-      return json(res, 500, {
-        error:
-          "Variáveis de ambiente da moderação não configuradas."
-      });
+      return reply(
+        res,
+        500,
+        {
+          error:
+            "Configuração da moderação incompleta na Vercel."
+        }
+      );
     }
 
     const supabase =
@@ -96,28 +113,35 @@ module.exports = async (req, res) => {
         SUPABASE_SERVICE_ROLE_KEY,
         {
           auth: {
-            autoRefreshToken: false,
-            persistSession: false
+            autoRefreshToken:
+              false,
+            persistSession:
+              false
           }
         }
       );
 
     const {
-      data: userData,
-      error: userError
+      data: authData,
+      error: authError
     } =
-      await supabase.auth.getUser(
-        accessToken
-      );
+      await supabase.auth
+        .getUser(
+          accessToken
+        );
 
     if (
-      userError ||
-      !userData?.user
+      authError ||
+      !authData?.user
     ) {
-      return json(res, 401, {
-        error:
-          "Sessão inválida ou expirada."
-      });
+      return reply(
+        res,
+        401,
+        {
+          error:
+            "Sessão inválida ou expirada."
+        }
+      );
     }
 
     const {
@@ -134,10 +158,14 @@ module.exports = async (req, res) => {
       !room_name ||
       !target_identity
     ) {
-      return json(res, 400, {
-        error:
-          "Dados de moderação incompletos."
-      });
+      return reply(
+        res,
+        400,
+        {
+          error:
+            "Dados de moderação incompletos."
+        }
+      );
     }
 
     const {
@@ -145,7 +173,9 @@ module.exports = async (req, res) => {
       error: membershipError
     } =
       await supabase
-        .from("community_members")
+        .from(
+          "community_members"
+        )
         .select("role")
         .eq(
           "community_id",
@@ -153,7 +183,7 @@ module.exports = async (req, res) => {
         )
         .eq(
           "user_id",
-          userData.user.id
+          authData.user.id
         )
         .maybeSingle();
 
@@ -161,10 +191,14 @@ module.exports = async (req, res) => {
       membershipError ||
       !membership
     ) {
-      return json(res, 403, {
-        error:
-          "Você não possui acesso de moderação nesta comunidade."
-      });
+      return reply(
+        res,
+        403,
+        {
+          error:
+            "Você não participa desta comunidade."
+        }
+      );
     }
 
     const role =
@@ -179,20 +213,24 @@ module.exports = async (req, res) => {
         "moderator"
       ].includes(role)
     ) {
-      return json(res, 403, {
-        error:
-          "Ação permitida somente para equipe da comunidade."
-      });
+      return reply(
+        res,
+        403,
+        {
+          error:
+            "Ação permitida somente para equipe."
+        }
+      );
     }
 
-    const livekitHost =
-      String(
-        LIVEKIT_URL
-      ).replace(/\/+$/, "");
-
-    const roomService =
+    const livekit =
       new RoomServiceClient(
-        livekitHost,
+        String(
+          URL_LIVEKIT
+        ).replace(
+          /\/+$/,
+          ""
+        ),
         LIVEKIT_API_KEY,
         LIVEKIT_API_SECRET
       );
@@ -201,16 +239,20 @@ module.exports = async (req, res) => {
       action ===
       "remove_participant"
     ) {
-      await roomService
+      await livekit
         .removeParticipant(
           room_name,
           target_identity
         );
 
-      return json(res, 200, {
-        ok: true,
-        action
-      });
+      return reply(
+        res,
+        200,
+        {
+          ok: true,
+          action
+        }
+      );
     }
 
     if (
@@ -220,13 +262,17 @@ module.exports = async (req, res) => {
         "stop_screen"
     ) {
       if (!track_sid) {
-        return json(res, 400, {
-          error:
-            "Track da publicação não informado."
-        });
+        return reply(
+          res,
+          400,
+          {
+            error:
+              "Track SID não informado."
+          }
+        );
       }
 
-      await roomService
+      await livekit
         .mutePublishedTrack(
           room_name,
           target_identity,
@@ -234,27 +280,39 @@ module.exports = async (req, res) => {
           true
         );
 
-      return json(res, 200, {
-        ok: true,
-        action
-      });
+      return reply(
+        res,
+        200,
+        {
+          ok: true,
+          action
+        }
+      );
     }
 
-    return json(res, 400, {
-      error:
-        "Ação de moderação desconhecida."
-    });
+    return reply(
+      res,
+      400,
+      {
+        error:
+          "Ação de moderação desconhecida."
+      }
+    );
 
   } catch (error) {
     console.error(
-      "VYBEE moderation:",
+      "VYBEE voice moderation:",
       error
     );
 
-    return json(res, 500, {
-      error:
-        error?.message ||
-        "Erro interno na moderação."
-    });
+    return reply(
+      res,
+      500,
+      {
+        error:
+          error?.message ||
+          "Erro interno na moderação."
+      }
+    );
   }
 };
