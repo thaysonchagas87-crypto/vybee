@@ -1313,6 +1313,136 @@ RESPONSIVE
   }
 }
 
+
+/* =========================================================
+   VYBEE PERFIL / AMIGOS
+   ========================================================= */
+.vybee-profile-panel{
+  position:fixed;
+  inset:0;
+  z-index:125;
+  display:none;
+  place-items:center;
+  padding:16px;
+  background:#000c;
+}
+.vybee-profile-panel.on{
+  display:grid;
+}
+.vybee-profile-box{
+  width:min(760px,100%);
+  max-height:88vh;
+  overflow:auto;
+  background:var(--p);
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:0 28px 90px #000c;
+}
+.vybee-profile-head{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:18px;
+  border-bottom:1px solid var(--line);
+}
+.vybee-profile-avatar{
+  width:58px;
+  height:58px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:var(--p2);
+  font-size:24px;
+}
+.vybee-profile-main{
+  min-width:0;
+  flex:1;
+}
+.vybee-profile-main h3{
+  margin:0;
+  font-size:19px;
+}
+.vybee-profile-main p{
+  margin:4px 0 0;
+  color:var(--mut);
+  font-size:11px;
+}
+.vybee-profile-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  padding:16px;
+}
+.vybee-profile-card{
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:var(--p2);
+}
+.vybee-profile-card h4{
+  margin:0 0 10px;
+  font-size:12px;
+}
+.vybee-profile-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:8px 0;
+  border-bottom:1px solid #202326;
+}
+.vybee-profile-row:last-child{
+  border-bottom:0;
+}
+.vybee-profile-row-main{
+  min-width:0;
+  flex:1;
+}
+.vybee-profile-row-main strong{
+  display:block;
+  font-size:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.vybee-profile-row-main span{
+  display:block;
+  margin-top:2px;
+  color:var(--mut);
+  font-size:10px;
+}
+.vybee-profile-action{
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:6px 8px;
+  background:#171b1e;
+  color:#fff;
+  font-size:10px;
+  cursor:pointer;
+}
+.vybee-profile-action:hover{
+  border-color:var(--n);
+}
+.vybee-profile-search{
+  width:100%;
+  margin-bottom:9px;
+  padding:9px 10px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#111416;
+  color:#fff;
+  outline:none;
+}
+.vybee-profile-empty{
+  color:#6f767d;
+  font-size:11px;
+  padding:8px 0;
+}
+@media(max-width:700px){
+  .vybee-profile-grid{
+    grid-template-columns:1fr;
+  }
+}
+
 </style>
 
 </head>
@@ -1460,6 +1590,15 @@ RESPONSIVE
 
 
   <button
+    class="vybee-notif-button"
+    id="vybeeProfileButton"
+    title="Meu perfil"
+    aria-label="Meu perfil"
+  >
+    👤
+  </button>
+
+<button
     class="vybee-notif-button"
     id="vybeeNotifButton"
     title="Notificações"
@@ -6423,6 +6562,54 @@ notifSupabase.auth.onAuthStateChange(
 await notifLoadUser();
 await notifSubscribeMessages();
 </script>
+
+
+<!-- =========================================================
+     VYBEE PERFIL + AMIGOS
+     ========================================================= -->
+<div class="vybee-profile-panel" id="vybeeProfilePanel">
+  <div class="vybee-profile-box">
+    <div class="vybee-profile-head">
+      <div class="vybee-profile-avatar">👤</div>
+      <div class="vybee-profile-main">
+        <h3 id="vybeeProfileName">Usuário VYBEE</h3>
+        <p id="vybeeProfileUsername">@usuario</p>
+      </div>
+      <button class="btn" id="vybeeProfileClose">✕</button>
+    </div>
+
+    <div class="vybee-profile-grid">
+      <section class="vybee-profile-card">
+        <h4>👥 Meus amigos</h4>
+        <div id="vybeeFriendsList">
+          <div class="vybee-profile-empty">
+            Carregando...
+          </div>
+        </div>
+      </section>
+
+      <section class="vybee-profile-card">
+        <h4>🤝 Solicitações recebidas</h4>
+        <div id="vybeeFriendRequests">
+          <div class="vybee-profile-empty">
+            Carregando...
+          </div>
+        </div>
+      </section>
+
+      <section class="vybee-profile-card" style="grid-column:1/-1">
+        <h4>🔎 Encontrar pessoas</h4>
+        <input
+          id="vybeePeopleSearch"
+          class="vybee-profile-search"
+          placeholder="Digite nome ou @usuário..."
+          autocomplete="off"
+        >
+        <div id="vybeePeopleList"></div>
+      </section>
+    </div>
+  </div>
+</div>
 
 </body>
 
