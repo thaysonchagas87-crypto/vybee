@@ -1176,6 +1176,49 @@ RESPONSIVE
   font-weight:700;
 }
 
+
+/* =========================
+   VYBEE VOICE V7
+   Active speaker / states
+   ========================= */
+.voice-member.speaking{
+  background:#16220f;
+  outline:1px solid #53ff1a;
+}
+.voice-member.speaking .voice-avatar{
+  box-shadow:0 0 0 3px #53ff1a;
+}
+.voice-speaking-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#53ff1a;
+  display:inline-block;
+  margin-right:5px;
+  box-shadow:0 0 8px #53ff1a;
+}
+.voice-top-status{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:4px;
+}
+.voice-security-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#171b1e;
+  border:1px solid var(--line);
+  color:#9ba2aa;
+  font-size:10px;
+}
+.voice-security-badge.owner{
+  color:#53ff1a;
+}
+
 </style>
 
 </head>
@@ -1735,7 +1778,10 @@ RESPONSIVE
     <div class="voice-head">
       <div class="voice-head-title">
         <strong id="voiceRoomTitle">🎙️ Sala de voz</strong>
-        <span id="voiceRoomSubtitle">Conectando...</span>
+        <div class="voice-top-status">
+          <span id="voiceRoomSubtitle">Conectando...</span>
+          <span class="voice-security-badge" id="voiceRoleBadge">🔒 participante</span>
+        </div>
       </div>
       <button class="btn" id="voiceCloseButton">✕ Fechar</button>
     </div>
@@ -2774,6 +2820,8 @@ let voiceDeafened = false;
 let voiceMediaElements = new Map();
 let voicePresenceChannel = null;
 let voicePresence = new Map();
+let voiceActiveSpeakers = new Set();
+let voiceCurrentRole = "member";
 
 const voiceModal = () =>
   document.getElementById("voiceRoomModal");
@@ -3064,6 +3112,128 @@ function updateVoiceSidebarCount() {
   }
 }
 
+
+async function loadVoiceRole() {
+  const sb = window.vybeeSupabase;
+  const user = window.vybeeCurrentUser;
+
+  voiceCurrentRole = "member";
+
+  if (!sb || !user || !voiceRoomInfo) {
+    return;
+  }
+
+  try {
+    const { data, error } =
+      await sb
+        .from("community_members")
+        .select("role")
+        .eq(
+          "community_id",
+          voiceRoomInfo.communityId
+        )
+        .eq(
+          "user_id",
+          user.id
+        )
+        .maybeSingle();
+
+    if (
+      !error &&
+      data?.role
+    ) {
+      voiceCurrentRole =
+        String(data.role).toLowerCase();
+    }
+  } catch (error) {
+    console.warn(
+      "VYBEE VOICE: cargo da sala:",
+      error
+    );
+  }
+
+  const badge =
+    document.getElementById(
+      "voiceRoleBadge"
+    );
+
+  if (badge) {
+    const isStaff =
+      ["owner", "admin", "moderator"]
+        .includes(
+          voiceCurrentRole
+        );
+
+    badge.textContent =
+      isStaff
+        ? "🛡️ " + voiceCurrentRole
+        : "🔒 participante";
+
+    badge.classList.toggle(
+      "owner",
+      isStaff
+    );
+  }
+}
+
+function isVoiceActive(participant) {
+  return voiceActiveSpeakers.has(
+    participant?.sid ||
+    participant?.identity
+  );
+}
+
+function updateVoiceActiveSpeakerStyles() {
+  const list =
+    voiceMembers();
+
+  if (!list || !voiceRoom) {
+    return;
+  }
+
+  const items =
+    list.querySelectorAll(
+      ".voice-member"
+    );
+
+  const participants = [
+    voiceRoom.localParticipant,
+    ...Array.from(
+      voiceRoom.remoteParticipants.values()
+    )
+  ];
+
+  items.forEach(
+    (item, index) => {
+      const participant =
+        participants[index];
+
+      const speaking =
+        isVoiceActive(participant);
+
+      item.classList.toggle(
+        "speaking",
+        speaking
+      );
+
+      const state =
+        item.querySelector(
+          ".voice-member-state"
+        );
+
+      if (
+        state &&
+        speaking &&
+        !state.textContent.includes("●")
+      ) {
+        state.innerHTML =
+          '<span class="voice-speaking-dot"></span>' +
+          state.textContent;
+      }
+    }
+  );
+}
+
 function updateVoiceMemberList() {
   const list = voiceMembers();
   if (!list || !voiceRoom) return;
@@ -3213,6 +3383,8 @@ function updateVoiceMemberList() {
 
     list.appendChild(item);
   });
+
+  updateVoiceActiveSpeakerStyles();
 }
 
 function removeElementSafely(element) {
@@ -3506,6 +3678,22 @@ async function showVoiceRoom(info) {
     voiceRoom = room;
 
     room.on(
+      RoomEvent.ActiveSpeakersChanged,
+      speakers => {
+        voiceActiveSpeakers =
+          new Set(
+            (speakers || []).map(
+              participant =>
+                participant?.sid ||
+                participant?.identity
+            )
+          );
+
+        updateVoiceActiveSpeakerStyles();
+      }
+    );
+
+    room.on(
       RoomEvent.TrackSubscribed,
       (
         track,
@@ -3588,6 +3776,8 @@ async function showVoiceRoom(info) {
       data.url,
       data.token
     );
+
+    await loadVoiceRole();
 
     await room.localParticipant
       .setMicrophoneEnabled(
@@ -4010,6 +4200,10 @@ window.vybeeVoiceRoomState = () => ({
   mic: voiceMicEnabled,
   camera: voiceCameraEnabled,
   screen: voiceScreenEnabled,
+  role: voiceCurrentRole,
+  activeSpeakers: Array.from(
+    voiceActiveSpeakers
+  ),
   participants: voicePresence.size ||
     (voiceRoom
       ? voiceRoom.remoteParticipants.size + 1
@@ -4021,7 +4215,7 @@ window.showVoiceRoom =
 
 window.leaveVoiceRoom =
   leaveVoiceRoom;
-</script>
+
 
 <script type="module">
 
