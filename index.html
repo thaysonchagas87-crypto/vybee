@@ -2846,6 +2846,110 @@ body.vybee-modern-home-active > .app > footer{
 .vybee-member-add-btn:hover{border-color:#39ff14}
 </style>
 
+
+<style id="vybee-community-invite-style">
+.vybee-invite-panel{
+  position:fixed;
+  inset:0;
+  z-index:395;
+  display:none;
+  place-items:center;
+  padding:16px;
+  background:#000d;
+}
+.vybee-invite-panel.on{display:grid}
+.vybee-invite-box{
+  width:min(640px,100%);
+  max-height:88vh;
+  overflow:auto;
+  background:#0b0e0f;
+  border:1px solid #293036;
+  border-radius:18px;
+  box-shadow:0 30px 100px #000d;
+}
+.vybee-invite-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:16px 18px;
+  border-bottom:1px solid #20262b;
+}
+.vybee-invite-head h2{margin:0;font-size:17px}
+.vybee-invite-head p{margin:3px 0 0;color:#747d84;font-size:9px}
+.vybee-invite-close{margin-left:auto}
+.vybee-invite-body{padding:16px 18px 20px}
+.vybee-invite-card{
+  padding:13px;
+  border:1px solid #252c31;
+  border-radius:12px;
+  background:#101415;
+}
+.vybee-invite-code{
+  margin-top:9px;
+  padding:10px;
+  border:1px dashed #33403a;
+  border-radius:10px;
+  background:#0a0d0e;
+  font-family:monospace;
+  font-size:11px;
+  word-break:break-all;
+  color:#53ff1a;
+}
+.vybee-invite-actions{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+.vybee-invite-actions button{
+  border:1px solid #2b3237;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:8px 10px;
+  cursor:pointer;
+  font-size:9px;
+}
+.vybee-invite-actions button.primary{
+  border-color:#39ff14;
+  background:#39ff14;
+  color:#071006;
+}
+.vybee-invite-list{
+  display:grid;
+  gap:8px;
+  margin-top:12px;
+}
+.vybee-invite-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:10px;
+  border:1px solid #242a2f;
+  border-radius:11px;
+  background:#101415;
+}
+.vybee-invite-row-main{min-width:0;flex:1}
+.vybee-invite-row-main strong{display:block;font-size:10px}
+.vybee-invite-row-main span{display:block;margin-top:2px;color:#737c83;font-size:8px}
+.vybee-invite-row button{
+  border:1px solid #2b3237;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:6px 8px;
+  cursor:pointer;
+  font-size:9px;
+}
+.vybee-invite-row button:hover{border-color:#39ff14}
+.vybee-invite-status{
+  margin-top:8px;
+  min-height:15px;
+  color:#7d868c;
+  font-size:9px;
+}
+</style>
+
 </head>
 
 <body>
@@ -12423,6 +12527,10 @@ if(requestedLive){
               <div class="vybee-community-manage-actions">
                 <button
                   type="button"
+                  data-community-invite="${esc(community.id)}"
+                >Convidar</button>
+                <button
+                  type="button"
                   data-community-members="${esc(community.id)}"
                 >Membros</button>
                 <button
@@ -13493,6 +13601,565 @@ if(requestedLive){
 
   window.vybeeCloseMembers =
     closeMembers;
+})();
+</script>
+
+
+<div
+  class="vybee-invite-panel"
+  id="vybeeInvitePanel"
+>
+  <div class="vybee-invite-box">
+    <div class="vybee-invite-head">
+      <div>
+        <h2 id="vybeeInviteTitle">🤝 Convites</h2>
+        <p id="vybeeInviteSubtitle">Convide pessoas para sua comunidade.</p>
+      </div>
+
+      <button
+        type="button"
+        class="btn vybee-invite-close"
+        id="vybeeInviteClose"
+      >✕</button>
+    </div>
+
+    <div class="vybee-invite-body">
+      <div class="vybee-invite-card">
+        <b>🔗 Link de convite</b>
+        <div
+          class="vybee-invite-code"
+          id="vybeeInviteLink"
+        >Gerando...</div>
+
+        <div class="vybee-invite-actions">
+          <button
+            type="button"
+            class="primary"
+            id="vybeeInviteCopy"
+          >📋 Copiar link</button>
+
+          <button
+            type="button"
+            id="vybeeInviteShare"
+          >📤 Compartilhar</button>
+
+          <button
+            type="button"
+            id="vybeeInviteRevoke"
+          >♻️ Criar novo link</button>
+        </div>
+
+        <div
+          class="vybee-invite-status"
+          id="vybeeInviteStatus"
+        ></div>
+      </div>
+
+      <div class="section" style="margin-top:16px">
+        CONVITES ATIVOS
+      </div>
+
+      <div
+        id="vybeeInviteList"
+        class="vybee-invite-list"
+      >
+        <div class="vybee-community-empty">
+          Carregando...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script id="vybee-community-invite-controller">
+(function(){
+  let communityId=null;
+  let community=null;
+  let invite=null;
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){
+    return String(v??"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function openInvites(c){
+    if(!c||!user()) return;
+
+    community=c;
+    communityId=c.id;
+
+    el("vybeeInviteTitle").textContent=
+      "🤝 Convites • "+(c.name||"Comunidade");
+
+    el("vybeeInviteSubtitle").textContent=
+      "Gere e compartilhe convites para esta comunidade.";
+
+    el("vybeeInvitePanel").classList.add("on");
+    loadInvite();
+  }
+
+  function closeInvites(){
+    el("vybeeInvitePanel")?.classList.remove("on");
+    community=null;
+    communityId=null;
+    invite=null;
+  }
+
+  function makeToken(){
+    if(
+      window.crypto &&
+      typeof window.crypto.randomUUID==="function"
+    ){
+      return window.crypto.randomUUID()
+        .replaceAll("-","")
+        .slice(0,20);
+    }
+
+    return (
+      Date.now().toString(36)+
+      Math.random().toString(36).slice(2,12)
+    ).slice(0,20);
+  }
+
+  function inviteUrl(token){
+    return (
+      window.location.origin+
+      window.location.pathname+
+      "?invite="+encodeURIComponent(token)
+    );
+  }
+
+  async function loadInvite(){
+    const client=sb();
+    const current=user();
+
+    if(!client||!current||!communityId) return;
+
+    const list=el("vybeeInviteList");
+    const status=el("vybeeInviteStatus");
+
+    try{
+      const {data,error}=
+        await client
+          .from("community_invites")
+          .select(
+            "id,token,community_id,created_by,expires_at,revoked,created_at,uses,max_uses"
+          )
+          .eq(
+            "community_id",
+            communityId
+          )
+          .eq(
+            "created_by",
+            current.id
+          )
+          .eq(
+            "revoked",
+            false
+          )
+          .order(
+            "created_at",
+            {ascending:false}
+          );
+
+      if(error) throw error;
+
+      invite=data?.[0]||null;
+
+      if(!invite){
+        el("vybeeInviteLink").textContent=
+          "Nenhum convite ativo.";
+
+        list.innerHTML=
+          '<div class="vybee-community-empty">Nenhum convite ativo. Clique em "Criar novo link".</div>';
+
+        return;
+      }
+
+      el("vybeeInviteLink").textContent=
+        inviteUrl(invite.token);
+
+      list.innerHTML=
+        (data||[]).map(
+          row=>`
+            <div class="vybee-invite-row">
+              <div class="vybee-invite-row-main">
+                <strong>Convite ativo</strong>
+                <span>
+                  Uso: ${Number(row.uses||0)}${row.max_uses ? "/"+row.max_uses : ""}
+                  • criado em ${new Date(row.created_at).toLocaleDateString("pt-BR")}
+                </span>
+              </div>
+              <button
+                type="button"
+                data-invite-copy="${esc(row.token)}"
+              >Copiar</button>
+              <button
+                type="button"
+                data-invite-revoke-id="${esc(row.id)}"
+              >Revogar</button>
+            </div>
+          `
+        ).join("");
+
+      list
+        .querySelectorAll(
+          "[data-invite-copy]"
+        )
+        .forEach(
+          button=>{
+            button.addEventListener(
+              "click",
+              ()=>copyInvite(
+                button.dataset.inviteCopy
+              )
+            );
+          }
+        );
+
+      list
+        .querySelectorAll(
+          "[data-invite-revoke-id]"
+        )
+        .forEach(
+          button=>{
+            button.addEventListener(
+              "click",
+              ()=>revokeInvite(
+                button.dataset.inviteRevokeId
+              )
+            );
+          }
+        );
+
+      status.textContent=
+        "";
+
+    }catch(error){
+      console.error(
+        "VYBEE invites:",
+        error
+      );
+
+      el("vybeeInviteLink").textContent=
+        "Configure a tabela community_invites no Supabase.";
+
+      status.textContent=
+        "Não foi possível carregar os convites.";
+    }
+  }
+
+  async function createInvite(){
+    const client=sb();
+    const current=user();
+
+    if(!client||!current||!communityId) return;
+
+    const status=el("vybeeInviteStatus");
+    status.textContent=
+      "Criando convite...";
+
+    try{
+      /*
+       * Revoga convites anteriores criados por este Owner
+       * para deixar um link principal ativo.
+       */
+      await client
+        .from("community_invites")
+        .update({
+          revoked:true
+        })
+        .eq(
+          "community_id",
+          communityId
+        )
+        .eq(
+          "created_by",
+          current.id
+        )
+        .eq(
+          "revoked",
+          false
+        );
+
+      const token=makeToken();
+
+      const {data,error}=
+        await client
+          .from("community_invites")
+          .insert({
+            community_id:
+              communityId,
+            created_by:
+              current.id,
+            token,
+            revoked:false,
+            uses:0
+          })
+          .select(
+            "id,token,community_id,created_by,expires_at,revoked,created_at,uses,max_uses"
+          )
+          .single();
+
+      if(error) throw error;
+
+      invite=data;
+
+      el("vybeeInviteLink").textContent=
+        inviteUrl(
+          token
+        );
+
+      status.textContent=
+        "✅ Novo convite criado.";
+
+      await loadInvite();
+
+    }catch(error){
+      console.error(
+        "VYBEE create invite:",
+        error
+      );
+
+      status.textContent=
+        "❌ Não foi possível criar o convite. " +
+        (error?.message||"");
+    }
+  }
+
+  async function revokeInvite(id){
+    const client=sb();
+
+    if(!client||!id) return;
+
+    try{
+      const {error}=
+        await client
+          .from("community_invites")
+          .update({
+            revoked:true
+          })
+          .eq(
+            "id",
+            id
+          );
+
+      if(error) throw error;
+
+      el("vybeeInviteStatus").textContent=
+        "✅ Convite revogado.";
+
+      await loadInvite();
+
+    }catch(error){
+      console.error(
+        "VYBEE revoke invite:",
+        error
+      );
+
+      el("vybeeInviteStatus").textContent=
+        "❌ Não foi possível revogar.";
+    }
+  }
+
+  async function copyInvite(token){
+    const url=inviteUrl(token);
+
+    try{
+      await navigator.clipboard.writeText(url);
+
+      el("vybeeInviteStatus").textContent=
+        "✅ Link copiado.";
+
+    }catch(_){
+      window.prompt(
+        "Copie o link:",
+        url
+      );
+    }
+  }
+
+  async function copyCurrentInvite(){
+    if(!invite?.token){
+      await createInvite();
+      return;
+    }
+
+    await copyInvite(
+      invite.token
+    );
+  }
+
+  async function shareCurrentInvite(){
+    if(!invite?.token){
+      await createInvite();
+    }
+
+    if(!invite?.token) return;
+
+    const url=inviteUrl(
+      invite.token
+    );
+
+    if(
+      navigator.share
+    ){
+      try{
+        await navigator.share({
+          title:
+            "Convite para "+
+            (community?.name||"VYBEE"),
+          text:
+            "Entre na minha comunidade no VYBEE.",
+          url
+        });
+
+        return;
+      }catch(_){}
+    }
+
+    await copyInvite(
+      invite.token
+    );
+  }
+
+  function bind(){
+    el("vybeeInviteClose")
+      ?.addEventListener(
+        "click",
+        closeInvites
+      );
+
+    el("vybeeInvitePanel")
+      ?.addEventListener(
+        "click",
+        event=>{
+          if(
+            event.target.id ===
+            "vybeeInvitePanel"
+          ){
+            closeInvites();
+          }
+        }
+      );
+
+    el("vybeeInviteCopy")
+      ?.addEventListener(
+        "click",
+        copyCurrentInvite
+      );
+
+    el("vybeeInviteShare")
+      ?.addEventListener(
+        "click",
+        shareCurrentInvite
+      );
+
+    el("vybeeInviteRevoke")
+      ?.addEventListener(
+        "click",
+        createInvite
+      );
+  }
+
+  bind();
+
+  document.addEventListener(
+    "click",
+    event=>{
+      const button=
+        event.target.closest?.(
+          "[data-community-invite]"
+        );
+
+      if(!button) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      /*
+       * O manager já possui a comunidade na lista; recuperamos
+       * novamente para preservar a mesma estrutura do V1.
+       */
+      const managerList=
+        document.getElementById(
+          "vybeeCommunityManageList"
+        );
+
+      const rows=
+        managerList
+          ? [
+              ...managerList.querySelectorAll(
+                "[data-community-invite]"
+              )
+            ]
+          : [];
+
+      /*
+       * O evento chega no botão; o ID é suficiente para carregar
+       * o registro diretamente do banco.
+       */
+      const id=
+        button.dataset.communityInvite;
+
+      const current=user();
+      const client=sb();
+
+      if(
+        !current||
+        !client||
+        !id
+      ) return;
+
+      client
+        .from("communities")
+        .select(
+          "id,name,description,owner_id,is_public"
+        )
+        .eq(
+          "id",
+          id
+        )
+        .eq(
+          "owner_id",
+          current.id
+        )
+        .maybeSingle()
+        .then(
+          ({data,error})=>{
+            if(
+              error ||
+              !data
+            ){
+              console.error(
+                "VYBEE invite community:",
+                error
+              );
+              return;
+            }
+
+            openInvites(
+              data
+            );
+          }
+        );
+    },
+    true
+  );
+
+  window.vybeeOpenInviteManager=
+    openInvites;
+
+  window.vybeeCloseInviteManager=
+    closeInvites;
 })();
 </script>
 
