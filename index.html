@@ -1248,6 +1248,218 @@ RESPONSIVE
 }
 </style>
 
+
+<style id="vybee-notification-popup-style">
+.vybee-notification-button{
+  position:relative;
+  margin-left:8px;
+  border:1px solid var(--line);
+  background:var(--p2);
+  color:#fff;
+  border-radius:10px;
+  padding:8px 10px;
+  cursor:pointer;
+  font-size:15px;
+  font-weight:800;
+}
+.vybee-notification-button:hover{
+  border-color:var(--n);
+}
+.vybee-notification-badge{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  min-width:18px;
+  height:18px;
+  display:none;
+  place-items:center;
+  padding:0 4px;
+  border-radius:999px;
+  background:#e53935;
+  color:#fff;
+  border:2px solid var(--p);
+  font-size:9px;
+  font-weight:900;
+}
+.vybee-notification-badge.on{
+  display:grid;
+}
+.vybee-notification-center{
+  position:fixed;
+  top:72px;
+  right:18px;
+  z-index:130;
+  width:min(380px,calc(100vw - 24px));
+  max-height:70vh;
+  overflow:auto;
+  display:none;
+  background:var(--p);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 24px 70px #000b;
+}
+.vybee-notification-center.on{
+  display:block;
+}
+.vybee-notification-center-head{
+  position:sticky;
+  top:0;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:11px 13px;
+  border-bottom:1px solid var(--line);
+  background:var(--p);
+}
+.vybee-notification-center-head strong{
+  font-size:12px;
+}
+.vybee-notification-center-head button{
+  border:1px solid var(--line);
+  background:var(--p2);
+  color:#fff;
+  border-radius:8px;
+  padding:6px 8px;
+  cursor:pointer;
+  font-size:10px;
+}
+.vybee-notification-list-item{
+  display:flex;
+  gap:9px;
+  padding:11px 13px;
+  border-bottom:1px solid #202326;
+  cursor:pointer;
+}
+.vybee-notification-list-item:hover{
+  background:var(--p2);
+}
+.vybee-notification-list-item.unread{
+  background:#12190f;
+}
+.vybee-notification-icon{
+  width:30px;
+  height:30px;
+  flex:0 0 30px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:var(--p2);
+}
+.vybee-notification-copy{
+  min-width:0;
+  flex:1;
+}
+.vybee-notification-title{
+  font-size:11px;
+  font-weight:900;
+}
+.vybee-notification-text{
+  margin-top:2px;
+  color:#b0b6bb;
+  font-size:10px;
+  line-height:1.35;
+}
+.vybee-notification-time{
+  margin-top:3px;
+  color:#676d72;
+  font-size:9px;
+}
+.vybee-notification-empty{
+  padding:26px 15px;
+  text-align:center;
+  color:#6f767d;
+  font-size:11px;
+}
+.vybee-popup-stack{
+  position:fixed;
+  top:78px;
+  right:18px;
+  z-index:140;
+  width:min(390px,calc(100vw - 24px));
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  pointer-events:none;
+}
+.vybee-popup{
+  pointer-events:auto;
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  padding:12px 13px;
+  border:1px solid var(--line);
+  border-left:3px solid var(--n);
+  border-radius:13px;
+  background:#121516f5;
+  color:#fff;
+  box-shadow:0 18px 55px #000a;
+  animation:vybeeNotifIn .22s ease-out;
+}
+.vybee-popup.out{
+  animation:vybeeNotifOut .22s ease-in forwards;
+}
+.vybee-popup-icon{
+  width:32px;
+  height:32px;
+  flex:0 0 32px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:var(--p2);
+  font-size:16px;
+}
+.vybee-popup-copy{
+  min-width:0;
+  flex:1;
+}
+.vybee-popup-title{
+  font-size:12px;
+  font-weight:900;
+}
+.vybee-popup-text{
+  margin-top:3px;
+  color:#c7ccd0;
+  font-size:10px;
+  line-height:1.4;
+}
+.vybee-popup-close{
+  border:0;
+  background:transparent;
+  color:#8f969c;
+  cursor:pointer;
+  font-size:14px;
+}
+@keyframes vybeeNotifIn{
+  from{
+    opacity:0;
+    transform:translateX(20px);
+  }
+  to{
+    opacity:1;
+    transform:translateX(0);
+  }
+}
+@keyframes vybeeNotifOut{
+  from{
+    opacity:1;
+    transform:translateX(0);
+  }
+  to{
+    opacity:0;
+    transform:translateX(20px);
+  }
+}
+@media(max-width:700px){
+  .vybee-notification-center,
+  .vybee-popup-stack{
+    right:8px;
+    width:calc(100vw - 16px);
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -1260,7 +1472,21 @@ RESPONSIVE
     VY<span>BEE</span>
   </div>
 
-  <div class="online">
+  <button
+    type="button"
+    class="vybee-notification-button"
+    id="vybeeNotificationButton"
+    title="Notificações"
+    aria-label="Notificações"
+  >
+    🔔
+    <span
+      id="vybeeNotificationBadge"
+      class="vybee-notification-badge"
+    >0</span>
+  </button>
+
+<div class="online">
     ● ONLINE
   </div>
 
@@ -2796,6 +3022,9 @@ RESPONSIVE
 
   window.vybeeGetCurrentCommunity =
     () => currentCommunity;
+
+  window.vybeeGetCurrentTextChannel =
+    () => currentTextChannel?.id || null;
 
   window.vybeeGetCurrentProfile =
     () => currentProfile;
@@ -6273,6 +6502,883 @@ if(requestedLive){
 })();
 </script>
 
+
+
+<div
+  class="vybee-notification-center"
+  id="vybeeNotificationCenter"
+>
+  <div class="vybee-notification-center-head">
+    <strong>🔔 Notificações</strong>
+    <div style="display:flex;gap:5px">
+      <button type="button" id="vybeeNotificationReadAll">
+        Marcar lidas
+      </button>
+      <button type="button" id="vybeeNotificationClear">
+        Limpar
+      </button>
+      <button type="button" id="vybeeNotificationClose">
+        ✕
+      </button>
+    </div>
+  </div>
+  <div id="vybeeNotificationList">
+    <div class="vybee-notification-empty">
+      Nenhuma notificação.
+    </div>
+  </div>
+</div>
+
+<div
+  class="vybee-popup-stack"
+  id="vybeePopupStack"
+  aria-live="polite"
+  aria-atomic="false"
+></div>
+
+
+<script>
+(function(){
+  const STORE_KEY =
+    "vybee_browser_notifications_v2";
+
+  const LIVE_STORE_KEY =
+    "vybee_seen_live_rooms_v2";
+
+  const MAX_ITEMS =
+    80;
+
+  let items = [];
+  let readIds = new Set();
+  let channel = null;
+  let currentUserId = null;
+  let initializedLives = false;
+
+  function sb(){
+    return window.vybeeSupabase || null;
+  }
+
+  function user(){
+    return window.vybeeCurrentUser || null;
+  }
+
+  function esc(value){
+    return String(value ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function loadStore(){
+    try{
+      const value =
+        JSON.parse(
+          localStorage.getItem(
+            STORE_KEY
+          ) || "{}"
+        );
+
+      items =
+        Array.isArray(value.items)
+          ? value.items.slice(
+              0,
+              MAX_ITEMS
+            )
+          : [];
+
+      readIds =
+        new Set(
+          Array.isArray(
+            value.readIds
+          )
+            ? value.readIds
+            : []
+        );
+    }catch(_){
+      items = [];
+      readIds =
+        new Set();
+    }
+  }
+
+  function saveStore(){
+    try{
+      localStorage.setItem(
+        STORE_KEY,
+        JSON.stringify({
+          items:
+            items.slice(
+              0,
+              MAX_ITEMS
+            ),
+          readIds:
+            [...readIds]
+              .slice(
+                0,
+                MAX_ITEMS
+              )
+        })
+      );
+    }catch(_){}
+  }
+
+  function countUnread(){
+    return items.filter(
+      item =>
+        !readIds.has(
+          item.id
+        )
+    ).length;
+  }
+
+  function updateBadge(){
+    const badge =
+      document.getElementById(
+        "vybeeNotificationBadge"
+      );
+
+    if(!badge) return;
+
+    const count =
+      countUnread();
+
+    badge.textContent =
+      count > 99
+        ? "99+"
+        : String(count);
+
+    badge.classList.toggle(
+      "on",
+      count > 0
+    );
+  }
+
+  function timeText(value){
+    const date =
+      new Date(value);
+
+    if(
+      Number.isNaN(
+        date.getTime()
+      )
+    ){
+      return "";
+    }
+
+    return date.toLocaleTimeString(
+      "pt-BR",
+      {
+        hour:"2-digit",
+        minute:"2-digit"
+      }
+    );
+  }
+
+  function renderCenter(){
+    const list =
+      document.getElementById(
+        "vybeeNotificationList"
+      );
+
+    if(!list) return;
+
+    if(!items.length){
+      list.innerHTML =
+        `<div class="vybee-notification-empty">
+          Nenhuma notificação.
+        </div>`;
+
+      updateBadge();
+      return;
+    }
+
+    list.innerHTML =
+      items.map(
+        item => {
+          const unread =
+            !readIds.has(
+              item.id
+            );
+
+          return `
+            <div
+              class="vybee-notification-list-item ${unread ? "unread" : ""}"
+              data-vybee-notif-id="${esc(item.id)}"
+            >
+              <div class="vybee-notification-icon">
+                ${esc(item.icon || "🔔")}
+              </div>
+
+              <div class="vybee-notification-copy">
+                <div class="vybee-notification-title">
+                  ${esc(item.title || "VYBEE")}
+                </div>
+
+                <div class="vybee-notification-text">
+                  ${esc(item.text || "")}
+                </div>
+
+                <div class="vybee-notification-time">
+                  ${esc(timeText(item.createdAt))}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      ).join("");
+
+    list
+      .querySelectorAll(
+        "[data-vybee-notif-id]"
+      )
+      .forEach(
+        element => {
+          element.addEventListener(
+            "click",
+            () => {
+              const id =
+                element.dataset
+                  .vybeeNotifId;
+
+              readIds.add(id);
+              saveStore();
+              renderCenter();
+            }
+          );
+        }
+      );
+
+    updateBadge();
+  }
+
+  function browserNotify(
+    title,
+    body
+  ){
+    try{
+      if(
+        "Notification" in window &&
+        Notification.permission ===
+          "granted"
+      ){
+        new Notification(
+          title,
+          {
+            body
+          }
+        );
+      }
+    }catch(_){}
+  }
+
+  function showPopup({
+    icon = "🔔",
+    title = "VYBEE",
+    text = "",
+    duration = 5000
+  }){
+    const stack =
+      document.getElementById(
+        "vybeePopupStack"
+      );
+
+    if(!stack) return;
+
+    const popup =
+      document.createElement(
+        "div"
+      );
+
+    popup.className =
+      "vybee-popup";
+
+    popup.innerHTML = `
+      <div class="vybee-popup-icon">
+        ${esc(icon)}
+      </div>
+
+      <div class="vybee-popup-copy">
+        <div class="vybee-popup-title">
+          ${esc(title)}
+        </div>
+
+        <div class="vybee-popup-text">
+          ${esc(text)}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="vybee-popup-close"
+        aria-label="Fechar"
+      >✕</button>
+    `;
+
+    const close =
+      () => {
+        popup.classList.add(
+          "out"
+        );
+
+        setTimeout(
+          () => popup.remove(),
+          230
+        );
+      };
+
+    popup
+      .querySelector(
+        ".vybee-popup-close"
+      )
+      .addEventListener(
+        "click",
+        close
+      );
+
+    stack.appendChild(
+      popup
+    );
+
+    setTimeout(
+      close,
+      duration
+    );
+  }
+
+  function addNotification({
+    id,
+    icon,
+    title,
+    text,
+    popup = true
+  }){
+    if(!id) return;
+
+    if(
+      items.some(
+        item =>
+          item.id === id
+      )
+    ){
+      return;
+    }
+
+    const createdAt =
+      new Date()
+        .toISOString();
+
+    items.unshift({
+      id,
+      icon,
+      title,
+      text,
+      createdAt
+    });
+
+    items =
+      items.slice(
+        0,
+        MAX_ITEMS
+      );
+
+    saveStore();
+    renderCenter();
+
+    if(popup){
+      showPopup({
+        icon,
+        title,
+        text
+      });
+
+      browserNotify(
+        title,
+        text
+      );
+    }
+  }
+
+  async function messageInfo(
+    row
+  ){
+    const client = sb();
+
+    if(
+      !client ||
+      !row ||
+      !row.channel_id
+    ){
+      return null;
+    }
+
+    try{
+      const {
+        data
+      } =
+        await client
+          .from("channels")
+          .select(
+            "id,name,community_id,channel_type"
+          )
+          .eq(
+            "id",
+            row.channel_id
+          )
+          .maybeSingle();
+
+      return data || null;
+
+    }catch(_){
+      return null;
+    }
+  }
+
+  async function onMessage(
+    row
+  ){
+    const current =
+      user();
+
+    if(
+      !current ||
+      !row ||
+      row.user_id ===
+        current.id
+    ){
+      return;
+    }
+
+    const channelInfo =
+      await messageInfo(
+        row
+      );
+
+    if(!channelInfo){
+      return;
+    }
+
+    const currentChannel =
+      window.vybeeGetCurrentTextChannel?.();
+
+    if(
+      currentChannel &&
+      String(
+        currentChannel
+      ) ===
+        String(
+          channelInfo.id
+        )
+    ){
+      return;
+    }
+
+    let author =
+      "Novo usuário";
+
+    const client =
+      sb();
+
+    if(
+      client &&
+      row.user_id
+    ){
+      try{
+        const {
+          data
+        } =
+          await client
+            .from("profiles")
+            .select(
+              "display_name,username"
+            )
+            .eq(
+              "id",
+              row.user_id
+            )
+            .maybeSingle();
+
+        author =
+          data?.display_name ||
+          data?.username ||
+          author;
+      }catch(_){}
+    }
+
+    addNotification({
+      id:
+        "message:" +
+        row.id,
+      icon:
+        "💬",
+      title:
+        "Nova mensagem • #" +
+        channelInfo.name,
+      text:
+        author +
+        ": " +
+        String(
+          row.content || ""
+        ).slice(
+          0,
+          150
+        ),
+      popup:
+        true
+    });
+  }
+
+  async function subscribe(){
+    const client =
+      sb();
+
+    const current =
+      user();
+
+    if(
+      !client ||
+      !current
+    ){
+      return;
+    }
+
+    currentUserId =
+      current.id;
+
+    if(channel){
+      try{
+        await client.removeChannel(
+          channel
+        );
+      }catch(_){}
+
+      channel =
+        null;
+    }
+
+    channel =
+      client
+        .channel(
+          "vybee-global-notifications-" +
+          current.id
+        )
+        .on(
+          "postgres_changes",
+          {
+            event:
+              "INSERT",
+            schema:
+              "public",
+            table:
+              "messages"
+          },
+          payload => {
+            onMessage(
+              payload.new
+            );
+          }
+        )
+        .subscribe(
+          status => {
+            console.log(
+              "VYBEE Notificações:",
+              status
+            );
+          }
+        );
+  }
+
+  async function checkLives(){
+    if(
+      !user()
+    ){
+      return;
+    }
+
+    try{
+      const response =
+        await fetch(
+          "/api/rooms?t=" +
+          Date.now(),
+          {
+            cache:"no-store"
+          }
+        );
+
+      if(
+        !response.ok
+      ){
+        return;
+      }
+
+      const data =
+        await response.json();
+
+      const rooms =
+        Array.isArray(
+          data.rooms
+        )
+          ? data.rooms
+          : [];
+
+      const active =
+        rooms
+          .filter(
+            room =>
+              room &&
+              room.name &&
+              Number(
+                room.numParticipants ||
+                0
+              ) > 0
+          )
+          .map(
+            room =>
+              String(
+                room.name
+              )
+          );
+
+      let previous =
+        [];
+
+      try{
+        previous =
+          JSON.parse(
+            localStorage.getItem(
+              LIVE_STORE_KEY
+            ) || "[]"
+          );
+
+        if(
+          !Array.isArray(
+            previous
+          )
+        ){
+          previous = [];
+        }
+      }catch(_){
+        previous = [];
+      }
+
+      const oldSet =
+        new Set(
+          previous
+        );
+
+      /*
+       * Primeira leitura apenas registra as LIVEs já existentes,
+       * para não disparar vários popups ao abrir o site.
+       */
+      if(
+        !initializedLives
+      ){
+        localStorage.setItem(
+          LIVE_STORE_KEY,
+          JSON.stringify(
+            active
+          )
+        );
+
+        initializedLives =
+          true;
+
+        return;
+      }
+
+      active.forEach(
+        room => {
+          if(
+            !oldSet.has(room)
+          ){
+            addNotification({
+              id:
+                "live:" +
+                room +
+                ":" +
+                Date.now(),
+              icon:
+                "🔴",
+              title:
+                "Nova LIVE no VYBEE",
+              text:
+                "Uma transmissão acabou de começar.",
+              popup:
+                true
+            });
+          }
+        }
+      );
+
+      localStorage.setItem(
+        LIVE_STORE_KEY,
+        JSON.stringify(
+          active
+        )
+      );
+
+    }catch(error){
+      console.warn(
+        "VYBEE LIVE notifications:",
+        error
+      );
+    }
+  }
+
+  function bind(){
+    document
+      .getElementById(
+        "vybeeNotificationButton"
+      )
+      ?.addEventListener(
+        "click",
+        event => {
+          event.preventDefault();
+          event.stopPropagation();
+
+          document
+            .getElementById(
+              "vybeeNotificationCenter"
+            )
+            ?.classList.toggle(
+              "on"
+            );
+
+          /*
+           * O navegador só pede permissão de notification
+           * depois de um gesto explícito do usuário.
+           */
+          try{
+            if(
+              "Notification" in window &&
+              Notification.permission ===
+                "default"
+            ){
+              Notification.requestPermission()
+                .catch(
+                  () => {}
+                );
+            }
+          }catch(_){}
+        }
+      );
+
+    document
+      .getElementById(
+        "vybeeNotificationReadAll"
+      )
+      ?.addEventListener(
+        "click",
+        () => {
+          items.forEach(
+            item =>
+              readIds.add(
+                item.id
+              )
+          );
+
+          saveStore();
+          renderCenter();
+        }
+      );
+
+    document
+      .getElementById(
+        "vybeeNotificationClear"
+      )
+      ?.addEventListener(
+        "click",
+        () => {
+          items = [];
+          readIds =
+            new Set();
+
+          saveStore();
+          renderCenter();
+        }
+      );
+
+    document
+      .getElementById(
+        "vybeeNotificationClose"
+      )
+      ?.addEventListener(
+        "click",
+        () => {
+          document
+            .getElementById(
+              "vybeeNotificationCenter"
+            )
+            ?.classList.remove(
+              "on"
+            );
+        }
+      );
+
+    document.addEventListener(
+      "click",
+      event => {
+        const center =
+          document.getElementById(
+            "vybeeNotificationCenter"
+          );
+
+        const button =
+          document.getElementById(
+            "vybeeNotificationButton"
+          );
+
+        if(
+          center?.classList.contains(
+            "on"
+          ) &&
+          !center.contains(
+            event.target
+          ) &&
+          !button?.contains(
+            event.target
+          )
+        ){
+          center.classList.remove(
+            "on"
+          );
+        }
+      }
+    );
+  }
+
+  function waitForSite(){
+    if(
+      window.vybeeSupabase &&
+      window.vybeeCurrentUser
+    ){
+      subscribe();
+      checkLives();
+
+      setInterval(
+        checkLives,
+        5000
+      );
+      return;
+    }
+
+    setTimeout(
+      waitForSite,
+      300
+    );
+  }
+
+  loadStore();
+  renderCenter();
+  bind();
+
+  waitForSite();
+
+  window.vybeeShowNotification =
+    addNotification;
+})();
+</script>
 
 </body>
 
