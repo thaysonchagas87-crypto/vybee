@@ -1590,6 +1590,7 @@ RESPONSIVE
 
 
   <button
+    type="button"
     class="vybee-notif-button"
     id="vybeeProfileButton"
     title="Meu perfil"
@@ -1599,6 +1600,7 @@ RESPONSIVE
   </button>
 
 <button
+    type="button"
     class="vybee-notif-button"
     id="vybeeNotifButton"
     title="Notificações"
@@ -6640,16 +6642,52 @@ function profileEsc(value) {
     .replaceAll("'","&#039;");
 }
 
-function profileOpen() {
-  const user =
-    window.vybeeCurrentUser;
+async function profileOpen(event) {
+  event?.preventDefault();
+  event?.stopPropagation();
+
+  let user =
+    window.vybeeCurrentUser ||
+    null;
+
+  /*
+   * Não dependemos apenas do estado global do outro módulo.
+   * O perfil consulta a sessão atual do próprio cliente Supabase.
+   * Isso evita o clique ser interpretado como "não logado".
+   */
+  if (!user) {
+    try {
+      const { data } =
+        await profileSupabase.auth.getSession();
+
+      user =
+        data?.session?.user ||
+        null;
+
+      if (user) {
+        window.vybeeCurrentUser = user;
+      }
+    } catch (error) {
+      console.warn(
+        "VYBEE profile session:",
+        error
+      );
+    }
+  }
 
   if (!user) {
-    if (typeof window.showWebAuth === "function") {
+    if (
+      typeof window.showWebAuth ===
+      "function"
+    ) {
       window.showWebAuth();
     }
+
     return;
   }
+
+  profileUserId =
+    user.id;
 
   document
     .getElementById(
@@ -6657,10 +6695,7 @@ function profileOpen() {
     )
     ?.classList.add("on");
 
-  profileUserId =
-    user.id;
-
-  profileLoadAll();
+  await profileLoadAll();
 }
 
 function profileClose() {
