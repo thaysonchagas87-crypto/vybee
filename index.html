@@ -2126,6 +2126,209 @@ body.vybee-modern-home-active > .app{
 }
 </style>
 
+
+<style id="vybee-modern-pages-style">
+#vybeeHomeDashboard{
+  z-index:900 !important;
+}
+.vybee-modern-page{
+  position:absolute;
+  inset:74px 0 48px 0;
+  z-index:20;
+  display:none;
+  overflow:auto;
+  padding:16px 18px;
+  background:#050708;
+}
+.vybee-modern-page.on{display:block}
+.vybee-modern-page-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+.vybee-modern-page-head h2{
+  margin:0;
+  font-size:22px;
+}
+.vybee-modern-page-head p{
+  margin:4px 0 0;
+  color:#7a8389;
+  font-size:10px;
+}
+.vybee-modern-page-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+.vybee-modern-page-card{
+  padding:14px;
+  border:1px solid #252c31;
+  border-radius:13px;
+  background:#0d1112;
+}
+.vybee-modern-page-card:hover{
+  border-color:#53ff1a;
+}
+.vybee-modern-page-card h3{
+  margin:0;
+  font-size:12px;
+}
+.vybee-modern-page-card p{
+  margin:5px 0 0;
+  color:#7c858b;
+  font-size:9px;
+  line-height:1.4;
+}
+.vybee-modern-page-button{
+  margin-top:10px;
+  border:1px solid #2c3338;
+  background:#151a1c;
+  color:#fff;
+  border-radius:9px;
+  padding:8px 10px;
+  cursor:pointer;
+  font-size:9px;
+  font-weight:900;
+}
+.vybee-modern-page-button.primary{
+  background:#39ff14;
+  color:#061006;
+  border-color:#39ff14;
+}
+.vybee-modern-page-list{
+  display:grid;
+  gap:8px;
+}
+.vybee-modern-page-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:11px;
+  border:1px solid #23292e;
+  border-radius:11px;
+  background:#0e1213;
+}
+.vybee-modern-page-row-main{
+  min-width:0;
+  flex:1;
+}
+.vybee-modern-page-row-main strong{
+  display:block;
+  font-size:11px;
+}
+.vybee-modern-page-row-main span{
+  display:block;
+  margin-top:3px;
+  color:#747e84;
+  font-size:9px;
+}
+.vybee-modern-page-avatar{
+  width:34px;height:34px;
+  display:grid;place-items:center;
+  border-radius:10px;
+  background:#181d20;
+}
+.vybee-modern-page-empty{
+  padding:32px;
+  border:1px dashed #2a3136;
+  border-radius:13px;
+  color:#70787e;
+  text-align:center;
+  font-size:10px;
+}
+.vybee-modern-page-search{
+  width:100%;
+  box-sizing:border-box;
+  padding:11px 12px;
+  border:1px solid #2a3136;
+  border-radius:10px;
+  background:#0d1011;
+  color:#fff;
+  outline:none;
+  margin-bottom:10px;
+}
+.vybee-modern-live-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+.vybee-modern-live-card{
+  overflow:hidden;
+  border:1px solid #282f34;
+  border-radius:12px;
+  background:#0d1112;
+}
+.vybee-modern-live-thumb{
+  height:135px;
+  display:grid;
+  place-items:center;
+  position:relative;
+  background:
+    radial-gradient(circle at 50% 45%,#39ff1420,transparent 30%),
+    linear-gradient(135deg,#161b1d,#0a0d0d);
+  font-size:34px;
+}
+.vybee-modern-live-thumb b{
+  position:absolute;
+  left:8px;top:8px;
+  padding:4px 6px;
+  background:#f12828;
+  border-radius:6px;
+  font-size:8px;
+}
+.vybee-modern-live-thumb span{
+  position:absolute;
+  right:8px;top:8px;
+  padding:4px 6px;
+  background:#000b;
+  border-radius:6px;
+  font-size:8px;
+}
+.vybee-modern-live-body{
+  padding:10px;
+}
+.vybee-modern-live-body strong{
+  display:block;
+  font-size:11px;
+}
+.vybee-modern-live-body p{
+  margin:4px 0 0;
+  color:#707980;
+  font-size:9px;
+}
+@media(max-width:1000px){
+  .vybee-modern-page-grid,
+  .vybee-modern-live-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:700px){
+  .vybee-modern-page{
+    inset:62px 0 42px 0;
+    padding:11px;
+  }
+  .vybee-modern-page-grid,
+  .vybee-modern-live-grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+
+
+<style id="vybee-modern-shell-lock">
+body.vybee-modern-home-active > .app{
+  visibility:hidden !important;
+}
+.vybee-home{
+  z-index:200 !important;
+}
+.vybee-modern-page{
+  z-index:220 !important;
+}
+</style>
+
 </head>
 
 <body>
@@ -9174,7 +9377,14 @@ if(requestedLive){
         <span>© 2026 VYBEE • LIVE • SPORTS • COMMUNITY</span>
         <span>Conecte. Compartilhe. Viva.</span>
       </footer>
-    </main>
+    
+<div
+  id="vybeeModernPage"
+  class="vybee-modern-page"
+  aria-live="polite"
+></div>
+
+</main>
   </div>
 </div>
 
@@ -9182,166 +9392,589 @@ if(requestedLive){
 <script>
 (function(){
   function panel(){
-    return document.getElementById(
-      "vybeeHomeDashboard"
-    );
+    return document.getElementById("vybeeHomeDashboard");
+  }
+
+  function page(){
+    return document.getElementById("vybeeModernPage");
   }
 
   function openHome(){
-    const el = panel();
+    const el=panel();
     if(!el) return;
 
     el.classList.add("on");
     document.body.classList.add(
       "vybee-modern-home-active"
     );
+    page()?.classList.remove("on");
 
-    const user =
-      window.vybeeCurrentUser ||
-      null;
+    const current=window.vybeeCurrentUser||null;
+    const profile=window.vybeeGetCurrentProfile?.()||null;
 
-    const profile =
-      window.vybeeGetCurrentProfile?.() ||
-      null;
-
-    if(user){
+    if(current){
       const name =
         profile?.display_name ||
-        user.email?.split("@")[0] ||
+        current.email?.split("@")[0] ||
         "Usuário";
 
-      document.getElementById(
-        "vybeeHomeGreeting"
-      ).textContent =
-        "Bem-vindo de volta, " +
-        name +
-        " 👋";
+      const greeting=document.getElementById("vybeeHomeGreeting");
+      const account=document.getElementById("vybeeHomeAccountName");
+      const username=document.getElementById("vybeeHomeAccountUsername");
 
-      document.getElementById(
-        "vybeeHomeAccountName"
-      ).textContent =
-        name;
-
-      document.getElementById(
-        "vybeeHomeAccountUsername"
-      ).textContent =
-        profile?.username
-          ? "@" + profile.username
-          : "online";
+      if(greeting) greeting.textContent=
+        "Bem-vindo de volta, "+name+" 👋";
+      if(account) account.textContent=name;
+      if(username) username.textContent=
+        profile?.username ? "@"+profile.username : "online";
     }
 
     updateLiveCount();
   }
 
   function closeHome(){
+    page()?.classList.remove("on");
     panel()?.classList.remove("on");
-
     document.body.classList.remove(
       "vybee-modern-home-active"
     );
   }
 
   function updateLiveCount(){
-    const source =
-      document.getElementById(
-        "liveCount"
-      )?.textContent ||
-      "";
+    const source=
+      document.getElementById("liveCount")?.textContent||"0";
 
-    const value =
-      Number(
-        String(source)
-          .replace(/\D/g,"")
-      ) || 0;
+    const value=
+      Number(String(source).replace(/\D/g,""))||0;
 
-    const target =
-      document.getElementById(
-        "vybeeHomeLiveStat"
+    const target=
+      document.getElementById("vybeeHomeLiveStat");
+
+    if(target) target.textContent=String(value);
+  }
+
+  function showPage(title, subtitle, html){
+    const el=page();
+    if(!el) return;
+
+    el.innerHTML=`
+      <div class="vybee-modern-page-head">
+        <div>
+          <h2>${escapeHtml(title)}</h2>
+          <p>${escapeHtml(subtitle)}</p>
+        </div>
+        <button type="button" class="vybee-modern-page-button" data-page-home>
+          ← Início
+        </button>
+      </div>
+      ${html}
+    `;
+
+    el.classList.add("on");
+
+    el.querySelector("[data-page-home]")
+      ?.addEventListener(
+        "click",
+        openHome
       );
+  }
 
-    if(target){
-      target.textContent =
-        String(value);
+  function escapeHtml(value){
+    return String(value??"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  async function renderCommunities(){
+    const client=window.vybeeSupabase;
+    const current=window.vybeeCurrentUser;
+
+    if(!client||!current){
+      showPage(
+        "Comunidades",
+        "Entre para visualizar suas comunidades.",
+        '<div class="vybee-modern-page-empty">Você precisa estar conectado.</div>'
+      );
+      return;
+    }
+
+    showPage(
+      "Comunidades",
+      "Suas comunidades reais do VYBEE.",
+      '<div id="vybeeModernCommunities" class="vybee-modern-page-grid"><div class="vybee-modern-page-empty">Carregando...</div></div>'
+    );
+
+    try{
+      const {data:members,error:memberError}=
+        await client
+          .from("community_members")
+          .select("community_id")
+          .eq("user_id",current.id);
+
+      if(memberError) throw memberError;
+
+      const ids=(members||[])
+        .map(row=>row.community_id)
+        .filter(Boolean);
+
+      if(!ids.length){
+        document.getElementById("vybeeModernCommunities").innerHTML=
+          '<div class="vybee-modern-page-empty">Você ainda não participa de nenhuma comunidade.</div>';
+        return;
+      }
+
+      const {data,error}=
+        await client
+          .from("communities")
+          .select("id,name,description,is_public")
+          .in("id",ids)
+          .order("name",{ascending:true});
+
+      if(error) throw error;
+
+      const rows=data||[];
+      document.getElementById("vybeeModernCommunities").innerHTML=
+        rows.map(c=>`
+          <div class="vybee-modern-page-card">
+            <div class="vybee-modern-page-avatar">🐝</div>
+            <h3>${escapeHtml(c.name)}</h3>
+            <p>${escapeHtml(c.description||"Comunidade VYBEE.")}</p>
+            <button
+              type="button"
+              class="vybee-modern-page-button primary"
+              data-open-community="${escapeHtml(c.id)}"
+            >Abrir comunidade</button>
+          </div>
+        `).join("");
+
+      document
+        .querySelectorAll(
+          "[data-open-community]"
+        )
+        .forEach(button=>{
+          button.addEventListener(
+            "click",
+            async()=>{
+              const c=rows.find(
+                item=>String(item.id)===String(
+                  button.dataset.openCommunity
+                )
+              );
+              if(c&&window.vybeeOpenCommunity){
+                closeHome();
+                await window.vybeeOpenCommunity(c);
+              }
+            }
+          );
+        });
+    }catch(error){
+      console.error(
+        "VYBEE modern communities:",
+        error
+      );
+      document.getElementById("vybeeModernCommunities").innerHTML=
+        '<div class="vybee-modern-page-empty">Não foi possível carregar as comunidades.</div>';
     }
   }
 
-  function clickLegacy(selector){
-    closeHome();
-    const target =
-      document.querySelector(
-        selector
+  async function renderFriends(){
+    const client=window.vybeeSupabase;
+    const current=window.vybeeCurrentUser;
+
+    showPage(
+      "Amigos",
+      "Seus contatos e presença.",
+      '<div id="vybeeModernFriends" class="vybee-modern-page-list"><div class="vybee-modern-page-empty">Carregando...</div></div>'
+    );
+
+    if(!client||!current) return;
+
+    try{
+      const {data,error}=
+        await client
+          .from("friendships")
+          .select("id,user_a,user_b,status")
+          .or(
+            `user_a.eq.${current.id},user_b.eq.${current.id}`
+          )
+          .eq("status","accepted");
+
+      if(error) throw error;
+
+      const rows=data||[];
+
+      if(!rows.length){
+        document.getElementById("vybeeModernFriends").innerHTML=
+          '<div class="vybee-modern-page-empty">Nenhum amigo ainda.</div>';
+        return;
+      }
+
+      const ids=rows.map(
+        row=>row.user_a===current.id?row.user_b:row.user_a
       );
 
-    target?.click();
+      const {data:profiles}=await client
+        .from("profiles")
+        .select("id,display_name,username")
+        .in("id",ids);
+
+      const byId=new Map(
+        (profiles||[]).map(p=>[p.id,p])
+      );
+
+      document.getElementById("vybeeModernFriends").innerHTML=
+        rows.map(row=>{
+          const id=
+            row.user_a===current.id
+              ? row.user_b
+              : row.user_a;
+
+          const p=byId.get(id);
+
+          return `
+            <div class="vybee-modern-page-row">
+              <div class="vybee-modern-page-avatar">👤</div>
+              <div class="vybee-modern-page-row-main">
+                <strong>${escapeHtml(
+                  p?.display_name||
+                  p?.username||
+                  "Usuário"
+                )}</strong>
+                <span>${p?.username?"@"+escapeHtml(p.username):"Amigo"}</span>
+              </div>
+              <button
+                type="button"
+                class="vybee-modern-page-button"
+                data-open-friend-profile="${escapeHtml(id)}"
+              >Perfil</button>
+            </div>
+          `;
+        }).join("");
+
+      document
+        .querySelectorAll(
+          "[data-open-friend-profile]"
+        )
+        .forEach(button=>{
+          button.addEventListener(
+            "click",
+            ()=>{
+              document.getElementById(
+                "vybeeProfileButton"
+              )?.click();
+            }
+          );
+        });
+
+    }catch(error){
+      console.error(
+        "VYBEE modern friends:",
+        error
+      );
+      document.getElementById("vybeeModernFriends").innerHTML=
+        '<div class="vybee-modern-page-empty">Não foi possível carregar os amigos.</div>';
+    }
+  }
+
+  function renderMessages(){
+    showPage(
+      "Mensagens",
+      "O chat das comunidades continua disponível em tempo real.",
+      `
+        <div class="vybee-modern-page-grid">
+          <div class="vybee-modern-page-card">
+            <div class="vybee-modern-page-avatar">💬</div>
+            <h3>Chat da comunidade</h3>
+            <p>Escolha uma comunidade e entre no canal de texto para conversar.</p>
+            <button type="button" class="vybee-modern-page-button primary" data-open-communities>
+              Abrir comunidades
+            </button>
+          </div>
+
+          <div class="vybee-modern-page-card">
+            <div class="vybee-modern-page-avatar">🔒</div>
+            <h3>Mensagens privadas</h3>
+            <p>O sistema de DM ficará integrado aos amigos em uma próxima etapa.</p>
+            <button type="button" class="vybee-modern-page-button" disabled>
+              Em breve
+            </button>
+          </div>
+        </div>
+      `
+    );
+
+    page()
+      ?.querySelector(
+        "[data-open-communities]"
+      )
+      ?.addEventListener(
+        "click",
+        renderCommunities
+      );
+  }
+
+  async function renderLives(){
+    showPage(
+      "Lives",
+      "Transmissões disponíveis neste momento.",
+      '<div id="vybeeModernLives" class="vybee-modern-live-grid"><div class="vybee-modern-page-empty">Carregando...</div></div>'
+    );
+
+    const list=document.getElementById("vybeeModernLives");
+
+    try{
+      const response=await fetch(
+        "/api/rooms?t="+Date.now(),
+        {cache:"no-store"}
+      );
+
+      if(!response.ok) throw new Error("Falha ao consultar lives.");
+
+      const payload=await response.json();
+      const active=
+        (Array.isArray(payload.rooms)?payload.rooms:[])
+          .filter(
+            room =>
+              room &&
+              room.name &&
+              Number(room.numParticipants||0)>0
+          );
+
+      if(!active.length){
+        list.innerHTML=
+          '<div class="vybee-modern-page-empty">Nenhuma transmissão ao vivo agora.</div>';
+        return;
+      }
+
+      list.innerHTML=
+        active.map(room=>`
+          <div class="vybee-modern-live-card">
+            <div class="vybee-modern-live-thumb">
+              🔴
+              <b>AO VIVO</b>
+              <span>● ${Number(room.numParticipants||0)}</span>
+            </div>
+            <div class="vybee-modern-live-body">
+              <strong>${escapeHtml(room.name)}</strong>
+              <p>${Number(room.numParticipants||0)} participante(s)</p>
+              <button
+                type="button"
+                class="vybee-modern-page-button primary"
+                data-watch-live="${escapeHtml(room.name)}"
+              >Assistir</button>
+            </div>
+          </div>
+        `).join("");
+
+      list
+        .querySelectorAll(
+          "[data-watch-live]"
+        )
+        .forEach(button=>{
+          button.addEventListener(
+            "click",
+            ()=>{
+              if(typeof window.watchLive==="function"){
+                window.watchLive(
+                  button.dataset.watchLive,
+                  button.dataset.watchLive
+                );
+              }else{
+                toast(
+                  "Abra a transmissão pela área de LIVE."
+                );
+              }
+            }
+          );
+        });
+    }catch(error){
+      console.error(
+        "VYBEE modern lives:",
+        error
+      );
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Não foi possível carregar as LIVEs.</div>';
+    }
+  }
+
+  function renderEvents(){
+    showPage(
+      "Eventos",
+      "Acompanhe os próximos eventos das comunidades.",
+      `
+        <div class="vybee-modern-page-grid">
+          <div class="vybee-modern-page-card">
+            <div class="vybee-modern-page-avatar">🥋</div>
+            <h3>Grand Slam de Judô</h3>
+            <p>24 MAI • São Paulo - SP</p>
+            <button type="button" class="vybee-modern-page-button primary">Ver detalhes</button>
+          </div>
+          <div class="vybee-modern-page-card">
+            <div class="vybee-modern-page-avatar">🏆</div>
+            <h3>Final do Campeonato Brasileiro</h3>
+            <p>31 MAI • Série A</p>
+            <button type="button" class="vybee-modern-page-button primary">Ver detalhes</button>
+          </div>
+          <div class="vybee-modern-page-card">
+            <div class="vybee-modern-page-avatar">🎮</div>
+            <h3>Open VYBEE Games</h3>
+            <p>07 JUN • Inscrições abertas</p>
+            <button type="button" class="vybee-modern-page-button primary">Ver detalhes</button>
+          </div>
+        </div>
+      `
+    );
+  }
+
+  async function renderExplore(){
+    showPage(
+      "Explorar",
+      "Encontre comunidades e pessoas dentro do VYBEE.",
+      `
+        <input
+          id="vybeeModernExploreSearch"
+          class="vybee-modern-page-search"
+          placeholder="Buscar comunidade ou pessoa..."
+          autocomplete="off"
+        >
+        <div id="vybeeModernExploreResults" class="vybee-modern-page-list">
+          <div class="vybee-modern-page-empty">
+            Digite pelo menos 2 caracteres.
+          </div>
+        </div>
+      `
+    );
+
+    const input=document.getElementById(
+      "vybeeModernExploreSearch"
+    );
+
+    const results=document.getElementById(
+      "vybeeModernExploreResults"
+    );
+
+    input?.addEventListener(
+      "input",
+      async()=>{
+        const q=input.value.trim();
+
+        if(q.length<2){
+          results.innerHTML=
+            '<div class="vybee-modern-page-empty">Digite pelo menos 2 caracteres.</div>';
+          return;
+        }
+
+        results.innerHTML=
+          '<div class="vybee-modern-page-empty">🔎 Buscando...</div>';
+
+        const client=window.vybeeSupabase;
+        if(!client){
+          return;
+        }
+
+        try{
+          const {data,error}=
+            await client
+              .from("communities")
+              .select("id,name,description,is_public")
+              .ilike("name","%"+q+"%")
+              .limit(20);
+
+          if(error) throw error;
+
+          if(!data?.length){
+            results.innerHTML=
+              '<div class="vybee-modern-page-empty">Nenhuma comunidade encontrada.</div>';
+            return;
+          }
+
+          results.innerHTML=
+            data.map(c=>`
+              <div class="vybee-modern-page-row">
+                <div class="vybee-modern-page-avatar">🐝</div>
+                <div class="vybee-modern-page-row-main">
+                  <strong>${escapeHtml(c.name)}</strong>
+                  <span>${escapeHtml(c.description||"Comunidade")}</span>
+                </div>
+                <button
+                  type="button"
+                  class="vybee-modern-page-button primary"
+                  data-explore-community="${escapeHtml(c.id)}"
+                >Abrir</button>
+              </div>
+            `).join("");
+
+          results
+            .querySelectorAll(
+              "[data-explore-community]"
+            )
+            .forEach(button=>{
+              button.addEventListener(
+                "click",
+                async()=>{
+                  const c=data.find(
+                    item=>String(item.id)===String(
+                      button.dataset.exploreCommunity
+                    )
+                  );
+
+                  if(c&&window.vybeeOpenCommunity){
+                    closeHome();
+                    await window.vybeeOpenCommunity(c);
+                  }
+                }
+              );
+            });
+        }catch(error){
+          console.error(
+            "VYBEE explore:",
+            error
+          );
+          results.innerHTML=
+            '<div class="vybee-modern-page-empty">Não foi possível realizar a busca.</div>';
+        }
+      }
+    );
   }
 
   function go(action){
-    if(action === "home"){
-      openHome();
-      return;
-    }
+    switch(action){
+      case "home":
+        openHome();
+        return;
 
-    if(action === "lives"){
-      clickLegacy(".live-grid");
-      return;
-    }
+      case "communities":
+        renderCommunities();
+        return;
 
-    if(action === "settings"){
-      document.getElementById(
-        "vybeeSettingsButton"
-      )?.click();
-      return;
-    }
+      case "friends":
+        renderFriends();
+        return;
 
-    if(action === "friends"){
-      document.getElementById(
-        "vybeeProfileButton"
-      )?.click();
-      return;
-    }
+      case "messages":
+        renderMessages();
+        return;
 
-    if(action === "messages" || action === "communities"){
-      closeHome();
+      case "lives":
+        renderLives();
+        return;
 
-      const rail =
-        action === "messages"
-          ? document.querySelector(
-              ".rail button:nth-child(2)"
-            )
-          : document.querySelector(
-              ".rail button:nth-child(1)"
-            );
+      case "events":
+        renderEvents();
+        return;
 
-      rail?.click();
-      return;
-    }
+      case "explore":
+        renderExplore();
+        return;
 
-    if(action === "events"){
-      closeHome();
-
-      const item =
-        [...document.querySelectorAll(
-          ".side .channel"
-        )].find(
-          el =>
-            /eventos/i.test(
-              el.textContent || ""
-            )
-        );
-
-      item?.click();
-      return;
-    }
-
-    if(action === "explore"){
-      closeHome();
-      const search =
-        document.querySelector(
-          ".vybee-community-search"
-        );
-
-      search?.focus();
-      return;
+      case "settings":
+        document.getElementById(
+          "vybeeSettingsButton"
+        )?.click();
+        return;
     }
   }
 
@@ -9350,29 +9983,29 @@ if(requestedLive){
       "[data-home-nav]"
     )
     .forEach(
-      button => {
+      button=>{
         button.addEventListener(
           "click",
-          () => {
+          event=>{
+            event.preventDefault();
+            event.stopPropagation();
+
             document
               .querySelectorAll(
                 "[data-home-nav]"
               )
               .forEach(
                 item =>
-                  item.classList.remove(
-                    "active"
-                  )
+                  item.classList.remove("active")
               );
 
-            button.classList.add(
-              "active"
-            );
+            button.classList.add("active");
 
             go(
               button.dataset.homeNav
             );
-          }
+          },
+          true
         );
       }
     );
@@ -9381,69 +10014,56 @@ if(requestedLive){
     "vybeeHomeCreateLive"
   )?.addEventListener(
     "click",
-    () => {
-      window.openLive?.();
-    }
+    () => window.openLive?.()
   );
 
   document.getElementById(
     "vybeeHomeVoiceAction"
   )?.addEventListener(
     "click",
-    () => {
-      document.querySelector(
-        ".vybee-static-voice"
-      )?.click();
-    }
+    () => document.querySelector(
+      ".vybee-static-voice"
+    )?.click()
   );
 
   document.getElementById(
     "vybeeHomeEventsAction"
   )?.addEventListener(
     "click",
-    () => go("events")
+    () => renderEvents()
   );
 
   document.getElementById(
     "vybeeHomeJoinVoice"
   )?.addEventListener(
     "click",
-    () => {
-      document.querySelector(
-        ".vybee-static-voice"
-      )?.click();
-    }
+    () => document.querySelector(
+      ".vybee-static-voice"
+    )?.click()
   );
 
   document.getElementById(
     "vybeeHomeOpenVoice"
   )?.addEventListener(
     "click",
-    () => {
-      document.querySelector(
-        ".vybee-static-voice"
-      )?.click();
-    }
+    () => document.querySelector(
+      ".vybee-static-voice"
+    )?.click()
   );
 
   document.querySelectorAll(
     "[data-home-voice]"
   ).forEach(
-    card => {
+    card=>{
       card.addEventListener(
         "click",
-        () => {
-          closeHome();
-
+        ()=>{
           const wanted =
             card.dataset.homeVoice;
 
-          const item =
-            document.querySelector(
-              `.vybee-static-voice[data-static-voice="${wanted}"]`
-            );
-
-          item?.click();
+          document.querySelector(
+            `.vybee-static-voice[data-static-voice="${wanted}"]`
+          )?.click();
         }
       );
     }
@@ -9453,104 +10073,68 @@ if(requestedLive){
     "vybeeHomeViewVoice"
   )?.addEventListener(
     "click",
-    () => {
-      closeHome();
-      document.querySelector(
-        ".vybee-static-voice"
-      )?.click();
-    }
+    renderMessages
   );
 
   document.getElementById(
     "vybeeHomeViewLives"
   )?.addEventListener(
     "click",
-    () => {
-      closeHome();
-      document
-        .getElementById(
-          "liveGrid"
-        )
-        ?.scrollIntoView({
-          behavior:"smooth"
-        });
-    }
+    renderLives
   );
 
   document.getElementById(
     "vybeeHomeNotif"
   )?.addEventListener(
     "click",
-    () => {
-      closeHome();
-      document.getElementById(
-        "vybeeNotificationButton"
-      )?.click();
-    }
+    () => document.getElementById(
+      "vybeeNotificationButton"
+    )?.click()
   );
 
   document.getElementById(
     "vybeeHomeSettings"
   )?.addEventListener(
     "click",
-    () => {
-      closeHome();
-      document.getElementById(
-        "vybeeSettingsButton"
-      )?.click();
-    }
+    () => document.getElementById(
+      "vybeeSettingsButton"
+    )?.click()
   );
 
   document.getElementById(
     "vybeeHomeProfile"
   )?.addEventListener(
     "click",
-    () => {
-      closeHome();
-      document.getElementById(
-        "vybeeProfileButton"
-      )?.click();
-    }
+    () => document.getElementById(
+      "vybeeProfileButton"
+    )?.click()
   );
 
   document.getElementById(
     "vybeeHomeSearch"
   )?.addEventListener(
     "keydown",
-    event => {
-      if(
-        event.key !== "Enter"
-      ) return;
-
-      const search =
-        document.querySelector(
-          ".vybee-community-search"
+    event=>{
+      if(event.key === "Enter"){
+        const q=event.target.value.trim();
+        renderExplore();
+        const input=document.getElementById(
+          "vybeeModernExploreSearch"
         );
-
-      if(search){
-        search.value =
-          event.target.value;
-
-        search.dispatchEvent(
-          new Event(
-            "input",
-            {
-              bubbles:true
-            }
-          )
-        );
-
-        closeHome();
-        search.focus();
+        if(input){
+          input.value=q;
+          input.dispatchEvent(
+            new Event(
+              "input",
+              {bubbles:true}
+            )
+          );
+        }
       }
     }
   );
 
-  /*
-   * O botão HOME original do V6 passa a abrir
-   * o dashboard moderno.
-   */
-  const homeButton =
+  const homeButton=
     document.getElementById(
       "vybeeHomeButton"
     );
@@ -9558,7 +10142,7 @@ if(requestedLive){
   if(homeButton){
     homeButton.addEventListener(
       "click",
-      event => {
+      event=>{
         event.preventDefault();
         event.stopPropagation();
         openHome();
@@ -9568,93 +10152,73 @@ if(requestedLive){
   }
 
   /*
-   * Abre o Dashboard automaticamente depois que
-   * o fluxo de autenticação do V6 confirma o usuário.
+   * Dashboard moderna abre automaticamente quando o V6
+   * confirma a sessão.
    */
-  function waitForLogin(){
-    if(
-      window.vybeeCurrentUser
-    ){
-      openHome();
-      return;
-    }
+  let started=false;
 
-    setTimeout(
-      waitForLogin,
-      350
-    );
-  }
-
-  setTimeout(
-    waitForLogin,
-    500
-  );
-
-  /*
-   * VYBEE DASHBOARD AUTH WATCH
-   * Abre a interface moderna assim que a sessão do V6
-   * estiver disponível. Não altera a autenticação.
-   */
-  let dashboardAuthStarted = false;
-
-  async function openAfterAuth(){
-    if(dashboardAuthStarted) return;
-    dashboardAuthStarted = true;
+  async function waitAuth(){
+    if(started) return;
 
     for(let i=0;i<80;i++){
-      if(window.vybeeCurrentUser){
+      if(
+        window.vybeeCurrentUser
+      ){
+        started=true;
         openHome();
         return;
       }
 
       try{
-        const client =
+        const client=
           window.vybeeSupabase;
 
         if(client?.auth){
-          const result =
+          const result=
             await client.auth.getSession();
 
           if(result?.data?.session?.user){
-            window.vybeeCurrentUser =
+            window.vybeeCurrentUser=
               result.data.session.user;
 
+            started=true;
             openHome();
             return;
           }
         }
       }catch(error){
         console.warn(
-          "VYBEE Dashboard auth:",
+          "VYBEE dashboard auth:",
           error
         );
       }
 
       await new Promise(
-        resolve => setTimeout(resolve,300)
+        resolve =>
+          setTimeout(
+            resolve,
+            300
+          )
       );
     }
   }
 
-  window.addEventListener(
-    "vybee-auth-ready",
-    openAfterAuth
-  );
-
-  openAfterAuth();
+  waitAuth();
 
   setInterval(
     updateLiveCount,
     3000
   );
 
-  window.vybeeOpenDashboard =
+  window.vybeeOpenDashboard=
     openHome;
 
-  window.vybeeCloseDashboard =
+  window.vybeeCloseDashboard=
     closeHome;
 })();
 </script>
+
+
 
 
 <script id="vybee-modern-ui-guard">
