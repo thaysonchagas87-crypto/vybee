@@ -2690,6 +2690,162 @@ body.vybee-modern-home-active > .app > footer{
 }
 </style>
 
+
+<style id="vybee-community-members-style">
+.vybee-members-panel{
+  position:fixed;
+  inset:0;
+  z-index:390;
+  display:none;
+  place-items:center;
+  padding:16px;
+  background:#000d;
+}
+.vybee-members-panel.on{display:grid}
+.vybee-members-box{
+  width:min(820px,100%);
+  max-height:88vh;
+  overflow:auto;
+  border:1px solid #293036;
+  border-radius:18px;
+  background:#0b0e0f;
+  box-shadow:0 30px 100px #000d;
+}
+.vybee-members-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:16px 18px;
+  border-bottom:1px solid #20262b;
+}
+.vybee-members-head h2{
+  margin:0;
+  font-size:17px;
+}
+.vybee-members-head p{
+  margin:3px 0 0;
+  color:#747d84;
+  font-size:9px;
+}
+.vybee-members-close{
+  margin-left:auto;
+}
+.vybee-members-body{
+  padding:16px 18px 20px;
+}
+.vybee-members-tools{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+}
+.vybee-members-search{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px 11px;
+  border:1px solid #2a3136;
+  border-radius:9px;
+  background:#101415;
+  color:#fff;
+  outline:none;
+}
+.vybee-members-add{
+  border:1px solid #39ff14;
+  background:#39ff14;
+  color:#071006;
+  border-radius:9px;
+  padding:9px 12px;
+  cursor:pointer;
+  font-size:10px;
+  font-weight:900;
+}
+.vybee-members-status{
+  margin-top:7px;
+  min-height:15px;
+  color:#81898f;
+  font-size:9px;
+}
+.vybee-members-list{
+  display:grid;
+  gap:8px;
+  margin-top:12px;
+}
+.vybee-member-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:10px;
+  border:1px solid #242a2f;
+  border-radius:11px;
+  background:#101415;
+}
+.vybee-member-avatar{
+  width:34px;height:34px;display:grid;place-items:center;
+  border-radius:50%;background:#181d20;
+}
+.vybee-member-main{min-width:0;flex:1}
+.vybee-member-main strong{
+  display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.vybee-member-main span{
+  display:block;margin-top:2px;color:#737c83;font-size:8px;
+}
+.vybee-member-role{
+  border:1px solid #2b3237;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:7px 8px;
+  font-size:9px;
+}
+.vybee-member-remove{
+  border:1px solid #2b3237;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:7px 8px;
+  cursor:pointer;
+  font-size:9px;
+}
+.vybee-member-remove:hover{
+  border-color:#ff4d4d;
+  background:#241214;
+}
+.vybee-members-result{
+  margin-top:8px;
+  display:grid;
+  gap:6px;
+}
+.vybee-member-search-result{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px;
+  border:1px solid #252c31;
+  border-radius:9px;
+  background:#0e1213;
+}
+.vybee-member-search-result-main{
+  min-width:0;
+  flex:1;
+}
+.vybee-member-search-result-main strong{
+  display:block;font-size:10px;
+}
+.vybee-member-search-result-main span{
+  display:block;margin-top:2px;color:#707980;font-size:8px;
+}
+.vybee-member-add-btn{
+  border:1px solid #2b3237;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:6px 8px;
+  cursor:pointer;
+  font-size:9px;
+}
+.vybee-member-add-btn:hover{border-color:#39ff14}
+</style>
+
 </head>
 
 <body>
@@ -10892,6 +11048,15 @@ if(requestedLive){
         }
       },
       {
+        id:"vybeeMembersPanel",
+        close:function(el){
+          window.vybeeCloseMembers?.();
+
+          el.classList.remove("on");
+          el.style.display="none";
+        }
+      },
+      {
         id:"vybeeNotificationCenter",
         close:function(el){
           el.classList.remove("on");
@@ -12258,6 +12423,10 @@ if(requestedLive){
               <div class="vybee-community-manage-actions">
                 <button
                   type="button"
+                  data-community-members="${esc(community.id)}"
+                >Membros</button>
+                <button
+                  type="button"
                   data-community-edit="${esc(community.id)}"
                 >Editar</button>
                 <button
@@ -12269,6 +12438,38 @@ if(requestedLive){
             </div>
           `
         ).join("");
+
+      list
+        .querySelectorAll(
+          "[data-community-members]"
+        )
+        .forEach(
+          button => {
+            button.addEventListener(
+              "click",
+              () => {
+                const community =
+                  data.find(
+                    item =>
+                      String(item.id) ===
+                      String(
+                        button.dataset.communityMembers
+                      )
+                  );
+
+                if(
+                  community &&
+                  typeof window.vybeeOpenMembers ===
+                    "function"
+                ){
+                  window.vybeeOpenMembers(
+                    community
+                  );
+                }
+              }
+            );
+          }
+        );
 
       list
         .querySelectorAll(
@@ -12635,6 +12836,663 @@ if(requestedLive){
 
   window.vybeeCloseCommunityManager =
     closeManager;
+})();
+</script>
+
+
+<div
+  class="vybee-members-panel"
+  id="vybeeMembersPanel"
+>
+  <div class="vybee-members-box">
+    <div class="vybee-members-head">
+      <div>
+        <h2 id="vybeeMembersTitle">👥 Membros</h2>
+        <p id="vybeeMembersSubtitle">Gerencie membros e cargos.</p>
+      </div>
+
+      <button
+        type="button"
+        class="btn vybee-members-close"
+        id="vybeeMembersClose"
+      >✕</button>
+    </div>
+
+    <div class="vybee-members-body">
+      <div class="vybee-members-tools">
+        <input
+          id="vybeeMemberSearch"
+          class="vybee-members-search"
+          placeholder="Buscar pessoa por nome ou @usuário..."
+          autocomplete="off"
+        >
+
+        <button
+          type="button"
+          class="vybee-members-add"
+          id="vybeeMemberInviteButton"
+        >🤝 Adicionar</button>
+      </div>
+
+      <div
+        id="vybeeMemberSearchResults"
+        class="vybee-members-result"
+      ></div>
+
+      <div
+        id="vybeeMembersStatus"
+        class="vybee-members-status"
+      ></div>
+
+      <div
+        id="vybeeMembersList"
+        class="vybee-members-list"
+      >
+        <div class="vybee-community-empty">
+          Carregando...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script id="vybee-community-members-controller">
+(function(){
+  let currentCommunityId = null;
+  let currentCommunity = null;
+  let memberRows = [];
+
+  function sb(){
+    return window.vybeeSupabase || null;
+  }
+
+  function user(){
+    return window.vybeeCurrentUser || null;
+  }
+
+  function el(id){
+    return document.getElementById(id);
+  }
+
+  function esc(v){
+    return String(v??"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function openMembers(community){
+    if(!community || !user()) return;
+
+    currentCommunity=community;
+    currentCommunityId=community.id;
+
+    el("vybeeMembersTitle").textContent =
+      "👥 " + (community.name || "Membros");
+
+    el("vybeeMembersSubtitle").textContent =
+      "Adicione pessoas e organize os cargos da comunidade.";
+
+    el("vybeeMemberSearch").value="";
+    el("vybeeMemberSearchResults").innerHTML="";
+    el("vybeeMembersStatus").textContent="";
+
+    el("vybeeMembersPanel")
+      ?.classList.add("on");
+
+    loadMembers();
+  }
+
+  function closeMembers(){
+    el("vybeeMembersPanel")
+      ?.classList.remove("on");
+    currentCommunityId=null;
+    currentCommunity=null;
+  }
+
+  async function loadMembers(){
+    const client=sb();
+    const list=el("vybeeMembersList");
+
+    if(!client || !currentCommunityId || !list) return;
+
+    list.innerHTML =
+      '<div class="vybee-community-empty">Carregando membros...</div>';
+
+    try{
+      const {data,error}=
+        await client
+          .from("community_members")
+          .select(
+            "id,user_id,role,created_at"
+          )
+          .eq(
+            "community_id",
+            currentCommunityId
+          )
+          .order(
+            "created_at",
+            {ascending:true}
+          );
+
+      if(error) throw error;
+
+      memberRows=data||[];
+
+      if(!memberRows.length){
+        list.innerHTML =
+          '<div class="vybee-community-empty">Nenhum membro encontrado.</div>';
+        return;
+      }
+
+      const ids=memberRows.map(
+        row=>row.user_id
+      );
+
+      const {data:profiles,error:profileError}=
+        await client
+          .from("profiles")
+          .select(
+            "id,display_name,username"
+          )
+          .in(
+            "id",
+            ids
+          );
+
+      if(profileError) throw profileError;
+
+      const byId=
+        new Map(
+          (profiles||[]).map(
+            profile=>[
+              profile.id,
+              profile
+            ]
+          )
+        );
+
+      const me=user();
+
+      list.innerHTML=
+        memberRows.map(
+          row=>{
+            const profile=
+              byId.get(
+                row.user_id
+              );
+
+            const isOwner =
+              row.user_id ===
+              currentCommunity?.owner_id;
+
+            const isMe =
+              row.user_id ===
+              me?.id;
+
+            const locked =
+              isOwner ||
+              isMe;
+
+            return `
+              <div
+                class="vybee-member-row"
+                data-member-row="${esc(row.id)}"
+              >
+                <div class="vybee-member-avatar">
+                  ${isOwner ? "👑" : "👤"}
+                </div>
+
+                <div class="vybee-member-main">
+                  <strong>
+                    ${esc(
+                      profile?.display_name ||
+                      profile?.username ||
+                      "Usuário"
+                    )}
+                  </strong>
+
+                  <span>
+                    ${
+                      profile?.username
+                        ? "@"+esc(profile.username)
+                        : "membro"
+                    }
+                  </span>
+                </div>
+
+                <select
+                  class="vybee-member-role"
+                  data-member-role="${esc(row.id)}"
+                  ${locked ? "disabled" : ""}
+                >
+                  <option
+                    value="member"
+                    ${row.role==="member"?"selected":""}
+                  >Membro</option>
+
+                  <option
+                    value="moderator"
+                    ${row.role==="moderator"?"selected":""}
+                  >Moderador</option>
+
+                  <option
+                    value="admin"
+                    ${row.role==="admin"?"selected":""}
+                  >Administrador</option>
+
+                  <option
+                    value="owner"
+                    ${row.role==="owner"?"selected":""}
+                  >Owner</option>
+                </select>
+
+                <button
+                  type="button"
+                  class="vybee-member-remove"
+                  data-member-remove="${esc(row.id)}"
+                  ${locked ? "disabled" : ""}
+                >Remover</button>
+              </div>
+            `;
+          }
+        ).join("");
+
+      list
+        .querySelectorAll(
+          "[data-member-role]"
+        )
+        .forEach(
+          select=>{
+            select.addEventListener(
+              "change",
+              ()=>updateRole(
+                select.dataset.memberRole,
+                select.value
+              )
+            );
+          }
+        );
+
+      list
+        .querySelectorAll(
+          "[data-member-remove]"
+        )
+        .forEach(
+          button=>{
+            button.addEventListener(
+              "click",
+              ()=>removeMember(
+                button.dataset.memberRemove
+              )
+            );
+          }
+        );
+
+    }catch(error){
+      console.error(
+        "VYBEE members:",
+        error
+      );
+
+      list.innerHTML =
+        '<div class="vybee-community-empty">Não foi possível carregar os membros. Verifique as políticas do Supabase.</div>';
+    }
+  }
+
+  async function searchPeople(value){
+    const client=sb();
+    const results=el("vybeeMemberSearchResults");
+
+    if(!client || !currentCommunityId || !results) return;
+
+    const term=
+      String(value||"")
+        .trim();
+
+    if(term.length<2){
+      results.innerHTML="";
+      return;
+    }
+
+    try{
+      const safe =
+        term
+          .replaceAll("%","\\%")
+          .replaceAll("_","\\_");
+
+      const {data,error}=
+        await client
+          .from("profiles")
+          .select(
+            "id,display_name,username"
+          )
+          .or(
+            `display_name.ilike.%${safe}%,username.ilike.%${safe}%`
+          )
+          .limit(15);
+
+      if(error) throw error;
+
+      const existingIds=
+        new Set(
+          memberRows.map(
+            row=>String(row.user_id)
+          )
+        );
+
+      const candidates=
+        (data||[])
+          .filter(
+            profile =>
+              profile.id !==
+              user()?.id &&
+              !existingIds.has(
+                String(profile.id)
+              )
+          );
+
+      if(!candidates.length){
+        results.innerHTML =
+          '<div class="vybee-community-empty">Nenhuma pessoa disponível para adicionar.</div>';
+        return;
+      }
+
+      results.innerHTML=
+        candidates.map(
+          profile=>`
+            <div class="vybee-member-search-result">
+              <div class="vybee-member-avatar">👤</div>
+
+              <div class="vybee-member-search-result-main">
+                <strong>${esc(
+                  profile.display_name ||
+                  "Usuário"
+                )}</strong>
+                <span>${
+                  profile.username
+                    ? "@"+esc(profile.username)
+                    : ""
+                }</span>
+              </div>
+
+              <button
+                type="button"
+                class="vybee-member-add-btn"
+                data-member-add="${esc(profile.id)}"
+              >Adicionar</button>
+            </div>
+          `
+        ).join("");
+
+      results
+        .querySelectorAll(
+          "[data-member-add]"
+        )
+        .forEach(
+          button=>{
+            button.addEventListener(
+              "click",
+              ()=>addMember(
+                button.dataset.memberAdd
+              )
+            );
+          }
+        );
+
+    }catch(error){
+      console.error(
+        "VYBEE member search:",
+        error
+      );
+
+      results.innerHTML =
+        '<div class="vybee-community-empty">Não foi possível buscar usuários.</div>';
+    }
+  }
+
+  async function addMember(userId){
+    const client=sb();
+    const current=user();
+    const status=el("vybeeMembersStatus");
+
+    if(
+      !client ||
+      !current ||
+      !currentCommunityId ||
+      !userId
+    ){
+      return;
+    }
+
+    status.textContent =
+      "Adicionando...";
+
+    try{
+      const {error}=
+        await client
+          .from("community_members")
+          .insert({
+            community_id:
+              currentCommunityId,
+            user_id:
+              userId,
+            role:
+              "member"
+          });
+
+      if(error) throw error;
+
+      status.textContent =
+        "✅ Membro adicionado.";
+
+      el("vybeeMemberSearchResults")
+        .innerHTML="";
+
+      el("vybeeMemberSearch")
+        .value="";
+
+      await loadMembers();
+
+      /*
+       * Informa o novo membro por atividade local.
+       */
+      window.vybeeAddActivity?.({
+        id:
+          "member-add:"+
+          currentCommunityId+
+          ":"+
+          userId+
+          ":"+
+          Date.now(),
+        icon:"🤝",
+        title:"Novo membro na comunidade",
+        text:
+          (currentCommunity?.name || "Comunidade")+
+          " • membro adicionado."
+      });
+
+    }catch(error){
+      console.error(
+        "VYBEE add member:",
+        error
+      );
+
+      status.textContent =
+        "❌ Não foi possível adicionar. Verifique as políticas de acesso do Supabase.";
+    }
+  }
+
+  async function updateRole(
+    membershipId,
+    role
+  ){
+    const client=sb();
+
+    if(
+      !client ||
+      !membershipId
+    ){
+      return;
+    }
+
+    try{
+      const {error}=
+        await client
+          .from("community_members")
+          .update({
+            role
+          })
+          .eq(
+            "id",
+            membershipId
+          );
+
+      if(error) throw error;
+
+      el("vybeeMembersStatus")
+        .textContent =
+        "✅ Cargo atualizado.";
+
+    }catch(error){
+      console.error(
+        "VYBEE role:",
+        error
+      );
+
+      el("vybeeMembersStatus")
+        .textContent =
+        "❌ Não foi possível alterar o cargo. Verifique as políticas do banco.";
+
+      await loadMembers();
+    }
+  }
+
+  async function removeMember(
+    membershipId
+  ){
+    const client=sb();
+
+    if(
+      !client ||
+      !membershipId
+    ){
+      return;
+    }
+
+    if(
+      !window.confirm(
+        "Remover este membro da comunidade?"
+      )
+    ){
+      return;
+    }
+
+    try{
+      const {error}=
+        await client
+          .from("community_members")
+          .delete()
+          .eq(
+            "id",
+            membershipId
+          );
+
+      if(error) throw error;
+
+      el("vybeeMembersStatus")
+        .textContent =
+        "✅ Membro removido.";
+
+      await loadMembers();
+
+    }catch(error){
+      console.error(
+        "VYBEE remove member:",
+        error
+      );
+
+      el("vybeeMembersStatus")
+        .textContent =
+        "❌ Não foi possível remover o membro.";
+    }
+  }
+
+  function bind(){
+    el("vybeeMembersClose")
+      ?.addEventListener(
+        "click",
+        closeMembers
+      );
+
+    el("vybeeMembersPanel")
+      ?.addEventListener(
+        "click",
+        event=>{
+          if(
+            event.target.id ===
+            "vybeeMembersPanel"
+          ){
+            closeMembers();
+          }
+        }
+      );
+
+    el("vybeeMemberSearch")
+      ?.addEventListener(
+        "input",
+        event=>{
+          clearTimeout(
+            event.target._vybeeTimer
+          );
+
+          event.target._vybeeTimer=
+            setTimeout(
+              ()=>searchPeople(
+                event.target.value
+              ),
+              280
+            );
+        }
+      );
+  }
+
+  bind();
+
+  document.addEventListener(
+    "click",
+    event=>{
+      const button=
+        event.target.closest?.(
+          "[data-community-members]"
+        );
+
+      if(!button) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const ownerRows =
+        document.querySelectorAll(
+          "[data-community-owner-row]"
+        );
+
+      /*
+       * A lista do manager é o ponto principal; o botão é ligado
+       * diretamente abaixo também quando o manager renderiza.
+       */
+    },
+    true
+  );
+
+  window.vybeeOpenMembers =
+    openMembers;
+
+  window.vybeeCloseMembers =
+    closeMembers;
 })();
 </script>
 
