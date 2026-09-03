@@ -1177,7 +1177,14 @@ RESPONSIVE
 }
 
 
-/* VYBEE V7 — destaque de quem está falando */
+/* =========================================================
+   VYBEE COMPLETE VOICE PACK
+   Added on top of the proven V6 baseline.
+   ========================================================= */
+.voice-member{
+  position:relative;
+  user-select:none;
+}
 .voice-member.speaking{
   background:#16220f;
   outline:1px solid #53ff1a;
@@ -1186,18 +1193,15 @@ RESPONSIVE
   box-shadow:0 0 0 3px #53ff1a;
 }
 .voice-speaking-dot{
-  display:inline-block;
   width:7px;
   height:7px;
-  margin-left:5px;
   border-radius:50%;
+  display:inline-block;
+  margin-left:5px;
   background:#53ff1a;
   box-shadow:0 0 8px #53ff1a;
   vertical-align:middle;
 }
-
-
-/* VYBEE V8 — moderação */
 .voice-member-actions{
   display:none;
   gap:4px;
@@ -1221,10 +1225,111 @@ RESPONSIVE
 .voice-member-actions button.danger:hover{
   background:#7d1e1e;
 }
-.voice-moderation-badge{
+.voice-member-volume{
+  width:65px;
+  accent-color:#53ff1a;
+}
+.voice-count-pill{
+  color:var(--n);
+  font-size:11px;
+  font-weight:700;
+  margin-left:4px;
+}
+.voice-grid{
+  position:absolute;
+  inset:0;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  grid-auto-rows:minmax(160px,1fr);
+  gap:10px;
+  padding:12px;
+  overflow:auto;
+  align-content:center;
+}
+.voice-tile{
+  position:relative;
+  min-height:160px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#0c0e0f;
+}
+.voice-tile video{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:contain;
+  background:#000;
+}
+.voice-tile-label{
+  position:absolute;
+  left:8px;
+  bottom:8px;
+  padding:5px 8px;
+  border-radius:8px;
+  background:#000b;
+  color:#fff;
+  font-size:11px;
+}
+.voice-tile-badge{
+  position:absolute;
+  top:8px;
+  right:8px;
+  padding:5px 8px;
+  border-radius:8px;
+  background:#e53935;
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+}
+.voice-pinned{
+  border-color:#53ff1a;
+  box-shadow:0 0 0 2px #53ff1a55;
+}
+.voice-staff-badge{
   color:#53ff1a;
   font-size:10px;
-  margin-left:4px;
+  margin-left:5px;
+}
+.voice-room-toast{
+  position:absolute;
+  left:50%;
+  bottom:78px;
+  transform:translateX(-50%);
+  z-index:20;
+  display:none;
+  padding:9px 12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#16191b;
+  color:#fff;
+  font-size:12px;
+}
+.voice-room-toast.on{
+  display:block;
+}
+.voice-moderation-panel{
+  display:none;
+  gap:6px;
+  flex-wrap:wrap;
+  padding:8px 10px;
+  border-bottom:1px solid var(--line);
+  background:#0d0f10;
+}
+.voice-moderation-panel.on{
+  display:flex;
+}
+.voice-moderation-panel button{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#171b1e;
+  color:#fff;
+  padding:7px 10px;
+  cursor:pointer;
+  font-size:11px;
+}
+.voice-moderation-panel button:hover{
+  border-color:#53ff1a;
 }
 
 </style>
@@ -1787,7 +1892,6 @@ RESPONSIVE
       <div class="voice-head-title">
         <strong id="voiceRoomTitle">🎙️ Sala de voz</strong>
         <span id="voiceRoomSubtitle">Conectando...</span>
-        <span id="voiceRoleBadge" class="voice-moderation-badge"></span>
       </div>
       <button class="btn" id="voiceCloseButton">✕ Fechar</button>
     </div>
@@ -1795,6 +1899,9 @@ RESPONSIVE
     <div class="voice-layout">
       <aside class="voice-members">
         <h4>Pessoas na sala</h4>
+        <div class="voice-moderation-panel" id="voiceModerationPanel">
+          <button id="voiceModerationInfo">🛡️ Moderação</button>
+        </div>
         <div id="voiceMembersList"></div>
       </aside>
 
@@ -1817,6 +1924,7 @@ RESPONSIVE
       <button class="btn" id="voiceDeafenButton">🔊 Áudio</button>
       <button class="btn" id="voiceCameraButton">📷 Câmera</button>
       <button class="btn" id="voiceScreenButton">🖥️ Compartilhar tela</button>
+      <button class="btn" id="voiceSettingsButton">⚙️ Controles</button>
       <button class="btn red" id="voiceLeaveButton">🚪 Sair da sala</button>
     </div>
   </div>
@@ -2764,16 +2872,6 @@ RESPONSIVE
   window.vybeeGetCurrentProfile =
     () => currentProfile;
 
-  window.vybeeGetAccessToken = async () => {
-    try {
-      const { data } =
-        await supabase.auth.getSession();
-      return data?.session?.access_token || null;
-    } catch (_) {
-      return null;
-    }
-  };
-
   initSupabaseApp();
 
 
@@ -2824,9 +2922,25 @@ import {
 } from "https://cdn.jsdelivr.net/npm/livekit-client@2/+esm";
 
 /*
- * VYBEE VOICE ROOMS — V4
- * Voz, câmera opcional e compartilhamento de tela.
+ * VYBEE — VOICE COMPLETE
+ * Base: V6 funcional.
+ *
+ * Recursos:
+ * - voz coletiva
+ * - presença
+ * - contador
+ * - indicador de fala
+ * - volume individual
+ * - mute/deafen local
+ * - câmera opcional
+ * - compartilhamento de tela
+ * - áudio do compartilhamento
+ * - grade para múltiplos vídeos
+ * - fixar vídeo
+ * - cargo da comunidade
+ * - moderação via endpoint seguro
  */
+
 let voiceRoom = null;
 let voiceRoomInfo = null;
 let voiceMicEnabled = false;
@@ -2837,25 +2951,38 @@ let voiceMediaElements = new Map();
 let voicePresenceChannel = null;
 let voiceActiveSpeakers = new Set();
 let voiceCurrentRole = "member";
-let voicePresence = new Map();
+let voicePinnedParticipant = null;
 
 const voiceModal = () =>
-  document.getElementById("voiceRoomModal");
+  document.getElementById(
+    "voiceRoomModal"
+  );
 
 const voiceStatus = () =>
-  document.getElementById("voiceStatus");
+  document.getElementById(
+    "voiceStatus"
+  );
 
 const voiceMembers = () =>
-  document.getElementById("voiceMembersList");
+  document.getElementById(
+    "voiceMembersList"
+  );
 
 const voiceScreen = () =>
-  document.getElementById("voiceScreen");
+  document.getElementById(
+    "voiceScreen"
+  );
 
 const voiceAudio = () =>
-  document.getElementById("voiceAudioContainer");
+  document.getElementById(
+    "voiceAudioContainer"
+  );
 
-/* escapeHTML está em outro módulo; a sala de voz usa sua própria versão
-   para não depender de escopo de outro módulo ES. */
+const voiceToast = () =>
+  document.getElementById(
+    "voiceRoomToast"
+  );
+
 function voiceEscapeHTML(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -2870,31 +2997,63 @@ function voiceSetStatus(text) {
   if (el) el.textContent = text;
 }
 
+function voiceNotify(text) {
+  const el = voiceToast();
+
+  if (!el) {
+    voiceSetStatus(text);
+    return;
+  }
+
+  el.textContent = text;
+  el.classList.add("on");
+
+  clearTimeout(el._vybeeTimer);
+
+  el._vybeeTimer =
+    setTimeout(
+      () =>
+        el.classList.remove(
+          "on"
+        ),
+      2500
+    );
+}
+
 function voiceShowModal() {
-  voiceModal()?.classList.add("on");
+  voiceModal()
+    ?.classList.add("on");
 }
 
 function voiceHideModal() {
-  voiceModal()?.classList.remove("on");
+  voiceModal()
+    ?.classList.remove("on");
 }
 
 function voiceIdentity() {
   return (
     "voice-" +
-    crypto.randomUUID()
+    crypto
+      .randomUUID()
       .replaceAll("-", "")
       .slice(0, 10)
   );
 }
 
-function voiceDisplayName(participant) {
-  const local =
-    participant === voiceRoom?.localParticipant;
+function voiceDisplayName(
+  participant
+) {
+  if (
+    participant ===
+    voiceRoom?.localParticipant
+  ) {
+    const user =
+      window.vybeeCurrentUser ||
+      null;
 
-  if (local) {
-    const user = window.vybeeCurrentUser || null;
     const profile =
-      window.vybeeGetCurrentProfile?.() || null;
+      window.vybeeGetCurrentProfile?.() ||
+      null;
 
     return (
       profile?.display_name ||
@@ -2905,227 +3064,11 @@ function voiceDisplayName(participant) {
     );
   }
 
-  return participant?.name ||
-    participant?.identity ||
-    "Usuário";
-}
-
-
-function voicePresenceName() {
-  const profile =
-    window.vybeeGetCurrentProfile?.() || null;
-  const user =
-    window.vybeeCurrentUser || null;
-
   return (
-    profile?.display_name ||
-    profile?.username ||
-    user?.user_metadata?.display_name ||
-    user?.email ||
-    "Usuário VYBEE"
+    participant?.name ||
+    participant?.identity ||
+    "Usuário"
   );
-}
-
-async function joinVoicePresence() {
-  const sb = window.vybeeSupabase;
-
-  if (
-    !sb ||
-    !voiceRoomInfo
-  ) {
-    return;
-  }
-
-  try {
-    if (voicePresenceChannel) {
-      await sb.removeChannel(
-        voicePresenceChannel
-      );
-      voicePresenceChannel = null;
-    }
-
-    voicePresence = new Map();
-
-    const key =
-      "voice:" +
-      voiceRoomInfo.communityId +
-      ":" +
-      voiceRoomInfo.channelId;
-
-    voicePresenceChannel =
-      sb.channel(key, {
-        config: {
-          presence: {
-            key:
-              window.vybeeCurrentUser?.id ||
-              voiceIdentity()
-          }
-        }
-      });
-
-    voicePresenceChannel.on(
-      "presence",
-      {
-        event: "sync"
-      },
-      () => {
-        const state =
-          voicePresenceChannel.presenceState();
-
-        voicePresence.clear();
-
-        Object.entries(state || {})
-          .forEach(
-            ([key, entries]) => {
-              const last =
-                Array.isArray(entries)
-                  ? entries[entries.length - 1]
-                  : entries;
-
-              if (last) {
-                voicePresence.set(
-                  key,
-                  last
-                );
-              }
-            }
-          );
-
-        updateVoiceSidebarCount();
-      }
-    );
-
-    voicePresenceChannel.on(
-      "presence",
-      {
-        event: "join"
-      },
-      () => {
-        updateVoiceSidebarCount();
-      }
-    );
-
-    voicePresenceChannel.on(
-      "presence",
-      {
-        event: "leave"
-      },
-      () => {
-        updateVoiceSidebarCount();
-      }
-    );
-
-    await voicePresenceChannel.subscribe(
-      async status => {
-        if (
-          status !== "SUBSCRIBED"
-        ) {
-          return;
-        }
-
-        await voicePresenceChannel.track({
-          user_id:
-            window.vybeeCurrentUser?.id ||
-            null,
-          name:
-            voicePresenceName(),
-          mic:
-            voiceMicEnabled,
-          camera:
-            voiceCameraEnabled,
-          screen:
-            voiceScreenEnabled,
-          joined_at:
-            Date.now()
-        });
-      }
-    );
-
-  } catch (error) {
-    console.warn(
-      "VYBEE VOICE: presença:",
-      error
-    );
-  }
-}
-
-async function updateVoicePresence() {
-  if (!voicePresenceChannel) {
-    return;
-  }
-
-  try {
-    await voicePresenceChannel.track({
-      user_id:
-        window.vybeeCurrentUser?.id ||
-        null,
-      name:
-        voicePresenceName(),
-      mic:
-        voiceMicEnabled,
-      camera:
-        voiceCameraEnabled,
-      screen:
-        voiceScreenEnabled,
-      joined_at:
-        Date.now()
-    });
-  } catch (_) {}
-}
-
-function updateVoiceSidebarCount() {
-  if (!voiceRoomInfo) return;
-
-  const count =
-    voicePresence.size ||
-    (
-      voiceRoom
-        ? voiceRoom.remoteParticipants.size + 1
-        : 0
-    );
-
-  document
-    .querySelectorAll(
-      `[data-voice-channel-id="${CSS.escape(
-        voiceRoomInfo.channelId
-      )}"]`
-    )
-    .forEach(item => {
-      let pill =
-        item.querySelector(
-          ".voice-count-pill"
-        );
-
-      if (!pill) {
-        pill =
-          document.createElement(
-            "span"
-          );
-        pill.className =
-          "voice-count-pill";
-        item.appendChild(pill);
-      }
-
-      pill.textContent =
-        "· " + count;
-    });
-
-  const subtitle =
-    document.getElementById(
-      "voiceRoomSubtitle"
-    );
-
-  if (subtitle) {
-    subtitle.textContent =
-      (
-        voiceRoomInfo.communityName ||
-        "VYBEE"
-      ) +
-      " • " +
-      count +
-      " participante" +
-      (count === 1 ? "" : "s");
-  }
 }
 
 function voiceIsStaff() {
@@ -3160,7 +3103,9 @@ async function voiceLoadRole() {
   try {
     const { data } =
       await sb
-        .from("community_members")
+        .from(
+          "community_members"
+        )
         .select("role")
         .eq(
           "community_id",
@@ -3179,8 +3124,20 @@ async function voiceLoadRole() {
     }
   } catch (error) {
     console.warn(
-      "VYBEE: cargo da sala:",
+      "VYBEE VOICE role:",
       error
+    );
+  }
+
+  const panel =
+    document.getElementById(
+      "voiceModerationPanel"
+    );
+
+  if (panel) {
+    panel.classList.toggle(
+      "on",
+      voiceIsStaff()
     );
   }
 
@@ -3197,228 +3154,228 @@ async function voiceLoadRole() {
   }
 }
 
-async function voiceModerationRequest(
-  action,
-  participant,
-  trackSid = null
-) {
-  if (!voiceIsStaff()) {
-    voiceNotify(
-      "🔒 Você não possui permissão para moderar."
-    );
-    return false;
-  }
-
-  const accessToken =
-    await window.vybeeGetAccessToken?.();
-
-  if (!accessToken) {
-    voiceNotify(
-      "Sessão expirada. Entre novamente."
-    );
-    return false;
-  }
-
-  try {
-    const response =
-      await fetch(
-        "/api/voice-moderation",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-            "Authorization":
-              "Bearer " + accessToken
-          },
-          body: JSON.stringify({
-            action,
-            community_id:
-              voiceRoomInfo.communityId,
-            room_name:
-              "vybee-voice-" +
-              voiceRoomInfo.communityId +
-              "-" +
-              voiceRoomInfo.channelId,
-            target_identity:
-              participant.identity,
-            track_sid:
-              trackSid
-          })
-        }
-      );
-
-    const data =
-      await response
-        .json()
-        .catch(
-          () => ({})
-        );
-
-    if (!response.ok) {
-      throw new Error(
-        data?.error ||
-        "Ação recusada."
-      );
-    }
-
-    return true;
-
-  } catch (error) {
-    console.error(
-      "VYBEE moderation:",
-      error
-    );
-
-    voiceNotify(
-      "🔴 " + error.message
-    );
-
-    return false;
-  }
-}
-
-async function voiceMuteParticipant(
-  participant
-) {
-  const publication =
-    participant.getTrackPublication?.(
-      Track.Source.Microphone
-    );
-
-  if (!publication?.trackSid) {
-    voiceNotify(
-      "Microfone ativo não encontrado."
-    );
+function updateVoiceSpeakerUI() {
+  if (!voiceRoom) {
     return;
   }
 
-  if (
-    await voiceModerationRequest(
-      "mute_microphone",
-      participant,
-      publication.trackSid
-    )
-  ) {
-    voiceNotify(
-      "🔇 Microfone de " +
-      voiceDisplayName(participant) +
-      " silenciado."
-    );
-  }
-}
+  const list =
+    voiceMembers();
 
-async function voiceStopScreen(
-  participant
-) {
-  const publication =
-    participant.getTrackPublication?.(
-      Track.Source.ScreenShare
-    );
-
-  if (!publication?.trackSid) {
-    voiceNotify(
-      "Esse participante não está compartilhando tela."
-    );
+  if (!list) {
     return;
   }
-
-  if (
-    await voiceModerationRequest(
-      "stop_screen",
-      participant,
-      publication.trackSid
-    )
-  ) {
-    voiceNotify(
-      "🖥️ Compartilhamento encerrado."
-    );
-  }
-}
-
-async function voiceKickParticipant(
-  participant
-) {
-  const name =
-    voiceDisplayName(
-      participant
-    );
-
-  if (
-    !window.confirm(
-      "Expulsar " +
-      name +
-      " da sala?"
-    )
-  ) {
-    return;
-  }
-
-  if (
-    await voiceModerationRequest(
-      "remove_participant",
-      participant
-    )
-  ) {
-    voiceNotify(
-      "🚪 " + name +
-      " foi removido da sala."
-    );
-  }
-}
-
-function updateVoiceSpeakingState() {
-  if (!voiceRoom) return;
-
-  const list = voiceMembers();
-  if (!list) return;
 
   const participants = [
     voiceRoom.localParticipant,
     ...Array.from(
-      voiceRoom.remoteParticipants.values()
+      voiceRoom.remoteParticipants
+        .values()
     )
   ];
 
-  const items =
-    list.querySelectorAll(
+  list
+    .querySelectorAll(
       ".voice-member"
-    );
+    )
+    .forEach(
+      (item, index) => {
+        const participant =
+          participants[index];
 
-  items.forEach(
-    (item, index) => {
-      const participant =
-        participants[index];
+        const key =
+          participant?.sid ||
+          participant?.identity;
+
+        const speaking =
+          Boolean(
+            key &&
+            voiceActiveSpeakers.has(
+              key
+            )
+          );
+
+        item.classList.toggle(
+          "speaking",
+          speaking
+        );
+
+        const name =
+          item.querySelector(
+            ".voice-member-name"
+          );
+
+        if (!name) return;
+
+        let dot =
+          name.querySelector(
+            ".voice-speaking-dot"
+          );
+
+        if (
+          speaking &&
+          !dot
+        ) {
+          dot =
+            document.createElement(
+              "span"
+            );
+
+          dot.className =
+            "voice-speaking-dot";
+
+          dot.title =
+            "Falando agora";
+
+          name.appendChild(
+            dot
+          );
+        }
+
+        if (
+          !speaking &&
+          dot
+        ) {
+          dot.remove();
+        }
+      }
+    );
+}
+
+function updateVoiceMemberList() {
+  const list =
+    voiceMembers();
+
+  if (
+    !list ||
+    !voiceRoom
+  ) {
+    return;
+  }
+
+  list.innerHTML = "";
+
+  const participants = [
+    voiceRoom.localParticipant,
+    ...Array.from(
+      voiceRoom.remoteParticipants
+        .values()
+    )
+  ];
+
+  participants.forEach(
+    participant => {
+      const item =
+        document.createElement(
+          "div"
+        );
+
+      item.className =
+        "voice-member";
+
+      if (
+        participant ===
+        voiceRoom.localParticipant
+      ) {
+        item.classList.add(
+          "active"
+        );
+      }
 
       const key =
         participant?.sid ||
         participant?.identity;
 
-      const speaking =
-        Boolean(
-          key &&
-          voiceActiveSpeakers.has(key)
+      if (
+        voiceActiveSpeakers.has(
+          key
+        )
+      ) {
+        item.classList.add(
+          "speaking"
+        );
+      }
+
+      const displayName =
+        voiceDisplayName(
+          participant
         );
 
-      item.classList.toggle(
-        "speaking",
-        speaking
-      );
+      const mic =
+        participant.getTrackPublication?.(
+          Track.Source.Microphone
+        );
+
+      const camera =
+        participant.getTrackPublication?.(
+          Track.Source.Camera
+        );
+
+      const screen =
+        participant.getTrackPublication?.(
+          Track.Source.ScreenShare
+        );
+
+      const micOn =
+        mic
+          ? !mic.isMuted
+          : participant ===
+              voiceRoom.localParticipant
+            ? voiceMicEnabled
+            : false;
+
+      const cameraOn =
+        camera
+          ? !camera.isMuted
+          : participant ===
+              voiceRoom.localParticipant
+            ? voiceCameraEnabled
+            : false;
+
+      const screenOn =
+        screen
+          ? !screen.isMuted
+          : false;
+
+      const avatar =
+        document.createElement(
+          "div"
+        );
+
+      avatar.className =
+        "voice-avatar";
+
+      avatar.textContent =
+        cameraOn
+          ? "📷"
+          : "👤";
+
+      const info =
+        document.createElement(
+          "div"
+        );
+
+      info.className =
+        "voice-member-name";
 
       const name =
-        item.querySelector(
-          ".voice-member-name"
+        document.createElement(
+          "span"
         );
 
-      if (!name) return;
+      name.textContent =
+        displayName;
 
-      let dot =
-        name.querySelector(
-          ".voice-speaking-dot"
-        );
+      info.appendChild(
+        name
+      );
 
-      if (speaking && !dot) {
-        dot =
+      if (
+        voiceActiveSpeakers.has(
+          key
+        )
+      ) {
+        const dot =
           document.createElement(
             "span"
           );
@@ -3429,24 +3386,205 @@ function updateVoiceSpeakingState() {
         dot.title =
           "Falando agora";
 
-        name.appendChild(dot);
+        info.appendChild(
+          dot
+        );
       }
 
-      if (!speaking && dot) {
-        dot.remove();
+      const state =
+        document.createElement(
+          "span"
+        );
+
+      state.className =
+        "voice-member-state";
+
+      state.textContent =
+        (micOn ? "🎙️" : "🔇") +
+        (screenOn ? " 🖥️" : "");
+
+      const actions =
+        document.createElement(
+          "div"
+        );
+
+      actions.className =
+        "voice-member-actions";
+
+      if (
+        participant !==
+        voiceRoom.localParticipant
+      ) {
+        const audio =
+          voiceMediaElements.get(
+            participant.identity +
+            "::audio"
+          );
+
+        if (audio) {
+          const volume =
+            document.createElement(
+              "input"
+            );
+
+          volume.type =
+            "range";
+          volume.min = "0";
+          volume.max = "1";
+          volume.step = "0.05";
+          volume.value =
+            String(
+              audio.volume ?? 1
+            );
+
+          volume.className =
+            "voice-member-volume";
+
+          volume.title =
+            "Volume de " +
+            displayName;
+
+          volume.addEventListener(
+            "input",
+            () => {
+              audio.volume =
+                Number(
+                  volume.value
+                );
+            }
+          );
+
+          actions.appendChild(
+            volume
+          );
+        }
+
+        if (voiceIsStaff()) {
+          const mute =
+            document.createElement(
+              "button"
+            );
+
+          mute.textContent =
+            "🔇";
+
+          mute.title =
+            "Silenciar";
+
+          mute.addEventListener(
+            "click",
+            event => {
+              event.stopPropagation();
+
+              voiceMuteParticipant(
+                participant
+              );
+            }
+          );
+
+          const stopScreen =
+            document.createElement(
+              "button"
+            );
+
+          stopScreen.textContent =
+            "🖥️";
+
+          stopScreen.title =
+            "Encerrar tela";
+
+          stopScreen.addEventListener(
+            "click",
+            event => {
+              event.stopPropagation();
+
+              voiceStopScreen(
+                participant
+              );
+            }
+          );
+
+          const kick =
+            document.createElement(
+              "button"
+            );
+
+          kick.textContent =
+            "🚪";
+
+          kick.title =
+            "Expulsar";
+
+          kick.className =
+            "danger";
+
+          kick.addEventListener(
+            "click",
+            event => {
+              event.stopPropagation();
+
+              voiceKickParticipant(
+                participant
+              );
+            }
+          );
+
+          actions.append(
+            mute,
+            stopScreen,
+            kick
+          );
+        }
+
+        const pin =
+          document.createElement(
+            "button"
+          );
+
+        pin.textContent =
+          voicePinnedParticipant ===
+          participant.identity
+            ? "📌"
+            : "📍";
+
+        pin.title =
+          "Fixar vídeo";
+
+        pin.addEventListener(
+          "click",
+          event => {
+            event.stopPropagation();
+
+            voicePinnedParticipant =
+              voicePinnedParticipant ===
+              participant.identity
+                ? null
+                : participant.identity;
+
+            updateVoiceTiles();
+            updateVoiceMemberList();
+          }
+        );
+
+        actions.appendChild(
+          pin
+        );
       }
+
+      item.append(
+        avatar,
+        info,
+        state,
+        actions
+      );
+
+      list.appendChild(
+        item
+      );
     }
   );
-}
 
-function updateVoiceMemberList() {
-  const list = voiceMembers();
-  if (!list || !voiceRoom) return;
-
-  list.innerHTML = "";
-
-  const remoteCount =
-    voiceRoom.remoteParticipants.size;
+  updateVoiceSpeakerUI();
 
   const subtitle =
     document.getElementById(
@@ -3455,329 +3593,226 @@ function updateVoiceMemberList() {
 
   if (subtitle) {
     subtitle.textContent =
-      (voiceRoomInfo?.communityName || "VYBEE") +
+      (
+        voiceRoomInfo?.communityName ||
+        "VYBEE"
+      ) +
       " • " +
-      (remoteCount + 1) +
+      participants.length +
       " participante" +
-      (remoteCount === 0 ? "" : "s");
+      (
+        participants.length === 1
+          ? ""
+          : "s"
+      );
+  }
+}
+
+function ensureVoiceGrid() {
+  const stage =
+    voiceScreen();
+
+  if (!stage) {
+    return null;
   }
 
-  const participants = [
-    voiceRoom.localParticipant,
-    ...Array.from(voiceRoom.remoteParticipants.values())
-  ];
+  let grid =
+    document.getElementById(
+      "voiceGrid"
+    );
 
-  participants.forEach(participant => {
-    const item = document.createElement("div");
-    item.className = "voice-member";
-
-    if (participant === voiceRoom.localParticipant) {
-      item.classList.add("active");
-    }
-
-    const displayName =
-      voiceDisplayName(participant);
-
-    const micPublication =
-      participant.getTrackPublication?.(
-        Track.Source.Microphone
-      );
-
-    const cameraPublication =
-      participant.getTrackPublication?.(
-        Track.Source.Camera
-      );
-
-    const screenPublication =
-      participant.getTrackPublication?.(
-        Track.Source.ScreenShare
-      );
-
-    const micOn =
-      micPublication
-        ? !micPublication.isMuted
-        : participant === voiceRoom.localParticipant
-          ? voiceMicEnabled
-          : false;
-
-    const cameraOn =
-      cameraPublication
-        ? !cameraPublication.isMuted
-        : participant === voiceRoom.localParticipant
-          ? voiceCameraEnabled
-          : false;
-
-    const sharing =
-      screenPublication
-        ? !screenPublication.isMuted
-        : false;
-
-    const mediaKey =
-      participant.identity + "::audio";
-
-    const audioElement =
-      voiceMediaElements.get(mediaKey);
-
-    const controls =
-      document.createElement("div");
-    controls.className =
-      "voice-member-controls";
-
-    const state =
-      document.createElement("span");
-    state.className =
-      "voice-member-state";
-    state.textContent =
-      (micOn ? "🎙️" : "🔇") +
-      (sharing ? " 🖥️" : "");
-
-    controls.appendChild(state);
-
-    if (
-      participant !== voiceRoom.localParticipant &&
-      audioElement
-    ) {
-      const volume =
-        document.createElement("input");
-
-      volume.type = "range";
-      volume.min = "0";
-      volume.max = "1";
-      volume.step = "0.05";
-      volume.value =
-        String(
-          audioElement.volume ?? 1
-        );
-      volume.className =
-        "voice-member-volume";
-      volume.title =
-        "Volume de " + displayName;
-
-      volume.addEventListener(
-        "input",
-        () => {
-          audioElement.volume =
-            Number(volume.value);
-        }
-      );
-
-      controls.appendChild(volume);
-    }
-
-    item.innerHTML = "";
-
-    const avatar =
-      document.createElement("div");
-    avatar.className =
-      "voice-avatar";
-    avatar.textContent =
-      cameraOn ? "📷" : "👤";
-
-    const name =
-      document.createElement("div");
-    name.className =
-      "voice-member-name";
-    name.textContent =
-      displayName;
-
-    const actions =
+  if (!grid) {
+    grid =
       document.createElement(
         "div"
       );
 
-    actions.className =
-      "voice-member-actions";
+    grid.id =
+      "voiceGrid";
 
-    if (
-      participant !==
-      voiceRoom.localParticipant &&
-      voiceIsStaff()
-    ) {
-      const muteButton =
-        document.createElement(
-          "button"
-        );
+    grid.className =
+      "voice-grid";
 
-      muteButton.textContent =
-        "🔇";
-
-      muteButton.title =
-        "Silenciar";
-
-      muteButton.onclick =
-        event => {
-          event.stopPropagation();
-          voiceMuteParticipant(
-            participant
-          );
-        };
-
-      const screenButton =
-        document.createElement(
-          "button"
-        );
-
-      screenButton.textContent =
-        "🖥️";
-
-      screenButton.title =
-        "Encerrar tela";
-
-      screenButton.onclick =
-        event => {
-          event.stopPropagation();
-          voiceStopScreen(
-            participant
-          );
-        };
-
-      const kickButton =
-        document.createElement(
-          "button"
-        );
-
-      kickButton.textContent =
-        "🚪";
-
-      kickButton.title =
-        "Expulsar";
-
-      kickButton.className =
-        "danger";
-
-      kickButton.onclick =
-        event => {
-          event.stopPropagation();
-          voiceKickParticipant(
-            participant
-          );
-        };
-
-      actions.append(
-        muteButton,
-        screenButton,
-        kickButton
-      );
-    }
-
-    item.append(
-      avatar,
-      name,
-      controls,
-      actions
+    stage.appendChild(
+      grid
     );
-
-    list.appendChild(item);
-  });
-
-  updateVoiceSpeakingState();
-}
-
-function removeElementSafely(element) {
-  try {
-    element?.remove();
-  } catch (_) {}
-}
-
-function removeParticipantMedia(participantIdentity, source) {
-  const key =
-    participantIdentity + "::" + source;
-
-  const element =
-    voiceMediaElements.get(key);
-
-  if (element) {
-    removeElementSafely(element);
-    voiceMediaElements.delete(key);
-  }
-}
-
-function ensureVoiceStageGrid() {
-  const stage = voiceScreen();
-  if (!stage) return null;
-
-  let grid =
-    document.getElementById(
-      "voiceStageGrid"
-    );
-
-  if (!grid) {
-    grid = document.createElement("div");
-    grid.id = "voiceStageGrid";
-    grid.className = "voice-stage-grid";
-    stage.appendChild(grid);
   }
 
   return grid;
 }
 
-function attachVoiceTrack(track, participant) {
-  if (!track || !participant) return;
+function removeVoiceMedia(
+  participantIdentity,
+  source
+) {
+  const key =
+    participantIdentity +
+    "::" +
+    source;
+
+  const media =
+    voiceMediaElements.get(
+      key
+    );
+
+  if (!media) {
+    return;
+  }
+
+  try {
+    const tile =
+      media.closest?.(
+        ".voice-tile"
+      );
+
+    if (tile) {
+      tile.remove();
+    } else {
+      media.remove();
+    }
+  } catch (_) {}
+
+  voiceMediaElements.delete(
+    key
+  );
+}
+
+function updateVoiceTiles() {
+  const grid =
+    document.getElementById(
+      "voiceGrid"
+    );
+
+  if (!grid) return;
+
+  grid
+    .querySelectorAll(
+      ".voice-tile"
+    )
+    .forEach(
+      tile => {
+        tile.classList.toggle(
+          "voice-pinned",
+          voicePinnedParticipant ===
+            tile.dataset.participant
+        );
+      }
+    );
+}
+
+function attachVoiceTrack(
+  track,
+  participant
+) {
+  if (
+    !track ||
+    !participant
+  ) {
+    return;
+  }
 
   const identity =
     participant.identity;
 
   if (
-    track.kind === Track.Kind.Audio
+    track.kind ===
+    Track.Kind.Audio
   ) {
-    if (voiceDeafened) return;
+    if (voiceDeafened) {
+      return;
+    }
 
-    const elements =
+    removeVoiceMedia(
+      identity,
+      "audio"
+    );
+
+    const attached =
       track.attach();
 
-    const list =
-      Array.isArray(elements)
-        ? elements
-        : [elements];
+    const elements =
+      Array.isArray(attached)
+        ? attached
+        : [attached];
 
-    list.forEach(element => {
-      element.autoplay = true;
-      element.playsInline = true;
-      element.style.display = "none";
+    elements.forEach(
+      element => {
+        element.autoplay =
+          true;
 
-      voiceAudio()?.appendChild(element);
+        element.playsInline =
+          true;
 
-      element.play().catch(() => {});
+        element.muted =
+          false;
 
-      voiceMediaElements.set(
-        identity + "::audio",
-        element
-      );
-    });
+        element.volume =
+          1;
+
+        element.style.display =
+          "none";
+
+        voiceAudio()
+          ?.appendChild(
+            element
+          );
+
+        element.play()
+          .catch(
+            () => {}
+          );
+
+        voiceMediaElements.set(
+          identity +
+            "::audio",
+          element
+        );
+      }
+    );
+
+    updateVoiceMemberList();
 
     return;
   }
 
   const source =
-    track.source === Track.Source.ScreenShare
+    track.source ===
+    Track.Source.ScreenShare
       ? "screen"
       : "camera";
 
-  const key =
-    identity + "::" + source;
-
-  removeParticipantMedia(
+  removeVoiceMedia(
     identity,
     source
   );
 
-  const element =
+  const video =
     track.attach();
 
-  element.autoplay = true;
-  element.playsInline = true;
-  element.muted = true;
-  element.style.width = "100%";
-  element.style.height = "100%";
-  element.style.objectFit = "contain";
+  video.autoplay = true;
+  video.playsInline = true;
+  video.muted = true;
+
+  video.style.width =
+    "100%";
+
+  video.style.height =
+    "100%";
+
+  video.style.objectFit =
+    "contain";
 
   const grid =
-    ensureVoiceStageGrid();
+    ensureVoiceGrid();
 
-  if (!grid) return;
+  if (!grid) {
+    return;
+  }
 
   const tile =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   tile.className =
     "voice-tile";
@@ -3788,36 +3823,75 @@ function attachVoiceTrack(track, participant) {
   tile.dataset.source =
     source;
 
+  if (
+    voicePinnedParticipant ===
+    identity
+  ) {
+    tile.classList.add(
+      "voice-pinned"
+    );
+  }
+
   const label =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   label.className =
     "voice-tile-label";
 
   label.textContent =
-    voiceDisplayName(participant);
+    voiceDisplayName(
+      participant
+    );
 
-  tile.appendChild(element);
-  tile.appendChild(label);
+  tile.append(
+    video,
+    label
+  );
 
-  if (source === "screen") {
+  if (
+    source === "screen"
+  ) {
     const badge =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     badge.className =
-      "voice-sharing-badge";
+      "voice-tile-badge";
 
     badge.textContent =
-      "🖥️ COMPARTILHANDO TELA";
+      "🖥️ COMPARTILHANDO";
 
-    tile.appendChild(badge);
+    tile.appendChild(
+      badge
+    );
   }
 
-  grid.appendChild(tile);
+  tile.addEventListener(
+    "dblclick",
+    () => {
+      voicePinnedParticipant =
+        voicePinnedParticipant ===
+        identity
+          ? null
+          : identity;
+
+      updateVoiceTiles();
+      updateVoiceMemberList();
+    }
+  );
+
+  grid.appendChild(
+    tile
+  );
 
   voiceMediaElements.set(
-    key,
-    tile
+    identity +
+      "::" +
+      source,
+    video
   );
 
   const placeholder =
@@ -3826,14 +3900,25 @@ function attachVoiceTrack(track, participant) {
     );
 
   if (placeholder) {
-    placeholder.style.display = "none";
+    placeholder.style.display =
+      "none";
   }
 
-  element.play().catch(() => {});
+  video.play()
+    .catch(
+      () => {}
+    );
+
+  updateVoiceTiles();
 }
 
-function detachVoiceTrack(track, participant) {
-  if (!track) return;
+function detachVoiceTrack(
+  track,
+  participant
+) {
+  if (!track) {
+    return;
+  }
 
   try {
     const elements =
@@ -3845,90 +3930,253 @@ function detachVoiceTrack(track, participant) {
         : [elements];
 
     list.forEach(
-      removeElementSafely
+      element => {
+        try {
+          element.remove();
+        } catch (_) {}
+      }
     );
   } catch (_) {}
 
   if (participant) {
-    const identity =
-      participant.identity;
+    const source =
+      track.kind ===
+      Track.Kind.Audio
+        ? "audio"
+        : (
+            track.source ===
+            Track.Source.ScreenShare
+              ? "screen"
+              : "camera"
+          );
 
-    if (track.kind === Track.Kind.Video) {
-      const source =
-        track.source === Track.Source.ScreenShare
-          ? "screen"
-          : "camera";
-
-      removeParticipantMedia(
-        identity,
-        source
-      );
-    } else if (
-      track.kind === Track.Kind.Audio
-    ) {
-      removeParticipantMedia(
-        identity,
-        "audio"
-      );
-    }
+    removeVoiceMedia(
+      participant.identity,
+      source
+    );
   }
-}
 
-function restoreVoicePlaceholder() {
   const grid =
     document.getElementById(
-      "voiceStageGrid"
+      "voiceGrid"
     );
 
   if (
     grid &&
-    grid.children.length === 0
+    grid.children.length ===
+      0
   ) {
     grid.remove();
+
+    const placeholder =
+      document.getElementById(
+        "voiceScreenPlaceholder"
+      );
+
+    if (placeholder) {
+      placeholder.style.display =
+        "block";
+    }
   }
 
-  const placeholder =
-    document.getElementById(
-      "voiceScreenPlaceholder"
+  updateVoiceMemberList();
+}
+
+async function joinVoicePresence() {
+  const sb =
+    window.vybeeSupabase;
+
+  if (
+    !sb ||
+    !voiceRoomInfo
+  ) {
+    return;
+  }
+
+  try {
+    if (voicePresenceChannel) {
+      await sb.removeChannel(
+        voicePresenceChannel
+      );
+    }
+
+    voicePresenceChannel =
+      sb.channel(
+        "voice:" +
+        voiceRoomInfo.communityId +
+        ":" +
+        voiceRoomInfo.channelId,
+        {
+          config: {
+            presence: {
+              key:
+                window.vybeeCurrentUser?.id ||
+                voiceIdentity()
+            }
+          }
+        }
+      );
+
+    voicePresenceChannel.on(
+      "presence",
+      {
+        event: "sync"
+      },
+      () =>
+        updateVoiceSidebarCount()
     );
 
-  if (placeholder) {
-    placeholder.style.display =
-      "block";
+    voicePresenceChannel.on(
+      "presence",
+      {
+        event: "join"
+      },
+      () =>
+        updateVoiceSidebarCount()
+    );
+
+    voicePresenceChannel.on(
+      "presence",
+      {
+        event: "leave"
+      },
+      () =>
+        updateVoiceSidebarCount()
+    );
+
+    await voicePresenceChannel
+      .subscribe(
+        async status => {
+          if (
+            status ===
+            "SUBSCRIBED"
+          ) {
+            await updateVoicePresence();
+          }
+        }
+      );
+
+  } catch (error) {
+    console.warn(
+      "VYBEE VOICE presence:",
+      error
+    );
   }
 }
 
-async function showVoiceRoom(info) {
+async function updateVoicePresence() {
+  if (
+    !voicePresenceChannel
+  ) {
+    return;
+  }
+
+  try {
+    await voicePresenceChannel.track({
+      user_id:
+        window.vybeeCurrentUser?.id ||
+        null,
+      name:
+        voiceDisplayName(
+          voiceRoom?.localParticipant
+        ),
+      mic:
+        voiceMicEnabled,
+      camera:
+        voiceCameraEnabled,
+      screen:
+        voiceScreenEnabled,
+      joined_at:
+        Date.now()
+    });
+  } catch (_) {}
+}
+
+function updateVoiceSidebarCount() {
+  if (!voiceRoomInfo) {
+    return;
+  }
+
+  const count =
+    voiceRoom
+      ? voiceRoom.remoteParticipants
+          .size + 1
+      : 0;
+
+  document.querySelectorAll(
+    `[data-voice-channel-id="${CSS.escape(
+      voiceRoomInfo.channelId
+    )}"]`
+  ).forEach(
+    item => {
+      let pill =
+        item.querySelector(
+          ".voice-count-pill"
+        );
+
+      if (!pill) {
+        pill =
+          document.createElement(
+            "span"
+          );
+
+        pill.className =
+          "voice-count-pill";
+
+        item.appendChild(
+          pill
+        );
+      }
+
+      pill.textContent =
+        "· " + count;
+    }
+  );
+}
+
+async function showVoiceRoom(
+  info
+) {
   if (!window.vybeeCurrentUser) {
     showWebAuth();
     return;
   }
 
-  voiceRoomInfo = info;
+  voiceRoomInfo =
+    info;
 
   document.getElementById(
     "voiceRoomTitle"
   ).textContent =
-    "🎙️ " + info.channelName;
+    "🎙️ " +
+    info.channelName;
 
   document.getElementById(
     "voiceRoomSubtitle"
   ).textContent =
-    info.communityName || "VYBEE";
+    info.communityName ||
+    "VYBEE";
 
   voiceShowModal();
+
   voiceSetStatus(
-    "🔄 Conectando à sala..."
+    "🔄 Entrando na sala..."
   );
 
   try {
-    await leaveVoiceRoom(false);
+    await leaveVoiceRoom(
+      false
+    );
 
     const roomName =
       "vybee-voice-" +
-      String(info.communityId) +
+      String(
+        info.communityId
+      ) +
       "-" +
-      String(info.channelId);
+      String(
+        info.channelId
+      );
 
     const tokenProvider =
       window.vybeeGetToken;
@@ -3949,7 +4197,10 @@ async function showVoiceRoom(info) {
         "voice"
       );
 
-    if (!data?.url || !data?.token) {
+    if (
+      !data?.url ||
+      !data?.token
+    ) {
       throw new Error(
         "O servidor não retornou o token da sala de voz."
       );
@@ -3957,28 +4208,14 @@ async function showVoiceRoom(info) {
 
     const room =
       new Room({
-        adaptiveStream: true,
-        dynacast: true
+        adaptiveStream:
+          true,
+        dynacast:
+          true
       });
 
-    voiceRoom = room;
-
-    room.on(
-      RoomEvent.ActiveSpeakersChanged,
-      speakers => {
-        voiceActiveSpeakers =
-          new Set(
-            (speakers || [])
-              .map(
-                participant =>
-                  participant.sid ||
-                  participant.identity
-              )
-          );
-
-        updateVoiceSpeakingState();
-      }
-    );
+    voiceRoom =
+      room;
 
     room.on(
       RoomEvent.TrackSubscribed,
@@ -4007,26 +4244,39 @@ async function showVoiceRoom(info) {
           track,
           participant
         );
-
-        restoreVoicePlaceholder();
-        updateVoiceMemberList();
       }
     );
 
     room.on(
-      RoomEvent.TrackPublished,
-      (
-        publication,
-        participant
-      ) => {
-        updateVoiceMemberList();
+      RoomEvent.ActiveSpeakersChanged,
+      speakers => {
+        voiceActiveSpeakers =
+          new Set(
+            (speakers || [])
+              .map(
+                participant =>
+                  participant.sid ||
+                  participant.identity
+              )
+          );
+
+        updateVoiceSpeakerUI();
       }
     );
 
     room.on(
       RoomEvent.ParticipantConnected,
-      () => {
+      participant => {
+        voiceNotify(
+          "👋 " +
+          voiceDisplayName(
+            participant
+          ) +
+          " entrou na sala."
+        );
+
         updateVoiceMemberList();
+        updateVoiceSidebarCount();
       }
     );
 
@@ -4037,15 +4287,32 @@ async function showVoiceRoom(info) {
           "audio",
           "camera",
           "screen"
-        ].forEach(source => {
-          removeParticipantMedia(
-            participant.identity,
-            source
-          );
-        });
+        ].forEach(
+          source =>
+            removeVoiceMedia(
+              participant.identity,
+              source
+            )
+        );
 
-        restoreVoicePlaceholder();
+        if (
+          voicePinnedParticipant ===
+          participant.identity
+        ) {
+          voicePinnedParticipant =
+            null;
+        }
+
+        voiceNotify(
+          "👋 " +
+          voiceDisplayName(
+            participant
+          ) +
+          " saiu da sala."
+        );
+
         updateVoiceMemberList();
+        updateVoiceSidebarCount();
       }
     );
 
@@ -4055,6 +4322,10 @@ async function showVoiceRoom(info) {
         voiceSetStatus(
           "⚪ Desconectado"
         );
+
+        voiceActiveSpeakers =
+          new Set();
+
         updateVoiceMemberList();
       }
     );
@@ -4064,36 +4335,31 @@ async function showVoiceRoom(info) {
       data.token
     );
 
+    await voiceLoadRole();
+
     await room.localParticipant
       .setMicrophoneEnabled(
         true
       );
 
-    voiceMicEnabled = true;
+    voiceMicEnabled =
+      true;
 
-    voiceCameraEnabled = false;
-    voiceScreenEnabled = false;
+    voiceCameraEnabled =
+      false;
 
-    document.getElementById(
-      "voiceMuteButton"
-    ).textContent =
-      "🎙️ Microfone";
+    voiceScreenEnabled =
+      false;
 
-    document.getElementById(
-      "voiceCameraButton"
-    ).textContent =
-      "📷 Câmera";
-
-    document.getElementById(
-      "voiceScreenButton"
-    ).textContent =
-      "🖥️ Compartilhar tela";
+    voiceDeafened =
+      false;
 
     voiceSetStatus(
       "🟢 Conectado — voz ativa"
     );
 
     await joinVoicePresence();
+
     updateVoiceMemberList();
     updateVoiceSidebarCount();
 
@@ -4128,7 +4394,7 @@ async function showVoiceRoom(info) {
       "🔴 " +
       (
         error?.message ||
-        "Não foi possível entrar"
+        "Não foi possível entrar na sala."
       )
     );
   }
@@ -4141,7 +4407,8 @@ async function toggleVoiceMute() {
     voiceMicEnabled =
       !voiceMicEnabled;
 
-    await voiceRoom.localParticipant
+    await voiceRoom
+      .localParticipant
       .setMicrophoneEnabled(
         voiceMicEnabled
       );
@@ -4153,17 +4420,16 @@ async function toggleVoiceMute() {
         ? "🎙️ Microfone"
         : "🔇 Microfone";
 
-    voiceSetStatus(
-      voiceMicEnabled
-        ? "🟢 Microfone ligado"
-        : "🟠 Microfone desligado"
-    );
-
+    await updateVoicePresence();
     updateVoiceMemberList();
+
   } catch (error) {
-    console.error(
-      "VYBEE VOICE: microfone:",
-      error
+    voiceNotify(
+      "🔴 " +
+      (
+        error?.message ||
+        "Não foi possível alterar o microfone."
+      )
     );
   }
 }
@@ -4172,39 +4438,31 @@ async function toggleVoiceDeafen() {
   voiceDeafened =
     !voiceDeafened;
 
-  const button =
-    document.getElementById(
-      "voiceDeafenButton"
-    );
+  document.getElementById(
+    "voiceDeafenButton"
+  ).textContent =
+    voiceDeafened
+      ? "🔇 Áudio"
+      : "🔊 Áudio";
 
-  if (button) {
-    button.textContent =
-      voiceDeafened
-        ? "🔇 Áudio desligado"
-        : "🔊 Áudio";
-    button.classList.toggle(
-      "active",
-      voiceDeafened
-    );
-  }
-
-  voiceMediaElements.forEach(
-    (element, key) => {
-      if (!key.endsWith("::audio")) {
-        return;
+  voiceMediaElements
+    .forEach(
+      (element, key) => {
+        if (
+          key.endsWith(
+            "::audio"
+          )
+        ) {
+          element.muted =
+            voiceDeafened;
+        }
       }
-
-      try {
-        element.muted =
-          voiceDeafened;
-      } catch (_) {}
-    }
-  );
+    );
 
   voiceSetStatus(
     voiceDeafened
-      ? "🔇 Áudio das pessoas desligado"
-      : "🔊 Áudio das pessoas ligado"
+      ? "🔇 Áudio da sala desligado"
+      : "🔊 Áudio da sala ligado"
   );
 }
 
@@ -4215,7 +4473,8 @@ async function toggleVoiceCamera() {
     voiceCameraEnabled =
       !voiceCameraEnabled;
 
-    await voiceRoom.localParticipant
+    await voiceRoom
+      .localParticipant
       .setCameraEnabled(
         voiceCameraEnabled
       );
@@ -4224,30 +4483,15 @@ async function toggleVoiceCamera() {
       "voiceCameraButton"
     ).textContent =
       voiceCameraEnabled
-        ? "📷 Desligar câmera"
+        ? "📷 Câmera"
         : "📷 Câmera";
 
-    voiceSetStatus(
-      voiceCameraEnabled
-        ? "📷 Câmera ligada"
-        : "📷 Câmera desligada"
-    );
-
-    updateVoiceMemberList();
     await updateVoicePresence();
+    updateVoiceMemberList();
 
   } catch (error) {
-    voiceCameraEnabled = false;
-
-    document.getElementById(
-      "voiceCameraButton"
-    ).textContent =
-      "📷 Câmera";
-
-    console.error(
-      "VYBEE VOICE: câmera:",
-      error
-    );
+    voiceCameraEnabled =
+      false;
 
     voiceSetStatus(
       "🔴 " +
@@ -4266,7 +4510,8 @@ async function toggleVoiceScreen() {
     voiceScreenEnabled =
       !voiceScreenEnabled;
 
-    await voiceRoom.localParticipant
+    await voiceRoom
+      .localParticipant
       .setScreenShareEnabled(
         voiceScreenEnabled,
         {
@@ -4281,26 +4526,22 @@ async function toggleVoiceScreen() {
         ? "⏹️ Parar tela"
         : "🖥️ Compartilhar tela";
 
+    await updateVoicePresence();
+
     voiceSetStatus(
       voiceScreenEnabled
         ? "🖥️ Tela compartilhada."
         : "🟢 Compartilhamento encerrado."
     );
 
-    await updateVoicePresence();
-
   } catch (error) {
-    voiceScreenEnabled = false;
+    voiceScreenEnabled =
+      false;
 
     document.getElementById(
       "voiceScreenButton"
     ).textContent =
       "🖥️ Compartilhar tela";
-
-    console.error(
-      "VYBEE VOICE: compartilhamento:",
-      error
-    );
 
     voiceSetStatus(
       "🔴 " +
@@ -4312,80 +4553,343 @@ async function toggleVoiceScreen() {
   }
 }
 
+async function voiceMuteParticipant(
+  participant
+) {
+  const publication =
+    participant.getTrackPublication?.(
+      Track.Source.Microphone
+    );
+
+  if (
+    !publication?.trackSid
+  ) {
+    voiceNotify(
+      "Microfone ativo não encontrado."
+    );
+    return;
+  }
+
+  try {
+    const ok =
+      await voiceModerationRequest(
+        "mute_microphone",
+        participant,
+        publication.trackSid
+      );
+
+    if (ok) {
+      voiceNotify(
+        "🔇 Microfone de " +
+        voiceDisplayName(
+          participant
+        ) +
+        " silenciado."
+      );
+    }
+  } catch (error) {
+    voiceNotify(
+      "🔴 " +
+      (
+        error?.message ||
+        "Falha na moderação."
+      )
+    );
+  }
+}
+
+async function voiceStopScreen(
+  participant
+) {
+  const publication =
+    participant.getTrackPublication?.(
+      Track.Source.ScreenShare
+    );
+
+  if (
+    !publication?.trackSid
+  ) {
+    voiceNotify(
+      "Esse participante não está compartilhando tela."
+    );
+    return;
+  }
+
+  try {
+    const ok =
+      await voiceModerationRequest(
+        "stop_screen",
+        participant,
+        publication.trackSid
+      );
+
+    if (ok) {
+      voiceNotify(
+        "🖥️ Compartilhamento encerrado."
+      );
+    }
+  } catch (error) {
+    voiceNotify(
+      "🔴 " +
+      (
+        error?.message ||
+        "Falha na moderação."
+      )
+    );
+  }
+}
+
+async function voiceKickParticipant(
+  participant
+) {
+  const name =
+    voiceDisplayName(
+      participant
+    );
+
+  if (
+    !window.confirm(
+      "Expulsar " +
+      name +
+      " da sala?"
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const ok =
+      await voiceModerationRequest(
+        "remove_participant",
+        participant
+      );
+
+    if (ok) {
+      voiceNotify(
+        "🚪 " +
+        name +
+        " foi removido da sala."
+      );
+    }
+  } catch (error) {
+    voiceNotify(
+      "🔴 " +
+      (
+        error?.message ||
+        "Falha na moderação."
+      )
+    );
+  }
+}
+
+async function voiceModerationRequest(
+  action,
+  participant,
+  trackSid = null
+) {
+  if (!voiceIsStaff()) {
+    voiceNotify(
+      "🔒 Você não possui permissão de moderação."
+    );
+    return false;
+  }
+
+  const token =
+    await window.vybeeGetAccessToken?.();
+
+  if (!token) {
+    voiceNotify(
+      "Sua sessão expirou."
+    );
+    return false;
+  }
+
+  const response =
+    await fetch(
+      "/api/voice-moderation",
+      {
+        method:
+          "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+          "Authorization":
+            "Bearer " + token
+        },
+        body:
+          JSON.stringify({
+            action,
+            community_id:
+              voiceRoomInfo.communityId,
+            room_name:
+              "vybee-voice-" +
+              voiceRoomInfo.communityId +
+              "-" +
+              voiceRoomInfo.channelId,
+            target_identity:
+              participant.identity,
+            track_sid:
+              trackSid
+          })
+      }
+    );
+
+  const data =
+    await response
+      .json()
+      .catch(
+        () => ({})
+      );
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error ||
+      "Ação de moderação recusada."
+    );
+  }
+
+  return true;
+}
+
+async function openVoiceControls() {
+  if (!voiceRoom) {
+    voiceNotify(
+      "Entre primeiro em uma sala."
+    );
+    return;
+  }
+
+  voiceNotify(
+    voiceIsStaff()
+      ? "🛡️ Controles de moderação disponíveis ao passar o mouse sobre um participante."
+      : "🔊 Passe o mouse sobre um participante para ajustar o volume."
+  );
+}
+
 async function leaveVoiceRoom(
   closeModal = true
 ) {
+  const room =
+    voiceRoom;
+
   try {
-    if (voiceRoom) {
+    if (
+      voicePresenceChannel &&
+      window.vybeeSupabase
+    ) {
       try {
-        await voiceRoom
-          .localParticipant
+        await window.vybeeSupabase
+          .removeChannel(
+            voicePresenceChannel
+          );
+      } catch (_) {}
+    }
+
+    if (room) {
+      try {
+        await room.localParticipant
           .setScreenShareEnabled(
             false
           );
       } catch (_) {}
 
       try {
-        await voiceRoom
-          .localParticipant
+        await room.localParticipant
           .setCameraEnabled(
             false
           );
       } catch (_) {}
 
       try {
-        await voiceRoom
-          .localParticipant
+        await room.localParticipant
           .setMicrophoneEnabled(
             false
           );
       } catch (_) {}
 
       try {
-        await voiceRoom.disconnect();
+        await room.disconnect();
       } catch (_) {}
     }
   } finally {
-    const sb = window.vybeeSupabase;
+    voiceRoom =
+      null;
 
-    if (sb && voicePresenceChannel) {
-      try {
-        await sb.removeChannel(
-          voicePresenceChannel
-        );
-      } catch (_) {}
+    voicePresenceChannel =
+      null;
+
+    voiceActiveSpeakers =
+      new Set();
+
+    voiceCurrentRole =
+      "member";
+
+    voiceMicEnabled =
+      false;
+
+    voiceCameraEnabled =
+      false;
+
+    voiceScreenEnabled =
+      false;
+
+    voiceDeafened =
+      false;
+
+    voicePinnedParticipant =
+      null;
+
+    voiceMediaElements
+      .forEach(
+        element => {
+          try {
+            const tile =
+              element.closest?.(
+                ".voice-tile"
+              );
+
+            (
+              tile ||
+              element
+            ).remove();
+          } catch (_) {}
+        }
+      );
+
+    voiceMediaElements.clear();
+
+    document.getElementById(
+      "voiceGrid"
+    )?.remove();
+
+    const placeholder =
+      document.getElementById(
+        "voiceScreenPlaceholder"
+      );
+
+    if (placeholder) {
+      placeholder.style.display =
+        "block";
     }
 
-    voicePresenceChannel = null;
-    voicePresence = new Map();
-    voiceActiveSpeakers = new Set();
-    voiceCurrentRole = "member";
+    const panel =
+      document.getElementById(
+        "voiceModerationPanel"
+      );
 
-    const badge =
+    if (panel) {
+      panel.classList.remove(
+        "on"
+      );
+    }
+
+    const role =
       document.getElementById(
         "voiceRoleBadge"
       );
 
-    if (badge) {
-      badge.textContent = "";
-    }
-
-    voiceRoom = null;
-    voiceMicEnabled = false;
-    voiceCameraEnabled = false;
-    voiceScreenEnabled = false;
-    voiceDeafened = false;
-
-    voiceMediaElements.forEach(
-      removeElementSafely
-    );
-
-    voiceMediaElements.clear();
-
-    restoreVoicePlaceholder();
-
-    if (closeModal) {
-      voiceHideModal();
+    if (role) {
+      role.textContent = "";
     }
 
     const mute =
@@ -4396,19 +4900,6 @@ async function leaveVoiceRoom(
     if (mute) {
       mute.textContent =
         "🎙️ Microfone";
-    }
-
-    const deafen =
-      document.getElementById(
-        "voiceDeafenButton"
-      );
-
-    if (deafen) {
-      deafen.textContent =
-        "🔊 Áudio";
-      deafen.classList.remove(
-        "active"
-      );
     }
 
     const camera =
@@ -4430,6 +4921,22 @@ async function leaveVoiceRoom(
       screen.textContent =
         "🖥️ Compartilhar tela";
     }
+
+    const deafen =
+      document.getElementById(
+        "voiceDeafenButton"
+      );
+
+    if (deafen) {
+      deafen.textContent =
+        "🔊 Áudio";
+    }
+
+    if (closeModal) {
+      voiceHideModal();
+    }
+
+    updateVoiceSidebarCount();
   }
 }
 
@@ -4462,17 +4969,37 @@ document.getElementById(
 );
 
 document.getElementById(
+  "voiceSettingsButton"
+)?.addEventListener(
+  "click",
+  openVoiceControls
+);
+
+document.getElementById(
+  "voiceModerationInfo"
+)?.addEventListener(
+  "click",
+  openVoiceControls
+);
+
+document.getElementById(
   "voiceLeaveButton"
 )?.addEventListener(
   "click",
-  () => leaveVoiceRoom(true)
+  () =>
+    leaveVoiceRoom(
+      true
+    )
 );
 
 document.getElementById(
   "voiceCloseButton"
 )?.addEventListener(
   "click",
-  () => leaveVoiceRoom(true)
+  () =>
+    leaveVoiceRoom(
+      true
+    )
 );
 
 document.addEventListener(
@@ -4480,27 +5007,17 @@ document.addEventListener(
   event => {
     if (
       event.key === "Escape" &&
-      voiceModal()?.classList.contains(
-        "on"
-      )
+      voiceModal()
+        ?.classList.contains(
+          "on"
+        )
     ) {
-      leaveVoiceRoom(true);
+      leaveVoiceRoom(
+        true
+      );
     }
   }
 );
-
-window.vybeeVoiceRoomState = () => ({
-  connected: Boolean(voiceRoom),
-  communityId: voiceRoomInfo?.communityId || null,
-  channelId: voiceRoomInfo?.channelId || null,
-  mic: voiceMicEnabled,
-  camera: voiceCameraEnabled,
-  screen: voiceScreenEnabled,
-  participants: voicePresence.size ||
-    (voiceRoom
-      ? voiceRoom.remoteParticipants.size + 1
-      : 0)
-});
 
 window.showVoiceRoom =
   showVoiceRoom;
@@ -4508,6 +5025,37 @@ window.showVoiceRoom =
 window.leaveVoiceRoom =
   leaveVoiceRoom;
 
+window.vybeeVoiceRoomState =
+  () => ({
+    connected:
+      Boolean(
+        voiceRoom
+      ),
+    communityId:
+      voiceRoomInfo?.communityId ||
+      null,
+    channelId:
+      voiceRoomInfo?.channelId ||
+      null,
+    role:
+      voiceCurrentRole,
+    mic:
+      voiceMicEnabled,
+    camera:
+      voiceCameraEnabled,
+    screen:
+      voiceScreenEnabled,
+    participants:
+      voiceRoom
+        ? voiceRoom.remoteParticipants
+            .size + 1
+        : 0,
+    activeSpeakers:
+      Array.from(
+        voiceActiveSpeakers
+      )
+  });
+</script>
 
 <script type="module">
 
