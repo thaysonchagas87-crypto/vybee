@@ -1176,49 +1176,6 @@ RESPONSIVE
   font-weight:700;
 }
 
-
-/* =========================
-   VYBEE VOICE V7
-   Active speaker / states
-   ========================= */
-.voice-member.speaking{
-  background:#16220f;
-  outline:1px solid #53ff1a;
-}
-.voice-member.speaking .voice-avatar{
-  box-shadow:0 0 0 3px #53ff1a;
-}
-.voice-speaking-dot{
-  width:7px;
-  height:7px;
-  border-radius:50%;
-  background:#53ff1a;
-  display:inline-block;
-  margin-right:5px;
-  box-shadow:0 0 8px #53ff1a;
-}
-.voice-top-status{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:4px;
-}
-.voice-security-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-  padding:4px 8px;
-  border-radius:999px;
-  background:#171b1e;
-  border:1px solid var(--line);
-  color:#9ba2aa;
-  font-size:10px;
-}
-.voice-security-badge.owner{
-  color:#53ff1a;
-}
-
 </style>
 
 </head>
@@ -1778,10 +1735,7 @@ RESPONSIVE
     <div class="voice-head">
       <div class="voice-head-title">
         <strong id="voiceRoomTitle">🎙️ Sala de voz</strong>
-        <div class="voice-top-status">
-          <span id="voiceRoomSubtitle">Conectando...</span>
-          <span class="voice-security-badge" id="voiceRoleBadge">🔒 participante</span>
-        </div>
+        <span id="voiceRoomSubtitle">Conectando...</span>
       </div>
       <button class="btn" id="voiceCloseButton">✕ Fechar</button>
     </div>
@@ -2284,10 +2238,7 @@ RESPONSIVE
     if (!side) return;
 
     side.querySelectorAll(".vybee-static-voice")
-      .forEach(el => {
-        el.style.display = "none";
-        el.setAttribute("aria-hidden", "true");
-      });
+      .forEach(el => { el.style.display = "none"; });
 
     side.querySelectorAll(".vybee-real-voice-channel, .vybee-real-voice-section")
       .forEach(el => el.remove());
@@ -2803,136 +2754,6 @@ RESPONSIVE
 
 
 
-
-<script type="module">
-/*
- * VYBEE VOICE FALLBACK
- * Alguns layouts antigos ainda exibem "Geral" e "Squad" no bloco estático.
- * Em vez de deixar esses itens sem ação, resolvemos o canal real da comunidade
- * aberta e abrimos a sala LiveKit correspondente.
- */
-async function vybeeOpenStaticVoiceRoom(channelName) {
-  const user = window.vybeeCurrentUser || null;
-  const community =
-    window.vybeeGetCurrentCommunity?.() || null;
-  const sb = window.vybeeSupabase || null;
-
-  if (!user) {
-    showWebAuth();
-    return;
-  }
-
-  if (!community) {
-    toast(
-      "Abra primeiro uma comunidade para entrar em uma sala de voz."
-    );
-    return;
-  }
-
-  if (
-    !sb ||
-    typeof window.showVoiceRoom !== "function"
-  ) {
-    toast(
-      "A sala de voz ainda está carregando. Tente novamente."
-    );
-    return;
-  }
-
-  try {
-    const { data, error } =
-      await sb
-        .from("channels")
-        .select("id,name,channel_type,position")
-        .eq(
-          "community_id",
-          community.id
-        )
-        .eq(
-          "channel_type",
-          "voice"
-        )
-        .order("position", {
-          ascending: true
-        });
-
-    if (error) {
-      console.error(
-        "VYBEE VOICE fallback:",
-        error
-      );
-      toast(
-        "Não foi possível localizar a sala de voz."
-      );
-      return;
-    }
-
-    const wanted =
-      String(channelName || "")
-        .trim()
-        .toLowerCase();
-
-    const channel =
-      (data || []).find(c =>
-        String(c.name || "")
-          .trim()
-          .toLowerCase() === wanted
-      ) ||
-      (data || [])[0];
-
-    if (!channel) {
-      toast(
-        "Esta comunidade ainda não possui uma sala de voz."
-      );
-      return;
-    }
-
-    window.showVoiceRoom({
-      channelId: channel.id,
-      channelName:
-        channel.name ||
-        channelName ||
-        "Sala de voz",
-      communityId: community.id,
-      communityName: community.name
-    });
-
-  } catch (error) {
-    console.error(
-      "VYBEE VOICE fallback:",
-      error
-    );
-
-    toast(
-      "Não foi possível abrir a sala de voz."
-    );
-  }
-}
-
-document
-  .querySelectorAll(".vybee-static-voice")
-  .forEach(item => {
-    item.addEventListener(
-      "click",
-      () => {
-        const text =
-          item.textContent || "";
-
-        const name =
-          text
-            .replace(/^🎙️/u, "")
-            .replace(/^🎮/u, "")
-            .replace(/·.*$/u, "")
-            .trim();
-
-        vybeeOpenStaticVoiceRoom(
-          name
-        );
-      }
-    );
-  });
-</script>
-
 <script type="module">
 import {
   Room,
@@ -2953,8 +2774,6 @@ let voiceDeafened = false;
 let voiceMediaElements = new Map();
 let voicePresenceChannel = null;
 let voicePresence = new Map();
-let voiceActiveSpeakers = new Set();
-let voiceCurrentRole = "member";
 
 const voiceModal = () =>
   document.getElementById("voiceRoomModal");
@@ -3245,128 +3064,6 @@ function updateVoiceSidebarCount() {
   }
 }
 
-
-async function loadVoiceRole() {
-  const sb = window.vybeeSupabase;
-  const user = window.vybeeCurrentUser;
-
-  voiceCurrentRole = "member";
-
-  if (!sb || !user || !voiceRoomInfo) {
-    return;
-  }
-
-  try {
-    const { data, error } =
-      await sb
-        .from("community_members")
-        .select("role")
-        .eq(
-          "community_id",
-          voiceRoomInfo.communityId
-        )
-        .eq(
-          "user_id",
-          user.id
-        )
-        .maybeSingle();
-
-    if (
-      !error &&
-      data?.role
-    ) {
-      voiceCurrentRole =
-        String(data.role).toLowerCase();
-    }
-  } catch (error) {
-    console.warn(
-      "VYBEE VOICE: cargo da sala:",
-      error
-    );
-  }
-
-  const badge =
-    document.getElementById(
-      "voiceRoleBadge"
-    );
-
-  if (badge) {
-    const isStaff =
-      ["owner", "admin", "moderator"]
-        .includes(
-          voiceCurrentRole
-        );
-
-    badge.textContent =
-      isStaff
-        ? "🛡️ " + voiceCurrentRole
-        : "🔒 participante";
-
-    badge.classList.toggle(
-      "owner",
-      isStaff
-    );
-  }
-}
-
-function isVoiceActive(participant) {
-  return voiceActiveSpeakers.has(
-    participant?.sid ||
-    participant?.identity
-  );
-}
-
-function updateVoiceActiveSpeakerStyles() {
-  const list =
-    voiceMembers();
-
-  if (!list || !voiceRoom) {
-    return;
-  }
-
-  const items =
-    list.querySelectorAll(
-      ".voice-member"
-    );
-
-  const participants = [
-    voiceRoom.localParticipant,
-    ...Array.from(
-      voiceRoom.remoteParticipants.values()
-    )
-  ];
-
-  items.forEach(
-    (item, index) => {
-      const participant =
-        participants[index];
-
-      const speaking =
-        isVoiceActive(participant);
-
-      item.classList.toggle(
-        "speaking",
-        speaking
-      );
-
-      const state =
-        item.querySelector(
-          ".voice-member-state"
-        );
-
-      if (
-        state &&
-        speaking &&
-        !state.textContent.includes("●")
-      ) {
-        state.innerHTML =
-          '<span class="voice-speaking-dot"></span>' +
-          state.textContent;
-      }
-    }
-  );
-}
-
 function updateVoiceMemberList() {
   const list = voiceMembers();
   if (!list || !voiceRoom) return;
@@ -3516,8 +3213,6 @@ function updateVoiceMemberList() {
 
     list.appendChild(item);
   });
-
-  updateVoiceActiveSpeakerStyles();
 }
 
 function removeElementSafely(element) {
@@ -3811,22 +3506,6 @@ async function showVoiceRoom(info) {
     voiceRoom = room;
 
     room.on(
-      RoomEvent.ActiveSpeakersChanged,
-      speakers => {
-        voiceActiveSpeakers =
-          new Set(
-            (speakers || []).map(
-              participant =>
-                participant?.sid ||
-                participant?.identity
-            )
-          );
-
-        updateVoiceActiveSpeakerStyles();
-      }
-    );
-
-    room.on(
       RoomEvent.TrackSubscribed,
       (
         track,
@@ -3909,8 +3588,6 @@ async function showVoiceRoom(info) {
       data.url,
       data.token
     );
-
-    await loadVoiceRole();
 
     await room.localParticipant
       .setMicrophoneEnabled(
@@ -4333,10 +4010,6 @@ window.vybeeVoiceRoomState = () => ({
   mic: voiceMicEnabled,
   camera: voiceCameraEnabled,
   screen: voiceScreenEnabled,
-  role: voiceCurrentRole,
-  activeSpeakers: Array.from(
-    voiceActiveSpeakers
-  ),
   participants: voicePresence.size ||
     (voiceRoom
       ? voiceRoom.remoteParticipants.size + 1
@@ -4348,7 +4021,7 @@ window.showVoiceRoom =
 
 window.leaveVoiceRoom =
   leaveVoiceRoom;
-
+</script>
 
 <script type="module">
 
