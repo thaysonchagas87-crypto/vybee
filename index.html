@@ -1194,6 +1194,24 @@ RESPONSIVE
     ● ONLINE
   </div>
 
+  <button
+    type="button"
+    id="vybeeProfileButton"
+    style="
+      margin-left:12px;
+      border:1px solid var(--line);
+      background:var(--p2);
+      color:#fff;
+      border-radius:10px;
+      padding:8px 11px;
+      cursor:pointer;
+      font-weight:700;
+    "
+    title="Abrir meu perfil"
+  >
+    👤 Perfil
+  </button>
+
 </header>
 
 
@@ -5517,6 +5535,229 @@ if(requestedLive){
 
 }
 
+</script>
+
+
+<!-- =========================
+     PERFIL DO USUÁRIO
+========================= -->
+<div
+  id="vybeeProfilePanel"
+  style="
+    position:fixed;
+    inset:0;
+    z-index:125;
+    display:none;
+    place-items:center;
+    padding:16px;
+    background:#000c;
+  "
+>
+  <div
+    style="
+      width:min(620px,100%);
+      max-height:86vh;
+      overflow:auto;
+      background:var(--p);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:0 28px 90px #000c;
+      padding:18px;
+    "
+  >
+    <div
+      style="
+        display:flex;
+        align-items:center;
+        gap:12px;
+        border-bottom:1px solid var(--line);
+        padding-bottom:14px;
+      "
+    >
+      <div style="
+        width:52px;
+        height:52px;
+        display:grid;
+        place-items:center;
+        border-radius:50%;
+        background:var(--p2);
+        font-size:22px;
+      ">👤</div>
+
+      <div style="flex:1;min-width:0">
+        <div
+          id="vybeeProfileName"
+          style="font-size:18px;font-weight:900"
+        >
+          Usuário VYBEE
+        </div>
+        <div
+          id="vybeeProfileUsername"
+          class="muted"
+          style="margin-top:3px"
+        ></div>
+      </div>
+
+      <button
+        type="button"
+        id="vybeeProfileClose"
+        class="btn"
+      >✕</button>
+    </div>
+
+    <div style="margin-top:16px">
+      <div
+        style="
+          padding:14px;
+          border:1px solid var(--line);
+          border-radius:12px;
+          background:var(--p2);
+        "
+      >
+        <b>👥 Amigos</b>
+        <div
+          id="vybeeFriendsList"
+          style="margin-top:10px"
+        >
+          <div class="muted">Nenhum amigo ainda.</div>
+        </div>
+      </div>
+
+      <div
+        style="
+          margin-top:12px;
+          padding:14px;
+          border:1px solid var(--line);
+          border-radius:12px;
+          background:var(--p2);
+        "
+      >
+        <b>🤝 Solicitações recebidas</b>
+        <div
+          id="vybeeFriendRequests"
+          style="margin-top:10px"
+        >
+          <div class="muted">Nenhuma solicitação.</div>
+        </div>
+      </div>
+
+      <div
+        style="
+          margin-top:12px;
+          padding:14px;
+          border:1px solid var(--line);
+          border-radius:12px;
+          background:var(--p2);
+        "
+      >
+        <b>ℹ️ Conta</b>
+        <div
+          id="vybeeProfileEmail"
+          class="muted"
+          style="margin-top:8px"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  function getUser(){
+    return window.vybeeCurrentUser || null;
+  }
+
+  function getProfile(){
+    return window.vybeeGetCurrentProfile?.() || null;
+  }
+
+  async function loadProfilePanel(){
+    const user = getUser();
+    const profile = getProfile();
+
+    if(!user){
+      if(typeof window.showWebAuth === "function"){
+        window.showWebAuth();
+      }
+      return;
+    }
+
+    const panel = document.getElementById("vybeeProfilePanel");
+    if(!panel) return;
+
+    panel.style.display = "grid";
+
+    document.getElementById("vybeeProfileName").textContent =
+      profile?.display_name ||
+      user.user_metadata?.display_name ||
+      user.email ||
+      "Usuário VYBEE";
+
+    document.getElementById("vybeeProfileUsername").textContent =
+      profile?.username
+        ? "@" + profile.username
+        : "";
+
+    document.getElementById("vybeeProfileEmail").textContent =
+      user.email || "";
+
+    /*
+     * Nesta primeira etapa, somente mostramos dados já carregados.
+     * Não fazemos nenhuma consulta extra nem mexemos na autenticação.
+     */
+    document.getElementById("vybeeFriendsList").innerHTML =
+      '<div class="muted">Amigos: módulo será conectado na próxima etapa.</div>';
+
+    document.getElementById("vybeeFriendRequests").innerHTML =
+      '<div class="muted">Solicitações: módulo será conectado na próxima etapa.</div>';
+  }
+
+  function closeProfilePanel(){
+    const panel = document.getElementById("vybeeProfilePanel");
+    if(panel){
+      panel.style.display = "none";
+    }
+  }
+
+  function bind(){
+    const button = document.getElementById("vybeeProfileButton");
+    if(button && !button.dataset.vybeeBound){
+      button.dataset.vybeeBound = "1";
+      button.addEventListener("click", function(event){
+        event.preventDefault();
+        event.stopPropagation();
+        loadProfilePanel();
+      }, true);
+    }
+
+    const close = document.getElementById("vybeeProfileClose");
+    if(close && !close.dataset.vybeeBound){
+      close.dataset.vybeeBound = "1";
+      close.addEventListener("click", function(event){
+        event.preventDefault();
+        closeProfilePanel();
+      });
+    }
+
+    const panel = document.getElementById("vybeeProfilePanel");
+    if(panel && !panel.dataset.vybeeOutsideBound){
+      panel.dataset.vybeeOutsideBound = "1";
+      panel.addEventListener("click", function(event){
+        if(event.target === panel){
+          closeProfilePanel();
+        }
+      });
+    }
+  }
+
+  bind();
+  document.addEventListener("DOMContentLoaded", bind);
+  setTimeout(bind, 300);
+  setTimeout(bind, 1000);
+
+  window.vybeeOpenProfile = loadProfilePanel;
+})();
 </script>
 
 </body>
