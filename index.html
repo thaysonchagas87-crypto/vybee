@@ -5022,6 +5022,24 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 @media(max-width:700px){.v13-table-row{grid-template-columns:1fr}}
 </style>
 
+
+<style id="vybee-mega-v14-style">
+.v14-wrap{display:grid;gap:9px}
+.v14-card{padding:11px;border:1px solid #252c31;border-radius:12px;background:#101415}
+.v14-row{display:flex;align-items:center;gap:8px}.v14-main{min-width:0;flex:1}
+.v14-main strong{display:block;font-size:9px}.v14-main span{display:block;margin-top:2px;color:#737c83;font-size:7px}
+.v14-btn{border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:8px}
+.v14-btn.primary{border-color:#39ff14;background:#39ff14;color:#071006}.v14-btn.danger:hover{border-color:#ff4d4d}
+.v14-toolbar{display:flex;gap:6px;flex-wrap:wrap}
+.v14-input,.v14-select,.v14-textarea{width:100%;box-sizing:border-box;padding:9px;border:1px solid #2a3136;border-radius:8px;background:#101415;color:#fff}
+.v14-textarea{min-height:90px;resize:vertical}
+.v14-table{display:grid;gap:6px}.v14-table-row{display:grid;grid-template-columns:1.2fr 1fr 100px;gap:7px;align-items:center;padding:8px;border:1px solid #242a2f;border-radius:8px;background:#101415}
+.v14-table-row span{font-size:8px}.v14-table-row small{font-size:7px;color:#6f787e}
+.v14-empty{padding:16px;border:1px dashed #2a3136;border-radius:9px;text-align:center;color:#727b82;font-size:8px}
+.v14-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.v14-kpi{padding:9px;text-align:center;border:1px solid #242a2f;border-radius:9px;background:#111516}.v14-kpi strong{display:block;font-size:13px}.v14-kpi span{display:block;margin-top:2px;color:#6f787e;font-size:7px}
+@media(max-width:700px){.v14-kpis{grid-template-columns:repeat(2,1fr)}.v14-table-row{grid-template-columns:1fr}}
+</style>
+
 </head>
 
 <body>
@@ -27337,6 +27355,165 @@ if(requestedLive){
     });
     window.vybeeOpenMembersAdminV13=openMembersAdmin;
     window.vybeeOpenCommunitySettingsV13=openCommunitySettings;
+  }
+  bind();
+})();
+</script>
+
+
+<div class="vybee-v10-overlay" id="vybeeV14MegaCenter">
+  <div class="vybee-v10-modal">
+    <div class="vybee-v10-head">
+      <div><h2>🧩 VYBEE Mega Center</h2><p>Central de integração dos principais fluxos da plataforma.</p></div>
+      <button type="button" class="btn" id="vybeeV14MegaClose">✕</button>
+    </div>
+    <div class="vybee-v10-body">
+      <div class="v14-kpis" id="vybeeV14KPIs"></div>
+      <div class="section" style="margin-top:14px">AÇÕES RÁPIDAS</div>
+      <div class="v14-toolbar" id="vybeeV14Quick"></div>
+      <div style="margin-top:10px" id="vybeeV14Body"></div>
+    </div>
+  </div>
+</div>
+
+
+<script id="vybee-mega-v14-controller">
+(function(){
+  const quick=[
+    ["👤","Perfil","profile"],
+    ["👥","Amigos","friends"],
+    ["💬","DMs","dms"],
+    ["♧","Comunidades","communities"],
+    ["🔔","Notificações","notifications"],
+    ["⚙️","Preferências","preferences"],
+    ["🚩","Denúncias","reports"],
+    ["🔐","Segurança","security"],
+    ["📁","Salvos","saved"],
+    ["⌁","Feed","feed"],
+    ["♛","Eventos","events"]
+  ];
+  let active="overview";
+  let currentCommunity=null;
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+  function toastSafe(v){try{window.toast?.(v)}catch(_){}}
+
+  async function open(){
+    el("vybeeV14MegaCenter")?.classList.add("on");
+    renderQuick();
+    await loadKPIs();
+    await render(active);
+  }
+  function close(){el("vybeeV14MegaCenter")?.classList.remove("on")}
+
+  function renderQuick(){
+    const box=el("vybeeV14Quick"); if(!box)return;
+    box.innerHTML=quick.map(q=>`<button type="button" class="v14-btn" data-v14-action="${q[2]}">${q[0]} ${q[1]}</button>`).join("");
+    box.querySelectorAll("[data-v14-action]").forEach(b=>b.onclick=()=>run(b.dataset.v14Action));
+  }
+
+  async function loadKPIs(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    const [f,c,n,e,p]=await Promise.all([
+      client.from("friendships").select("id",{count:"exact",head:true}).eq("status","accepted").or(`user_a.eq.${current.id},user_b.eq.${current.id}`),
+      client.from("community_members").select("id",{count:"exact",head:true}).eq("user_id",current.id),
+      client.from("notifications").select("id",{count:"exact",head:true}).eq("user_id",current.id).eq("is_read",false),
+      client.from("vybee_events").select("id",{count:"exact",head:true}).gte("event_at",new Date().toISOString()),
+      client.from("vybee_posts").select("id",{count:"exact",head:true})
+    ]);
+    el("vybeeV14KPIs").innerHTML=[
+      ["👥",f.count||0,"Amigos"],["♧",c.count||0,"Comunidades"],["🔔",n.count||0,"Não lidas"],["📅",e.count||0,"Eventos"],["📝",p.count||0,"Publicações"]
+    ].map(x=>`<div class="v14-kpi"><strong>${x[0]} ${Number(x[1])}</strong><span>${x[2]}</span></div>`).join("");
+  }
+
+  async function render(key){
+    active=key;
+    const body=el("vybeeV14Body"); if(!body)return;
+    if(key==="overview"){
+      body.innerHTML=`
+        <div class="v14-wrap">
+          <div class="v14-card"><div class="v14-row"><div class="v14-main"><strong>Central integrada</strong><span>Use os atalhos acima para navegar sem perder o estado atual.</span></div><span class="v11-badge">V14</span></div></div>
+          <div class="v14-card"><strong style="font-size:10px">Fluxos principais</strong><div class="v14-wrap" style="margin-top:8px"><div class="v14-row"><div>1️⃣</div><div class="v14-main"><strong>Descobrir</strong><span>Buscar pessoas e comunidades.</span></div></div><div class="v14-row"><div>2️⃣</div><div class="v14-main"><strong>Conectar</strong><span>Amizades, DMs e notificações.</span></div></div><div class="v14-row"><div>3️⃣</div><div class="v14-main"><strong>Participar</strong><span>Comunidades, canais, eventos e Feed.</span></div></div><div class="v14-row"><div>4️⃣</div><div class="v14-main"><strong>Criar</strong><span>Publicações, enquetes, arquivos e eventos.</span></div></div><div class="v14-row"><div>5️⃣</div><div class="v14-main"><strong>Administrar</strong><span>Membros, cargos, moderação, auditoria e denúncias.</span></div></div></div></div>
+        </div>`;
+      return;
+    }
+    if(key==="profile"){close();return window.vybeeOpenProfileEditor?.()}
+    if(key==="friends"){close();return window.vybeeOpenSocialFriends?.()}
+    if(key==="dms"){close();return window.vybeeRenderDirectMessages?.()}
+    if(key==="communities"){close();return document.querySelector('[data-home-nav="communities"]')?.click()}
+    if(key==="notifications"){close();return window.vybeeRenderNotificationsPage?.()}
+    if(key==="preferences"){close();return window.vybeeOpenNotificationSettings?.()}
+    if(key==="reports"){close();return window.vybeeOpenReportsCenterV8?.()}
+    if(key==="security"){close();return window.vybeeOpenSecurityCenter?.()}
+    if(key==="saved"){close();return window.vybeeOpenSaved?.()}
+    if(key==="feed"){close();return window.vybeeOpenSocialFeed?.() || document.querySelector('[data-home-nav="feed"]')?.click()}
+    if(key==="events"){close();return document.querySelector('[data-home-nav="events"]')?.click()}
+  }
+
+  function run(a){return render(a)}
+
+  // ---------- Public/community join ----------
+  async function discoverCommunities(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    showPage("Explorar comunidades","Encontre comunidades e entre diretamente.",`<div id="vybeeV14Discover" class="v14-wrap"><div class="v14-empty">Carregando...</div></div>`);
+    const box=el("vybeeV14Discover");
+    const {data,error}=await client.from("communities").select("id,name,description,is_public,allow_member_join,owner_id").eq("is_public",true).limit(100);
+    if(error){box.innerHTML='<div class="v14-empty">Não foi possível carregar comunidades.</div>';return}
+    if(!data?.length){box.innerHTML='<div class="v14-empty">Nenhuma comunidade pública encontrada.</div>';return}
+    box.innerHTML=data.map(c=>`<div class="v14-card"><div class="v14-row"><div class="v14-main"><strong>🐝 ${esc(c.name)}</strong><span>${esc(c.description||"Comunidade VYBEE")}</span></div><button type="button" class="v14-btn primary" data-v14-join="${esc(c.id)}">${c.allow_member_join===false?"Solicitar":"Entrar"}</button></div></div>`).join("");
+    box.querySelectorAll("[data-v14-join]").forEach(b=>b.onclick=()=>joinCommunity(b.dataset.v14Join,b));
+  }
+
+  async function joinCommunity(id,button){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    const {error}=await client.rpc("join_public_community",{p_community_id:id});
+    if(error){toastSafe(error.message||"Não foi possível entrar.");return}
+    button.disabled=true;button.textContent="✅ Participando";
+  }
+
+  // ---------- Notification mark all ----------
+  async function markAllNotifications(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    await client.from("notifications").update({is_read:true}).eq("user_id",current.id);
+    toastSafe("🔔 Notificações marcadas como lidas.");
+    loadKPIs();
+  }
+
+  // ---------- Blocks management ----------
+  async function manageBlocks(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    showPage("Usuários bloqueados","Controle sua lista de bloqueios.",`<div id="vybeeV14Blocks" class="v14-table"><div class="v14-empty">Carregando...</div></div>`);
+    const box=el("vybeeV14Blocks");
+    const {data,error}=await client.from("user_blocks").select("id,blocked_id,created_at").eq("blocker_id",current.id).order("created_at",{ascending:false});
+    if(error){box.innerHTML='<div class="v14-empty">Não foi possível carregar bloqueios.</div>';return}
+    const ids=(data||[]).map(x=>x.blocked_id);
+    const {data:profiles}=ids.length?await client.from("profiles").select("id,display_name,username").in("id",ids):{data:[]};
+    const map=new Map((profiles||[]).map(p=>[p.id,p]));
+    box.innerHTML=(data||[]).map(r=>{const p=map.get(r.blocked_id);return `<div class="v14-table-row"><span>${esc(p?.display_name||"Usuário")}</span><small>${p?.username?"@"+esc(p.username):""}</small><button type="button" class="v14-btn" data-v14-unblock="${esc(r.id)}">Desbloquear</button></div>`}).join("")||'<div class="v14-empty">Nenhum usuário bloqueado.</div>';
+    box.querySelectorAll("[data-v14-unblock]").forEach(b=>b.onclick=async()=>{
+      await client.from("user_blocks").delete().eq("id",b.dataset.v14Unblock).eq("blocker_id",current.id);
+      manageBlocks();
+    });
+  }
+
+  function bind(){
+    el("vybeeV14MegaClose")?.addEventListener("click",close);
+    el("vybeeV14MegaCenter")?.addEventListener("click",e=>{if(e.target.id==="vybeeV14MegaCenter")close()});
+    document.addEventListener("keydown",e=>{
+      if(e.key==="Escape")close();
+    });
+    window.vybeeOpenMegaCenterV14=open;
+    window.vybeeExploreCommunitiesV14=discoverCommunities;
+    window.vybeeMarkAllNotificationsV14=markAllNotifications;
+    window.vybeeManageBlocksV14=manageBlocks;
   }
   bind();
 })();
