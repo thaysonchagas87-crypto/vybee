@@ -3759,6 +3759,266 @@ html[data-vybee-build="master-v1"] body::after{
 document.documentElement.dataset.vybeeBuild="master-v1";
 </script>
 
+
+<style id="vybee-social-pack-style">
+.vybee-social-page{
+  display:grid;
+  gap:10px;
+}
+.vybee-social-tabs{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+}
+.vybee-social-tab{
+  border:1px solid #2a3136;
+  background:#111516;
+  color:#fff;
+  border-radius:9px;
+  padding:7px 9px;
+  cursor:pointer;
+  font-size:9px;
+  font-weight:800;
+}
+.vybee-social-tab.active,
+.vybee-social-tab:hover{
+  border-color:#53ff1a;
+  background:#121a12;
+}
+.vybee-social-list{
+  display:grid;
+  gap:8px;
+}
+.vybee-social-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:10px;
+  border:1px solid #242a2f;
+  border-radius:11px;
+  background:#101415;
+}
+.vybee-social-avatar{
+  width:36px;height:36px;
+  display:grid;place-items:center;
+  border-radius:50%;
+  background:#181d20;
+  flex:0 0 36px;
+}
+.vybee-social-main{
+  min-width:0;flex:1;
+}
+.vybee-social-main strong{
+  display:block;font-size:10px;
+}
+.vybee-social-main span{
+  display:block;margin-top:2px;color:#707980;font-size:8px;
+}
+.vybee-social-actions{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+}
+.vybee-social-actions button{
+  border:1px solid #2b3338;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:6px 8px;
+  cursor:pointer;
+  font-size:8px;
+}
+.vybee-social-actions .primary{
+  border-color:#39ff14;
+  background:#39ff14;
+  color:#071006;
+}
+.vybee-social-actions .danger:hover{
+  border-color:#ff4d4d;
+}
+.vybee-social-search{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px 11px;
+  border:1px solid #2a3136;
+  border-radius:9px;
+  background:#0f1314;
+  color:#fff;
+  outline:none;
+}
+.vybee-dm-shell{
+  display:grid;
+  grid-template-columns:260px minmax(0,1fr);
+  min-height:58vh;
+  border:1px solid #252c31;
+  border-radius:14px;
+  overflow:hidden;
+  background:#0a0d0e;
+}
+.vybee-dm-list{
+  border-right:1px solid #22282d;
+  overflow:auto;
+  background:#0e1112;
+}
+.vybee-dm-item{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  padding:10px;
+  cursor:pointer;
+}
+.vybee-dm-item:hover,
+.vybee-dm-item.active{
+  background:#161b1d;
+}
+.vybee-dm-item-main{
+  min-width:0;flex:1;
+}
+.vybee-dm-item-main strong{
+  display:block;font-size:10px;
+}
+.vybee-dm-item-main span{
+  display:block;margin-top:2px;color:#707980;font-size:8px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.vybee-dm-chat{
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  min-width:0;
+}
+.vybee-dm-head{
+  display:flex;
+  gap:9px;
+  align-items:center;
+  padding:11px 13px;
+  border-bottom:1px solid #22282d;
+  background:#0e1112;
+}
+.vybee-dm-head-main{min-width:0;flex:1}
+.vybee-dm-head-main strong{display:block;font-size:11px}
+.vybee-dm-head-main span{display:block;margin-top:2px;color:#707980;font-size:8px}
+.vybee-dm-messages{
+  overflow:auto;
+  padding:12px;
+  display:grid;
+  align-content:start;
+  gap:5px;
+}
+.vybee-dm-message{
+  display:flex;
+  gap:8px;
+  padding:6px 2px;
+}
+.vybee-dm-message.mine{justify-content:flex-end}
+.vybee-dm-bubble{
+  max-width:min(75%,520px);
+  padding:8px 10px;
+  border-radius:10px;
+  background:#121719;
+  border:1px solid #252c31;
+}
+.vybee-dm-message.mine .vybee-dm-bubble{
+  background:#142013;
+  border-color:#2d4d28;
+}
+.vybee-dm-bubble span{
+  display:block;
+  font-size:10px;
+  line-height:1.4;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.vybee-dm-bubble small{
+  display:block;
+  margin-top:3px;
+  color:#687178;
+  font-size:7px;
+}
+.vybee-dm-form{
+  display:flex;
+  gap:7px;
+  padding:9px;
+  border-top:1px solid #22282d;
+  background:#0e1112;
+}
+.vybee-dm-input{
+  flex:1;
+  min-width:0;
+  padding:10px;
+  border:1px solid #2b3338;
+  border-radius:9px;
+  background:#141819;
+  color:#fff;
+}
+.vybee-dm-send{
+  width:42px;
+  border:1px solid #39ff14;
+  border-radius:9px;
+  background:#39ff14;
+  color:#071006;
+  font-weight:900;
+  cursor:pointer;
+}
+.vybee-notification-page-list{
+  display:grid;
+  gap:7px;
+}
+.vybee-notification-page-row{
+  display:flex;
+  gap:9px;
+  padding:10px;
+  border:1px solid #242a2f;
+  border-radius:11px;
+  background:#101415;
+}
+.vybee-notification-page-row.unread{
+  border-color:#36582f;
+  background:#111811;
+}
+.vybee-notification-page-main{min-width:0;flex:1}
+.vybee-notification-page-main strong{display:block;font-size:10px}
+.vybee-notification-page-main span{display:block;margin-top:3px;color:#747d84;font-size:8px;line-height:1.35}
+.vybee-notification-page-main small{display:block;margin-top:3px;color:#5f686f;font-size:7px}
+.vybee-profile-edit-grid{
+  display:grid;
+  grid-template-columns:140px minmax(0,1fr);
+  gap:14px;
+}
+.vybee-profile-edit-avatar{
+  width:120px;height:120px;
+  display:grid;place-items:center;
+  border-radius:18px;
+  background:#171b1e;
+  font-size:48px;
+  border:1px solid #2a3136;
+}
+.vybee-profile-field{
+  display:grid;
+  gap:5px;
+  margin-bottom:9px;
+}
+.vybee-profile-field label{
+  color:#8a9399;
+  font-size:8px;
+  font-weight:900;
+}
+.vybee-profile-field input,
+.vybee-profile-field textarea{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px;
+  border:1px solid #2a3136;
+  border-radius:9px;
+  background:#101415;
+  color:#fff;
+}
+@media(max-width:800px){
+  .vybee-dm-shell{grid-template-columns:1fr}
+  .vybee-dm-list{max-height:180px;border-right:0;border-bottom:1px solid #22282d}
+  .vybee-profile-edit-grid{grid-template-columns:1fr}
+}
+</style>
+
 </head>
 
 <body>
@@ -11872,11 +12132,11 @@ if(requestedLive){
         return;
 
       case "friends":
-        renderFriends();
+        window.vybeeOpenSocialFriends?.();
         return;
 
       case "messages":
-        renderMessages();
+        window.vybeeRenderDirectMessages?.();
         return;
 
       case "lives":
@@ -12020,9 +12280,18 @@ if(requestedLive){
     "vybeeHomeNotif"
   )?.addEventListener(
     "click",
-    () => document.getElementById(
-      "vybeeNotificationButton"
-    )?.click()
+    () => {
+      if(
+        typeof window.vybeeRenderNotificationsPage ===
+          "function"
+      ){
+        window.vybeeRenderNotificationsPage();
+      }else{
+        document.getElementById(
+          "vybeeNotificationButton"
+        )?.click();
+      }
+    }
   );
 
   document.getElementById(
@@ -20023,6 +20292,1140 @@ if(requestedLive){
     closeManager;
 })();
 </script>
+
+<script id="vybee-social-pack-controller">
+(function(){
+  let friendState="friends";
+  let activeDmId=null;
+  let dmConversation=null;
+  let dmChannel=null;
+  let dmMessages=[];
+  let notificationTimer=null;
+  let unreadCount=0;
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){
+    return String(v??"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function time(v){
+    const d=new Date(v);
+    return Number.isNaN(d.getTime())
+      ? ""
+      : d.toLocaleTimeString(
+          "pt-BR",
+          {hour:"2-digit",minute:"2-digit"}
+        );
+  }
+
+  async function renderFriendPage(){
+    const client=sb();
+    const current=user();
+
+    showPage(
+      "Amigos",
+      "Amizades, solicitações e busca de pessoas.",
+      `
+        <div class="vybee-social-page">
+          <div class="vybee-social-tabs">
+            <button type="button" class="vybee-social-tab active" data-friend-tab="friends">👥 Amigos</button>
+            <button type="button" class="vybee-social-tab" data-friend-tab="requests">📨 Solicitações</button>
+            <button type="button" class="vybee-social-tab" data-friend-tab="search">🔎 Encontrar pessoas</button>
+          </div>
+          <div id="vybeeFriendSocialContent"></div>
+        </div>
+      `
+    );
+
+    document
+      .querySelectorAll("[data-friend-tab]")
+      .forEach(
+        button=>{
+          button.addEventListener(
+            "click",
+            ()=>{
+              document.querySelectorAll(
+                "[data-friend-tab]"
+              ).forEach(
+                b=>b.classList.remove("active")
+              );
+
+              button.classList.add("active");
+              friendState=
+                button.dataset.friendTab;
+
+              renderFriendSection();
+            }
+          );
+        }
+      );
+
+    await renderFriendSection();
+
+    async function renderFriendSection(){
+      const box=
+        el("vybeeFriendSocialContent");
+
+      if(!box) return;
+
+      if(friendState==="search"){
+        box.innerHTML=`
+          <input
+            id="vybeeFriendSearchInput"
+            class="vybee-social-search"
+            placeholder="Nome ou @usuário..."
+          >
+          <div id="vybeeFriendSearchResults" class="vybee-social-list" style="margin-top:9px"></div>
+        `;
+
+        el("vybeeFriendSearchInput")
+          ?.addEventListener(
+            "input",
+            event=>{
+              clearTimeout(
+                event.target._vybeeTimer
+              );
+
+              event.target._vybeeTimer=
+                setTimeout(
+                  ()=>searchPeople(
+                    event.target.value
+                  ),
+                  250
+                );
+            }
+          );
+
+        return;
+      }
+
+      if(!client||!current){
+        box.innerHTML=
+          '<div class="vybee-modern-page-empty">Faça login para usar Amigos.</div>';
+        return;
+      }
+
+      if(friendState==="requests"){
+        await renderRequests(box);
+      }else{
+        await renderFriends(box);
+      }
+    }
+
+    async function renderFriends(box){
+      const {data,error}=
+        await client
+          .from("friendships")
+          .select("id,user_a,user_b,status")
+          .or(
+            `user_a.eq.${current.id},user_b.eq.${current.id}`
+          )
+          .eq("status","accepted");
+
+      if(error){
+        box.innerHTML=
+          '<div class="vybee-modern-page-empty">Não foi possível carregar amigos.</div>';
+        return;
+      }
+
+      if(!data?.length){
+        box.innerHTML=
+          '<div class="vybee-modern-page-empty">Você ainda não possui amigos.</div>';
+        return;
+      }
+
+      const ids=
+        data.map(
+          row =>
+            row.user_a===current.id
+              ? row.user_b
+              : row.user_a
+        );
+
+      const {data:profiles}=
+        await client
+          .from("profiles")
+          .select("id,display_name,username")
+          .in("id",ids);
+
+      const map=
+        new Map(
+          (profiles||[]).map(
+            p=>[p.id,p]
+          )
+        );
+
+      box.innerHTML=
+        data.map(row=>{
+          const id=
+            row.user_a===current.id
+              ? row.user_b
+              : row.user_a;
+          const profile=
+            map.get(id);
+
+          return `
+            <div class="vybee-social-row">
+              <div class="vybee-social-avatar">👤</div>
+              <div class="vybee-social-main">
+                <strong>${esc(
+                  profile?.display_name||
+                  profile?.username||
+                  "Usuário"
+                )}</strong>
+                <span>${profile?.username?"@"+esc(profile.username):"Amigo"}</span>
+              </div>
+              <div class="vybee-social-actions">
+                <button
+                  type="button"
+                  class="primary"
+                  data-dm-user="${esc(id)}"
+                  data-dm-name="${esc(
+                    profile?.display_name||
+                    profile?.username||
+                    "Usuário"
+                  )}"
+                >💬 Mensagem</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+      bindDmButtons(box);
+    }
+
+    async function renderRequests(box){
+      const {data,error}=
+        await client
+          .from("friend_requests")
+          .select("id,sender_id,receiver_id,status,created_at")
+          .eq("receiver_id",current.id)
+          .eq("status","pending")
+          .order("created_at",{ascending:false});
+
+      if(error){
+        box.innerHTML=
+          '<div class="vybee-modern-page-empty">Crie a tabela de solicitações pelo SQL desta etapa.</div>';
+        return;
+      }
+
+      if(!data?.length){
+        box.innerHTML=
+          '<div class="vybee-modern-page-empty">Nenhuma solicitação pendente.</div>';
+        return;
+      }
+
+      const ids=data.map(row=>row.sender_id);
+
+      const {data:profiles}=
+        await client
+          .from("profiles")
+          .select("id,display_name,username")
+          .in("id",ids);
+
+      const map=
+        new Map(
+          (profiles||[]).map(
+            p=>[p.id,p]
+          )
+        );
+
+      box.innerHTML=
+        data.map(row=>{
+          const p=
+            map.get(row.sender_id);
+
+          return `
+            <div class="vybee-social-row">
+              <div class="vybee-social-avatar">👤</div>
+              <div class="vybee-social-main">
+                <strong>${esc(
+                  p?.display_name||
+                  p?.username||
+                  "Usuário"
+                )}</strong>
+                <span>Quer adicionar você.</span>
+              </div>
+              <div class="vybee-social-actions">
+                <button
+                  type="button"
+                  class="primary"
+                  data-friend-accept="${esc(row.id)}"
+                >Aceitar</button>
+                <button
+                  type="button"
+                  data-friend-reject="${esc(row.id)}"
+                >Recusar</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+      box
+        .querySelectorAll("[data-friend-accept]")
+        .forEach(
+          button=>{
+            button.addEventListener(
+              "click",
+              async()=>{
+                const {error}=
+                  await client.rpc(
+                    "respond_friend_request",
+                    {
+                      p_request_id:
+                        button.dataset.friendAccept,
+                      p_accept:
+                        true
+                    }
+                  );
+
+                if(error){
+                  toast(
+                    error.message||
+                    "Não foi possível aceitar."
+                  );
+                  return;
+                }
+
+                window.vybeeAddActivity?.({
+                  id:
+                    "friend-accept:"+
+                    button.dataset.friendAccept+
+                    ":"+
+                    Date.now(),
+                  icon:"👥",
+                  title:"Nova amizade",
+                  text:"Vocês agora são amigos."
+                });
+
+                await renderFriendSection();
+              }
+            );
+          }
+        );
+
+      box
+        .querySelectorAll("[data-friend-reject]")
+        .forEach(
+          button=>{
+            button.addEventListener(
+              "click",
+              async()=>{
+                const {error}=
+                  await client.rpc(
+                    "respond_friend_request",
+                    {
+                      p_request_id:
+                        button.dataset.friendReject,
+                      p_accept:
+                        false
+                    }
+                  );
+
+                if(error){
+                  toast(
+                    error.message||
+                    "Não foi possível recusar."
+                  );
+                  return;
+                }
+
+                await renderFriendSection();
+              }
+            );
+          }
+        );
+    }
+
+    async function searchPeople(value){
+      const box=
+        el("vybeeFriendSearchResults");
+
+      const term=
+        String(value||"").trim();
+
+      if(!box) return;
+
+      if(term.length<2){
+        box.innerHTML=
+          '<div class="vybee-modern-page-empty">Digite pelo menos 2 caracteres.</div>';
+        return;
+      }
+
+      const safe=
+        term
+          .replaceAll("%","\\%")
+          .replaceAll("_","\\_");
+
+      const {data,error}=
+        await client
+          .from("profiles")
+          .select("id,display_name,username")
+          .or(
+            `display_name.ilike.%${safe}%,username.ilike.%${safe}%`
+          )
+          .limit(20);
+
+      if(error){
+        box.innerHTML=
+          '<div class="vybee-modern-page-empty">Não foi possível buscar.</div>';
+        return;
+      }
+
+      const rows=(data||[]).filter(
+        p=>p.id!==current.id
+      );
+
+      if(!rows.length){
+        box.innerHTML=
+          '<div class="vybee-modern-page-empty">Nenhuma pessoa encontrada.</div>';
+        return;
+      }
+
+      box.innerHTML=
+        rows.map(
+          profile=>`
+            <div class="vybee-social-row">
+              <div class="vybee-social-avatar">👤</div>
+              <div class="vybee-social-main">
+                <strong>${esc(
+                  profile.display_name||
+                  profile.username||
+                  "Usuário"
+                )}</strong>
+                <span>${profile.username?"@"+esc(profile.username):""}</span>
+              </div>
+              <div class="vybee-social-actions">
+                <button
+                  type="button"
+                  class="primary"
+                  data-send-friend="${esc(profile.id)}"
+                >➕ Adicionar</button>
+                <button
+                  type="button"
+                  data-search-dm="${esc(profile.id)}"
+                  data-search-dm-name="${esc(
+                    profile.display_name||
+                    profile.username||
+                    "Usuário"
+                  )}"
+                >💬 Mensagem</button>
+              </div>
+            </div>
+          `
+        ).join("");
+
+      box
+        .querySelectorAll("[data-send-friend]")
+        .forEach(
+          button=>{
+            button.addEventListener(
+              "click",
+              async()=>{
+                const {error}=
+                  await client.rpc(
+                    "send_friend_request",
+                    {
+                      p_receiver_id:
+                        button.dataset.sendFriend
+                    }
+                  );
+
+                if(error){
+                  toast(
+                    error.message||
+                    "Não foi possível enviar."
+                  );
+                  return;
+                }
+
+                button.disabled=true;
+                button.textContent="✅ Enviado";
+
+                window.vybeeAddActivity?.({
+                  id:
+                    "friend-request:"+
+                    button.dataset.sendFriend+
+                    ":"+
+                    Date.now(),
+                  icon:"📨",
+                  title:"Solicitação enviada",
+                  text:"Pedido de amizade enviado."
+                });
+              }
+            );
+          }
+        );
+
+      bindDmButtons(box);
+    }
+
+    function bindDmButtons(root){
+      root
+        .querySelectorAll("[data-dm-user],[data-search-dm]")
+        .forEach(
+          button=>{
+            button.addEventListener(
+              "click",
+              ()=>{
+                const id=
+                  button.dataset.dmUser||
+                  button.dataset.searchDm;
+
+                const name=
+                  button.dataset.dmName||
+                  button.dataset.searchDmName||
+                  "Usuário";
+
+                openDm(
+                  id,
+                  name
+                );
+              }
+            );
+          }
+        );
+    }
+  }
+
+  async function openDm(userId,userName){
+    const client=sb();
+    const current=user();
+
+    if(!client||!current||!userId){
+      return;
+    }
+
+    await ensureDmSchemaAccess();
+
+    const {data:conversationId,error}=
+      await client.rpc(
+        "get_or_create_direct_conversation",
+        {
+          p_other_user_id:
+            userId
+        }
+      );
+
+    if(error){
+      toast(
+        error.message||
+        "Não foi possível abrir a conversa."
+      );
+      return;
+    }
+
+    activeDmId=
+      conversationId;
+
+    dmConversation={
+      id:
+        conversationId,
+      userId,
+      userName
+    };
+
+    renderDmPage();
+  }
+
+  async function renderDmPage(){
+    const current=user();
+
+    showPage(
+      "Mensagens",
+      "Conversas privadas do VYBEE.",
+      `
+        <div
+          class="vybee-dm-shell"
+          id="vybeeDmShell"
+        >
+          <aside
+            class="vybee-dm-list"
+            id="vybeeDmList"
+          >
+            <div class="vybee-modern-page-empty">Carregando conversas...</div>
+          </aside>
+
+          <section
+            class="vybee-dm-chat"
+            id="vybeeDmChat"
+          >
+            <div class="vybee-dm-head">
+              <div class="vybee-social-avatar">👤</div>
+              <div class="vybee-dm-head-main">
+                <strong>${esc(
+                  dmConversation?.userName||
+                  "Mensagens"
+                )}</strong>
+                <span>Mensagem privada</span>
+              </div>
+            </div>
+
+            <div
+              class="vybee-dm-messages"
+              id="vybeeDmMessages"
+            ></div>
+
+            <form
+              class="vybee-dm-form"
+              id="vybeeDmForm"
+            >
+              <input
+                id="vybeeDmInput"
+                class="vybee-dm-input"
+                maxlength="2000"
+                placeholder="Digite uma mensagem..."
+                autocomplete="off"
+              >
+              <button
+                class="vybee-dm-send"
+                id="vybeeDmSend"
+                type="submit"
+              >➤</button>
+            </form>
+          </section>
+        </div>
+      `
+    );
+
+    await loadDmConversations();
+
+    if(dmConversation){
+      await loadDmMessages();
+      subscribeDm();
+    }
+  }
+
+  async function loadDmConversations(){
+    const client=sb();
+    const current=user();
+    const list=el("vybeeDmList");
+
+    if(!client||!current||!list) return;
+
+    const {data,error}=
+      await client.rpc(
+        "list_direct_conversations"
+      );
+
+    if(error){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Execute o SQL da etapa social.</div>';
+      return;
+    }
+
+    if(!data?.length){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Nenhuma conversa ainda.</div>';
+      return;
+    }
+
+    list.innerHTML=
+      data.map(
+        row=>`
+          <div
+            class="vybee-dm-item ${
+              String(row.conversation_id)===
+              String(activeDmId)
+                ? "active"
+                : ""
+            }"
+            data-dm-conversation="${esc(row.conversation_id)}"
+            data-dm-user-id="${esc(row.other_user_id)}"
+            data-dm-user-name="${esc(row.other_display_name||row.other_username||"Usuário")}"
+          >
+            <div class="vybee-social-avatar">👤</div>
+            <div class="vybee-dm-item-main">
+              <strong>${esc(
+                row.other_display_name||
+                row.other_username||
+                "Usuário"
+              )}</strong>
+              <span>${esc(
+                row.last_message||
+                "Nova conversa"
+              )}</span>
+            </div>
+          </div>
+        `
+      ).join("");
+
+    list
+      .querySelectorAll("[data-dm-conversation]")
+      .forEach(
+        item=>{
+          item.addEventListener(
+            "click",
+            async()=>{
+              activeDmId=
+                item.dataset.dmConversation;
+
+              dmConversation={
+                id:
+                  activeDmId,
+                userId:
+                  item.dataset.dmUserId,
+                userName:
+                  item.dataset.dmUserName
+              };
+
+              await renderDmPage();
+            }
+          );
+        }
+      );
+  }
+
+  async function loadDmMessages(){
+    const client=sb();
+    const box=el("vybeeDmMessages");
+
+    if(!client||!activeDmId||!box) return;
+
+    const {data,error}=
+      await client
+        .from("direct_messages")
+        .select(
+          "id,sender_id,content,created_at"
+        )
+        .eq(
+          "conversation_id",
+          activeDmId
+        )
+        .order(
+          "created_at",
+          {ascending:true}
+        )
+        .limit(200);
+
+    if(error){
+      box.innerHTML=
+        '<div class="vybee-chat-system">Não foi possível carregar as mensagens.</div>';
+      return;
+    }
+
+    dmMessages=
+      data||[];
+
+    renderDmMessages();
+  }
+
+  function renderDmMessages(){
+    const box=el("vybeeDmMessages");
+    const current=user();
+
+    if(!box) return;
+
+    if(!dmMessages.length){
+      box.innerHTML=
+        '<div class="vybee-chat-system">Comece a conversa. 👋</div>';
+      return;
+    }
+
+    box.innerHTML=
+      dmMessages.map(
+        row=>{
+          const mine=
+            row.sender_id===
+            current?.id;
+
+          return `
+            <div
+              class="vybee-dm-message ${
+                mine?"mine":""
+              }"
+              data-dm-message="${esc(row.id)}"
+            >
+              ${
+                mine
+                  ? `<div class="vybee-dm-bubble">
+                      <span>${esc(row.content)}</span>
+                      <small>${esc(time(row.created_at))}</small>
+                    </div>`
+                  : `<div class="vybee-social-avatar">👤</div>
+                     <div class="vybee-dm-bubble">
+                       <span>${esc(row.content)}</span>
+                       <small>${esc(time(row.created_at))}</small>
+                     </div>`
+              }
+            </div>
+          `;
+        }
+      ).join("");
+
+    box.scrollTop=
+      box.scrollHeight;
+  }
+
+  function subscribeDm(){
+    const client=sb();
+
+    if(
+      dmChannel
+    ){
+      try{
+        client.removeChannel(
+          dmChannel
+        );
+      }catch(_){}
+      dmChannel=null;
+    }
+
+    if(
+      !client||
+      !activeDmId
+    ) return;
+
+    dmChannel=
+      client
+        .channel(
+          "vybee-dm-" +
+          activeDmId +
+          "-" +
+          Date.now()
+        )
+        .on(
+          "postgres_changes",
+          {
+            event:"INSERT",
+            schema:"public",
+            table:"direct_messages",
+            filter:
+              "conversation_id=eq."+
+              activeDmId
+          },
+          payload=>{
+            if(
+              dmMessages.some(
+                m=>String(m.id)===
+                  String(payload.new.id)
+              )
+            ){
+              return;
+            }
+
+            dmMessages.push(
+              payload.new
+            );
+
+            renderDmMessages();
+          }
+        )
+        .subscribe();
+  }
+
+  async function sendDm(){
+    const client=sb();
+    const current=user();
+    const input=el("vybeeDmInput");
+
+    if(!client||!current||!activeDmId||!input) return;
+
+    const content=
+      input.value.trim();
+
+    if(!content) return;
+
+    const {error}=
+      await client
+        .from("direct_messages")
+        .insert({
+          conversation_id:
+            activeDmId,
+          sender_id:
+            current.id,
+          content
+        });
+
+    if(error){
+      toast(
+        error.message||
+        "Não foi possível enviar."
+      );
+      return;
+    }
+
+    input.value="";
+    input.focus();
+  }
+
+  async function renderNotifications(){
+    const client=sb();
+    const current=user();
+
+    showPage(
+      "Notificações",
+      "Tudo que aconteceu com sua conta.",
+      `
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+          <button
+            type="button"
+            class="vybee-modern-page-button"
+            id="vybeeMarkNotificationsRead"
+          >✓ Marcar todas como lidas</button>
+        </div>
+        <div
+          id="vybeeNotificationPageList"
+          class="vybee-notification-page-list"
+        >
+          <div class="vybee-modern-page-empty">Carregando...</div>
+        </div>
+      `
+    );
+
+    if(
+      !client||
+      !current
+    ){
+      return;
+    }
+
+    const {data,error}=
+      await client
+        .from("notifications")
+        .select(
+          "id,type,title,body,is_read,created_at"
+        )
+        .eq(
+          "user_id",
+          current.id
+        )
+        .order(
+          "created_at",
+          {ascending:false}
+        )
+        .limit(100);
+
+    const list=el(
+      "vybeeNotificationPageList"
+    );
+
+    if(error){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Execute o SQL desta etapa para ativar notificações sociais.</div>';
+      return;
+    }
+
+    unreadCount=
+      (data||[]).filter(
+        n=>!n.is_read
+      ).length;
+
+    updateNotificationBadge();
+
+    if(!data?.length){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Nenhuma notificação.</div>';
+      return;
+    }
+
+    list.innerHTML=
+      data.map(
+        item=>`
+          <div
+            class="vybee-notification-page-row ${
+              item.is_read?"":"unread"
+            }"
+            data-notification-id="${esc(item.id)}"
+          >
+            <div class="vybee-social-avatar">🔔</div>
+            <div class="vybee-notification-page-main">
+              <strong>${esc(item.title||"Notificação")}</strong>
+              <span>${esc(item.body||"")}</span>
+              <small>${esc(time(item.created_at))}</small>
+            </div>
+            ${
+              item.is_read
+                ? ""
+                : `<button
+                    type="button"
+                    class="vybee-social-actions button"
+                    data-read-one="${esc(item.id)}"
+                  >Lida</button>`
+            }
+          </div>
+        `
+      ).join("");
+
+    list
+      .querySelectorAll(
+        "[data-read-one]"
+      )
+      .forEach(
+        button=>{
+          button.addEventListener(
+            "click",
+            async()=>{
+              await client
+                .from("notifications")
+                .update({
+                  is_read:true
+                })
+                .eq(
+                  "id",
+                  button.dataset.readOne
+                );
+
+              renderNotifications();
+            }
+          );
+        }
+      );
+
+    el("vybeeMarkNotificationsRead")
+      ?.addEventListener(
+        "click",
+        async()=>{
+          await client
+            .from("notifications")
+            .update({
+              is_read:true
+            })
+            .eq(
+              "user_id",
+              current.id
+            );
+
+          renderNotifications();
+        }
+      );
+  }
+
+  async function refreshNotificationCount(){
+    const client=sb();
+    const current=user();
+
+    if(!client||!current) return;
+
+    try{
+      const {count,error}=
+        await client
+          .from("notifications")
+          .select(
+            "id",
+            {
+              count:"exact",
+              head:true
+            }
+          )
+          .eq(
+            "user_id",
+            current.id
+          )
+          .eq(
+            "is_read",
+            false
+          );
+
+      if(error) return;
+
+      unreadCount=
+        Number(count||0);
+
+      updateNotificationBadge();
+
+    }catch(_){}
+  }
+
+  function updateNotificationBadge(){
+    const badge=
+      el("vybeeNotificationBadge");
+
+    if(!badge) return;
+
+    badge.textContent=
+      String(
+        unreadCount
+      );
+
+    badge.style.display=
+      unreadCount>0
+        ? "inline-flex"
+        : "none";
+  }
+
+  async function ensureDmSchemaAccess(){
+    /*
+     * O RPC é responsável por garantir a criação/recuperação
+     * da conversa sem permitir conversa de terceiros.
+     */
+  }
+
+  function bind(){
+    el("vybeeModernDmShortcut")
+      ?.addEventListener(
+        "click",
+        renderDmPage
+      );
+
+    el("vybeeHomeNotif")
+      ?.addEventListener(
+        "click",
+        renderNotifications
+      );
+
+    const originalNotif=
+      el("vybeeNotificationButton");
+
+    originalNotif?.addEventListener(
+      "dblclick",
+      renderNotifications
+    );
+  }
+
+  function wait(){
+    if(
+      sb() &&
+      user()
+    ){
+      bind();
+      refreshNotificationCount();
+
+      notificationTimer=
+        setInterval(
+          refreshNotificationCount,
+          8000
+        );
+
+      return;
+    }
+
+    setTimeout(
+      wait,
+      500
+    );
+  }
+
+  /*
+   * Overrides only the modern router actions. Existing V6 actions
+   * remain intact.
+   */
+  window.vybeeRenderFriendsSocial=
+    renderFriendPage;
+
+  window.vybeeRenderDirectMessages=
+    renderDmPage;
+
+  window.vybeeRenderNotificationsPage=
+    renderNotifications;
+
+  /*
+   * Export helper for the modern nav.
+   */
+  window.vybeeOpenSocialFriends=
+    renderFriendPage;
+
+  wait();
+})();
+</script>
+
 </body>
 
 </html>
