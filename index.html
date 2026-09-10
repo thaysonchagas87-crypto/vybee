@@ -5040,6 +5040,22 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 @media(max-width:700px){.v14-kpis{grid-template-columns:repeat(2,1fr)}.v14-table-row{grid-template-columns:1fr}}
 </style>
 
+
+<style id="vybee-mega-v15-style">
+.v15-grid{display:grid;gap:9px}.v15-card{padding:11px;border:1px solid #252c31;border-radius:12px;background:#101415}
+.v15-row{display:flex;align-items:center;gap:8px}.v15-main{min-width:0;flex:1}
+.v15-main strong{display:block;font-size:9px}.v15-main span{display:block;margin-top:2px;color:#737c83;font-size:7px}
+.v15-btn{border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:8px}
+.v15-btn.primary{border-color:#39ff14;background:#39ff14;color:#071006}.v15-btn.danger:hover{border-color:#ff4d4d}
+.v15-banner{padding:11px;border:1px solid #31462d;border-radius:11px;background:#111b12}
+.v15-banner strong{display:block;font-size:10px}.v15-banner span{display:block;margin-top:3px;color:#a2aaa5;font-size:8px;line-height:1.4}
+.v15-list{display:grid;gap:6px}.v15-item{display:flex;gap:8px;align-items:center;padding:8px;border:1px solid #242a2f;border-radius:9px;background:#101415}
+.v15-item-main{min-width:0;flex:1}.v15-item-main strong{display:block;font-size:8px}.v15-item-main span{display:block;margin-top:2px;color:#737c83;font-size:7px}
+.v15-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.v15-kpi{padding:9px;text-align:center;border:1px solid #242a2f;border-radius:9px;background:#111516}.v15-kpi strong{display:block;font-size:13px}.v15-kpi span{display:block;margin-top:2px;color:#6f787e;font-size:7px}
+.v15-select,.v15-input,.v15-textarea{width:100%;box-sizing:border-box;padding:9px;border:1px solid #2a3136;border-radius:8px;background:#101415;color:#fff}.v15-textarea{min-height:80px;resize:vertical}
+@media(max-width:700px){.v15-kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+
 </head>
 
 <body>
@@ -27514,6 +27530,213 @@ if(requestedLive){
     window.vybeeExploreCommunitiesV14=discoverCommunities;
     window.vybeeMarkAllNotificationsV14=markAllNotifications;
     window.vybeeManageBlocksV14=manageBlocks;
+  }
+  bind();
+})();
+</script>
+
+
+<div class="vybee-v10-overlay" id="vybeeV15OpsCenter">
+  <div class="vybee-v10-modal">
+    <div class="vybee-v10-head">
+      <div><h2>🛠️ Central de Operações</h2><p>Resumo e ferramentas de administração do VYBEE.</p></div>
+      <button type="button" class="btn" id="vybeeV15OpsClose">✕</button>
+    </div>
+    <div class="vybee-v10-body">
+      <div class="v15-kpis" id="vybeeV15OpsKpis"></div>
+      <div class="section" style="margin-top:13px">FILA DE MODERAÇÃO</div>
+      <div id="vybeeV15ModerationQueue" class="v15-list"></div>
+      <div class="section" style="margin-top:13px">ATIVIDADE</div>
+      <div id="vybeeV15OpsActivity" class="v15-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="vybee-v10-overlay" id="vybeeV15AnnouncementPanel">
+  <div class="vybee-v10-modal">
+    <div class="vybee-v10-head">
+      <div><h2>📣 Anúncio da comunidade</h2><p>Publique uma mensagem destacada para os membros.</p></div>
+      <button type="button" class="btn" id="vybeeV15AnnouncementClose">✕</button>
+    </div>
+    <div class="vybee-v10-body">
+      <div class="v15-grid">
+        <input id="vybeeV15AnnouncementTitle" class="v15-input" maxlength="120" placeholder="Título do anúncio">
+        <textarea id="vybeeV15AnnouncementBody" class="v15-textarea" maxlength="1000" placeholder="Mensagem"></textarea>
+        <div class="v15-row">
+          <div class="v15-main"><strong>Fixar anúncio</strong><span>Deixa o anúncio destacado na comunidade.</span></div>
+          <button type="button" class="v15-btn primary" id="vybeeV15AnnouncementPinned">Ativado</button>
+        </div>
+        <div class="v15-row">
+          <div class="v15-main"><strong>Publicar</strong><span>Somente membros autorizados devem utilizar este recurso.</span></div>
+          <button type="button" class="v15-btn primary" id="vybeeV15AnnouncementSave">Publicar</button>
+        </div>
+        <div id="vybeeV15AnnouncementStatus" class="v15-main"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="vybee-v10-overlay" id="vybeeV15DigestPanel">
+  <div class="vybee-v10-modal">
+    <div class="vybee-v10-head">
+      <div><h2>📊 Resumo pessoal</h2><p>Visão rápida da sua atividade no VYBEE.</p></div>
+      <button type="button" class="btn" id="vybeeV15DigestClose">✕</button>
+    </div>
+    <div class="vybee-v10-body">
+      <div id="vybeeV15Digest" class="v15-grid"></div>
+    </div>
+  </div>
+</div>
+
+
+<script id="vybee-mega-v15-controller">
+(function(){
+  let activeCommunity=null;
+  let announcementPinned=true;
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+  function toastSafe(v){try{window.toast?.(v)}catch(_){}}
+
+  async function openOps(){
+    el("vybeeV15OpsCenter")?.classList.add("on");
+    await loadOps();
+  }
+
+  async function loadOps(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+
+    const [reports,notifications,friendRequests,events]=await Promise.all([
+      client.from("user_reports").select("id",{count:"exact",head:true}).in("status",["open","reviewing"]),
+      client.from("notifications").select("id",{count:"exact",head:true}).eq("user_id",current.id).eq("is_read",false),
+      client.from("friend_requests").select("id",{count:"exact",head:true}).eq("receiver_id",current.id).eq("status","pending"),
+      client.from("vybee_events").select("id",{count:"exact",head:true}).gte("event_at",new Date().toISOString())
+    ]);
+
+    el("vybeeV15OpsKpis").innerHTML=[
+      ["🚩",reports.count||0,"Fila denúncias"],
+      ["🔔",notifications.count||0,"Notificações"],
+      ["📨",friendRequests.count||0,"Pedidos"],
+      ["📅",events.count||0,"Eventos"]
+    ].map(x=>`<div class="v15-kpi"><strong>${x[0]} ${Number(x[1])}</strong><span>${x[2]}</span></div>`).join("");
+
+    const {data:mods}=await client.from("community_moderation_actions")
+      .select("id,action,reason,created_at")
+      .eq("moderator_id",current.id)
+      .order("created_at",{ascending:false}).limit(12);
+
+    el("vybeeV15ModerationQueue").innerHTML=(mods||[]).map(m=>`
+      <div class="v15-item"><div>🛡️</div><div class="v15-item-main"><strong>${esc(m.action)}</strong><span>${esc(m.reason||"Sem motivo")} • ${new Date(m.created_at).toLocaleString("pt-BR")}</span></div></div>
+    `).join("")||'<div class="v15-empty">Nenhuma ação recente.</div>';
+
+    const {data:logs}=await client.from("user_activity_logs")
+      .select("id,action,details,created_at")
+      .eq("user_id",current.id)
+      .order("created_at",{ascending:false}).limit(12);
+
+    el("vybeeV15OpsActivity").innerHTML=(logs||[]).map(l=>`
+      <div class="v15-item"><div>⚡</div><div class="v15-item-main"><strong>${esc(l.action)}</strong><span>${new Date(l.created_at).toLocaleString("pt-BR")}</span></div></div>
+    `).join("")||'<div class="v15-empty">Nenhuma atividade registrada.</div>';
+  }
+
+  async function openAnnouncement(community){
+    activeCommunity=community;
+    announcementPinned=true;
+    el("vybeeV15AnnouncementTitle").value="";
+    el("vybeeV15AnnouncementBody").value="";
+    el("vybeeV15AnnouncementPinned").textContent="Ativado";
+    el("vybeeV15AnnouncementStatus").textContent="";
+    el("vybeeV15AnnouncementPanel")?.classList.add("on");
+  }
+
+  async function publishAnnouncement(){
+    const client=sb(), current=user();
+    if(!client||!current||!activeCommunity)return;
+
+    const title=el("vybeeV15AnnouncementTitle").value.trim();
+    const body=el("vybeeV15AnnouncementBody").value.trim();
+    if(title.length<2||body.length<1){
+      el("vybeeV15AnnouncementStatus").textContent="Informe título e mensagem.";
+      return;
+    }
+
+    const status=el("vybeeV15AnnouncementStatus");
+    status.textContent="Publicando...";
+
+    const {error}=await client.from("community_announcements").insert({
+      community_id:activeCommunity.id,
+      author_id:current.id,
+      title,
+      body,
+      pinned:announcementPinned
+    });
+
+    if(error){
+      status.textContent="❌ "+(error.message||"Não foi possível publicar.");
+      return;
+    }
+
+    status.textContent="✅ Anúncio publicado.";
+    window.vybeeAddActivity?.({
+      id:"announcement:"+Date.now(),
+      icon:"📣",
+      title:"Novo anúncio",
+      text:title
+    });
+    setTimeout(()=>el("vybeeV15AnnouncementPanel")?.classList.remove("on"),500);
+  }
+
+  async function openDigest(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    el("vybeeV15DigestPanel")?.classList.add("on");
+
+    const start=new Date();
+    start.setDate(start.getDate()-30);
+    const since=start.toISOString();
+
+    const [posts,comments,events,friends]=await Promise.all([
+      client.from("vybee_posts").select("id",{count:"exact",head:true}).eq("author_id",current.id).gte("created_at",since),
+      client.from("vybee_post_comments").select("id",{count:"exact",head:true}).eq("author_id",current.id).gte("created_at",since),
+      client.from("vybee_event_rsvps").select("id",{count:"exact",head:true}).eq("user_id",current.id).gte("created_at",since),
+      client.from("friend_requests").select("id",{count:"exact",head:true}).eq("sender_id",current.id).gte("created_at",since)
+    ]);
+
+    el("vybeeV15Digest").innerHTML=`
+      <div class="v15-card"><div class="v15-row"><div class="v15-main"><strong>📝 Publicações</strong><span>Nos últimos 30 dias.</span></div><span class="v11-badge">${posts.count||0}</span></div></div>
+      <div class="v15-card"><div class="v15-row"><div class="v15-main"><strong>💬 Comentários</strong><span>Comentários que você publicou.</span></div><span class="v11-badge">${comments.count||0}</span></div></div>
+      <div class="v15-card"><div class="v15-row"><div class="v15-main"><strong>📅 Eventos</strong><span>Confirmações realizadas.</span></div><span class="v11-badge">${events.count||0}</span></div></div>
+      <div class="v15-card"><div class="v15-row"><div class="v15-main"><strong>👥 Pedidos</strong><span>Solicitações enviadas.</span></div><span class="v11-badge">${friends.count||0}</span></div></div>
+    `;
+  }
+
+  function bind(){
+    el("vybeeV15OpsClose")?.addEventListener("click",()=>el("vybeeV15OpsCenter")?.classList.remove("on"));
+    el("vybeeV15AnnouncementClose")?.addEventListener("click",()=>el("vybeeV15AnnouncementPanel")?.classList.remove("on"));
+    el("vybeeV15DigestClose")?.addEventListener("click",()=>el("vybeeV15DigestPanel")?.classList.remove("on"));
+    el("vybeeV15AnnouncementPinned")?.addEventListener("click",()=>{
+      announcementPinned=!announcementPinned;
+      const b=el("vybeeV15AnnouncementPinned");
+      b.textContent=announcementPinned?"Ativado":"Desativado";
+      b.classList.toggle("primary",announcementPinned);
+    });
+    el("vybeeV15AnnouncementSave")?.addEventListener("click",publishAnnouncement);
+
+    [el("vybeeV15OpsCenter"),el("vybeeV15AnnouncementPanel"),el("vybeeV15DigestPanel")].forEach(panel=>{
+      panel?.addEventListener("click",e=>{if(e.target===panel)panel.classList.remove("on")});
+    });
+    document.addEventListener("keydown",e=>{
+      if(e.key==="Escape"){
+        [el("vybeeV15OpsCenter"),el("vybeeV15AnnouncementPanel"),el("vybeeV15DigestPanel")].forEach(x=>x?.classList.remove("on"));
+      }
+    });
+
+    window.vybeeOpenOpsCenterV15=openOps;
+    window.vybeeOpenAnnouncementV15=openAnnouncement;
+    window.vybeeOpenDigestV15=openDigest;
   }
   bind();
 })();
