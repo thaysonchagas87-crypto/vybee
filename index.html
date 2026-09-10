@@ -4795,6 +4795,58 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 }
 </style>
 
+
+<style id="vybee-giant-v7-style">
+.vybee-settings-grid-v7{display:grid;gap:9px}
+.vybee-setting-card-v7{padding:12px;border:1px solid #252c31;border-radius:12px;background:#101415}
+.vybee-setting-head-v7{display:flex;gap:9px;align-items:center}
+.vybee-setting-head-v7 strong{display:block;font-size:10px}
+.vybee-setting-head-v7 span{display:block;margin-top:2px;color:#737c83;font-size:8px}
+.vybee-setting-actions-v7{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.vybee-setting-actions-v7 button,.vybee-role-chip-v7{
+  border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:8px;
+  padding:7px 9px;cursor:pointer;font-size:8px
+}
+.vybee-setting-actions-v7 button.active,.vybee-role-chip-v7.active{
+  border-color:#39ff14;background:#39ff14;color:#071006
+}
+.vybee-security-row-v7{
+  display:flex;align-items:center;gap:9px;padding:9px;
+  border:1px solid #242a2f;border-radius:10px;background:#101415
+}
+.vybee-security-main-v7{min-width:0;flex:1}
+.vybee-security-main-v7 strong{display:block;font-size:9px}
+.vybee-security-main-v7 span{display:block;margin-top:2px;color:#737c83;font-size:7px}
+.vybee-community-overview-v7{display:grid;gap:9px}
+.vybee-role-grid-v7{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.vybee-role-card-v7{padding:10px;border:1px solid #252c31;border-radius:10px;background:#101415}
+.vybee-role-card-v7 strong{display:block;font-size:10px}
+.vybee-role-card-v7 span{display:block;margin-top:3px;color:#737c83;font-size:7px;line-height:1.4}
+.vybee-live-participants-v7{display:grid;gap:6px;margin-top:9px}
+.vybee-live-participant-v7{
+  display:flex;align-items:center;gap:8px;padding:7px 8px;
+  border:1px solid #242a2f;border-radius:9px;background:#101415
+}
+.vybee-live-participant-v7 .name{font-size:8px;min-width:0;flex:1}
+.vybee-live-participant-v7 .badge{font-size:7px;color:#737c83}
+.vybee-media-lightbox-v7{
+  position:fixed;inset:0;z-index:500;display:none;place-items:center;padding:18px;background:#000e
+}
+.vybee-media-lightbox-v7.on{display:grid}
+.vybee-media-lightbox-v7 img,.vybee-media-lightbox-v7 video{
+  max-width:min(94vw,1100px);max-height:86vh;border-radius:12px;object-fit:contain
+}
+.vybee-media-lightbox-controls-v7{
+  position:fixed;top:12px;right:12px;display:flex;gap:6px
+}
+.vybee-media-lightbox-controls-v7 button{
+  border:1px solid #343b40;background:#171b1e;color:#fff;border-radius:8px;padding:7px 9px;cursor:pointer
+}
+@media(max-width:700px){
+  .vybee-role-grid-v7{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+
 </head>
 
 <body>
@@ -25432,6 +25484,276 @@ if(requestedLive){
       }catch(_){}
     }
   );
+})();
+</script>
+
+
+<div class="vybee-media-lightbox-v7" id="vybeeMediaLightboxV7">
+  <div class="vybee-media-lightbox-controls-v7">
+    <button type="button" id="vybeeMediaPrevV7">←</button>
+    <button type="button" id="vybeeMediaNextV7">→</button>
+    <button type="button" id="vybeeMediaCloseV7">✕</button>
+  </div>
+  <div id="vybeeMediaLightboxContentV7"></div>
+</div>
+
+
+<script id="vybee-giant-v7-controller">
+(function(){
+  let mediaRows=[];
+  let mediaIndex=0;
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){
+    return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;")
+      .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  }
+
+  // -------- Notification center / preferences --------
+  async function openNotificationSettings(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+
+    const {data}=await client.from("user_preferences")
+      .select("notify_friend_requests,notify_messages,notify_lives,notify_events,show_online_status,allow_friend_requests,allow_dm_from_nonfriends")
+      .eq("user_id",current.id).maybeSingle();
+
+    const p=data||{};
+    showPage(
+      "Preferências",
+      "Privacidade, notificações e presença.",
+      `
+      <div class="vybee-settings-grid-v7">
+        ${[
+          ["notify_friend_requests","Solicitações de amizade","Receber notificações de novos pedidos."],
+          ["notify_messages","Mensagens privadas","Receber alertas de novas DMs."],
+          ["notify_lives","Lives","Receber alertas de transmissões."],
+          ["notify_events","Eventos","Receber alertas de eventos."],
+          ["show_online_status","Mostrar status online","Permitir que seu status seja exibido."],
+          ["allow_friend_requests","Permitir solicitações","Outras pessoas podem enviar pedidos."],
+          ["allow_dm_from_nonfriends","DM de não-amigos","Permitir mensagens privadas de pessoas que não são amigas."]
+        ].map(([key,title,desc])=>`
+          <div class="vybee-setting-card-v7">
+            <div class="vybee-setting-head-v7">
+              <div class="vybee-social-avatar">⚙️</div>
+              <div>
+                <strong>${title}</strong>
+                <span>${desc}</span>
+              </div>
+            </div>
+            <div class="vybee-setting-actions-v7">
+              <button type="button"
+                class="${p[key]!==false?"active":""}"
+                data-v7-pref="${key}"
+                data-v7-value="${p[key]!==false}">
+                ${p[key]!==false?"Ativado":"Desativado"}
+              </button>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+      `
+    );
+
+    document.querySelectorAll("[data-v7-pref]").forEach(btn=>{
+      btn.addEventListener("click",async()=>{
+        const key=btn.dataset.v7Pref;
+        const next=btn.dataset.v7Value!=="true";
+        btn.dataset.v7Value=String(next);
+        btn.classList.toggle("active",next);
+        btn.textContent=next?"Ativado":"Desativado";
+        await client.from("user_preferences").upsert(
+          {user_id:current.id,[key]:next},
+          {onConflict:"user_id"}
+        );
+      });
+    });
+  }
+
+  // -------- Community overview --------
+  async function openCommunityOverview(community){
+    const client=sb();
+    if(!client||!community)return;
+
+    const [members,channels,events]=await Promise.all([
+      client.from("community_members").select("id",{count:"exact",head:true}).eq("community_id",community.id),
+      client.from("channels").select("id,channel_type",{count:"exact"}).eq("community_id",community.id),
+      client.from("vybee_events").select("id",{count:"exact",head:true}).eq("community_id",community.id).gte("event_at",new Date().toISOString())
+    ]);
+
+    const textChannels=(channels.data||[]).filter(x=>x.channel_type==="text").length;
+    const voiceChannels=(channels.data||[]).filter(x=>x.channel_type==="voice").length;
+
+    showPage(
+      community.name||"Comunidade",
+      "Visão geral da comunidade.",
+      `
+      <div class="vybee-community-overview-v7">
+        <div class="vybee-setting-card-v7">
+          <div class="vybee-setting-head-v7">
+            <div class="vybee-social-avatar">🐝</div>
+            <div>
+              <strong>${esc(community.name||"Comunidade")}</strong>
+              <span>${esc(community.description||"Comunidade VYBEE")}</span>
+            </div>
+          </div>
+        </div>
+        <div class="vybee-role-grid-v7">
+          <div class="vybee-role-card-v7"><strong>${Number(members.count||0)}</strong><span>Membros</span></div>
+          <div class="vybee-role-card-v7"><strong>${textChannels}</strong><span>Textos</span></div>
+          <div class="vybee-role-card-v7"><strong>${voiceChannels}</strong><span>Voz</span></div>
+          <div class="vybee-role-card-v7"><strong>${Number(events.count||0)}</strong><span>Próximos eventos</span></div>
+        </div>
+        <div class="vybee-setting-card-v7">
+          <strong style="font-size:10px">Cargos</strong>
+          <div class="vybee-role-grid-v7" style="margin-top:8px">
+            <div class="vybee-role-card-v7"><strong>👑 Owner</strong><span>Controle total da comunidade.</span></div>
+            <div class="vybee-role-card-v7"><strong>🛡️ Admin</strong><span>Administração e moderação.</span></div>
+            <div class="vybee-role-card-v7"><strong>🛡 Moderador</strong><span>Moderação de membros e conteúdo.</span></div>
+            <div class="vybee-role-card-v7"><strong>👤 Membro</strong><span>Acesso normal aos recursos permitidos.</span></div>
+          </div>
+        </div>
+      </div>
+      `
+    );
+  }
+
+  // -------- Structured media lightbox --------
+  async function loadCommunityMediaV7(){
+    const client=sb();
+    const current=user();
+    if(!client||!current)return;
+
+    const {data,error}=await client.from("message_attachments")
+      .select("id,message_id,bucket,path,name,mime_type,size_bytes,created_at")
+      .order("created_at",{ascending:false}).limit(120);
+
+    if(error){
+      toast("Não foi possível carregar a mídia.");
+      return;
+    }
+
+    mediaRows=(data||[]).filter(x=>/^(image|video)\//i.test(x.mime_type||""));
+
+    showPage(
+      "Galeria",
+      "Mídia compartilhada nas conversas.",
+      `<div id="vybeeMediaGalleryV7" class="vybee-media-grid"></div>`
+    );
+
+    const box=el("vybeeMediaGalleryV7");
+    if(!mediaRows.length){
+      box.innerHTML='<div class="vybee-modern-page-empty">Nenhuma mídia encontrada.</div>';
+      return;
+    }
+
+    box.innerHTML=mediaRows.map((row,i)=>`
+      <button type="button" class="vybee-media-tile" data-v7-media="${i}"
+        style="border:1px solid #252c31;background:#111516;padding:0">
+        <div style="font-size:24px">${/^video\//i.test(row.mime_type)?"🎥":"🖼️"}</div>
+        <span>${esc(row.name)}</span>
+      </button>
+    `).join("");
+
+    box.querySelectorAll("[data-v7-media]").forEach(b=>{
+      b.addEventListener("click",()=>openMedia(Number(b.dataset.v7Media)));
+    });
+  }
+
+  async function openMedia(i){
+    mediaIndex=i;
+    const row=mediaRows[i];
+    if(!row)return;
+    const client=sb();
+    const {data,error}=await client.storage.from(row.bucket).createSignedUrl(row.path,600);
+    if(error||!data?.signedUrl){
+      toast("Não foi possível abrir a mídia.");
+      return;
+    }
+
+    const content=el("vybeeMediaLightboxContentV7");
+    content.innerHTML=
+      /^video\//i.test(row.mime_type||"")
+        ? `<video src="${esc(data.signedUrl)}" controls autoplay></video>`
+        : `<img src="${esc(data.signedUrl)}" alt="${esc(row.name)}">`;
+
+    el("vybeeMediaLightboxV7")?.classList.add("on");
+  }
+
+  function stepMedia(delta){
+    if(!mediaRows.length)return;
+    mediaIndex=(mediaIndex+delta+mediaRows.length)%mediaRows.length;
+    openMedia(mediaIndex);
+  }
+
+  function closeMedia(){
+    el("vybeeMediaLightboxV7")?.classList.remove("on");
+    el("vybeeMediaLightboxContentV7").innerHTML="";
+  }
+
+  // -------- Security / quick account tools --------
+  async function openSecurityCenter(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+
+    let email=current.email||"";
+    try{
+      const {data}=await client.from("profiles")
+        .select("display_name,username").eq("id",current.id).maybeSingle();
+      const p=data||{};
+      showPage(
+        "Segurança da conta",
+        "Controles rápidos da sua conta.",
+        `
+        <div class="vybee-settings-grid-v7">
+          <div class="vybee-security-row-v7">
+            <div class="vybee-social-avatar">✉️</div>
+            <div class="vybee-security-main-v7"><strong>E-mail</strong><span>${esc(email)}</span></div>
+          </div>
+          <div class="vybee-security-row-v7">
+            <div class="vybee-social-avatar">👤</div>
+            <div class="vybee-security-main-v7"><strong>Identidade</strong><span>${esc(p.display_name||"Usuário")} • ${p.username?"@"+esc(p.username):"sem @username"}</span></div>
+          </div>
+          <div class="vybee-security-row-v7">
+            <div class="vybee-social-avatar">🔐</div>
+            <div class="vybee-security-main-v7"><strong>Sessão</strong><span>Use o botão de sair da conta para encerrar esta sessão.</span></div>
+            <button type="button" class="btn" id="vybeeV7SignOut">Sair</button>
+          </div>
+        </div>
+        `
+      );
+      el("vybeeV7SignOut")?.addEventListener("click",async()=>{
+        await client.auth.signOut();
+        window.location.reload();
+      });
+    }catch(_){}
+  }
+
+  function bind(){
+    el("vybeeMediaPrevV7")?.addEventListener("click",()=>stepMedia(-1));
+    el("vybeeMediaNextV7")?.addEventListener("click",()=>stepMedia(1));
+    el("vybeeMediaCloseV7")?.addEventListener("click",closeMedia);
+    el("vybeeMediaLightboxV7")?.addEventListener("click",e=>{
+      if(e.target.id==="vybeeMediaLightboxV7")closeMedia();
+    });
+
+    document.addEventListener("keydown",e=>{
+      if(e.key==="Escape")closeMedia();
+      if(el("vybeeMediaLightboxV7")?.classList.contains("on")){
+        if(e.key==="ArrowLeft")stepMedia(-1);
+        if(e.key==="ArrowRight")stepMedia(1);
+      }
+    });
+
+    window.vybeeOpenNotificationSettings=openNotificationSettings;
+    window.vybeeOpenCommunityOverview=openCommunityOverview;
+    window.vybeeOpenCommunityMediaV7=loadCommunityMediaV7;
+    window.vybeeOpenSecurityCenter=openSecurityCenter;
+  }
+
+  bind();
 })();
 </script>
 
