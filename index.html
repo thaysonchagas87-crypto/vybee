@@ -4725,6 +4725,76 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 }
 </style>
 
+
+<style id="vybee-giant-v6-style">
+.vybee-status-panel{
+  position:fixed;inset:0;z-index:468;display:none;place-items:center;
+  padding:16px;background:#000e;
+}
+.vybee-status-panel.on{display:grid}
+.vybee-status-box{
+  width:min(520px,100%);padding:17px;border:1px solid #2b3338;
+  border-radius:16px;background:#0b0f10;box-shadow:0 30px 100px #000d;
+}
+.vybee-status-box h3{margin:0;font-size:16px}
+.vybee-status-box p{margin:4px 0 13px;color:#737c83;font-size:8px}
+.vybee-status-grid{display:grid;gap:7px}
+.vybee-status-choice{
+  display:flex;align-items:center;gap:9px;padding:10px;
+  border:1px solid #252c31;border-radius:10px;background:#101415;
+  cursor:pointer;
+}
+.vybee-status-choice.active{border-color:#39ff14;background:#121912}
+.vybee-status-choice i{
+  width:10px;height:10px;border-radius:50%;display:block;background:#737c83;
+}
+.vybee-status-choice.online i{background:#39ff14}
+.vybee-status-choice.away i{background:#f0b400}
+.vybee-status-choice.busy i{background:#ff4d4d}
+.vybee-status-choice.invisible i{background:#5a646a}
+.vybee-status-choice-main{min-width:0;flex:1}
+.vybee-status-choice-main strong{display:block;font-size:10px}
+.vybee-status-choice-main span{display:block;margin-top:2px;color:#707980;font-size:8px}
+.vybee-dm-typing-line{
+  min-height:14px;padding:0 12px;color:#667177;background:#0e1112;
+  font-size:8px;display:flex;align-items:center;
+}
+.vybee-dm-read-line{
+  text-align:right;margin-top:2px;color:#69737a;font-size:7px;
+}
+.vybee-online-dot{
+  width:8px;height:8px;border-radius:50%;display:inline-block;background:#596268;
+  border:1px solid #0b0f10;box-shadow:0 0 0 1px #263036;
+}
+.vybee-online-dot.online{background:#39ff14}
+.vybee-online-dot.away{background:#f0b400}
+.vybee-online-dot.busy{background:#ff4d4d}
+.vybee-community-stats{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px;
+}
+.vybee-community-stat{
+  padding:9px;border:1px solid #252c31;border-radius:9px;background:#101415;text-align:center;
+}
+.vybee-community-stat strong{display:block;font-size:13px}
+.vybee-community-stat span{display:block;margin-top:2px;color:#707980;font-size:7px}
+.vybee-media-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+}
+.vybee-media-tile{
+  aspect-ratio:1;border:1px solid #252c31;border-radius:9px;overflow:hidden;
+  background:#111516;display:grid;place-items:center;position:relative;
+}
+.vybee-media-tile img,.vybee-media-tile video{width:100%;height:100%;object-fit:cover}
+.vybee-media-tile span{
+  position:absolute;left:5px;bottom:5px;max-width:90%;padding:3px 5px;
+  border-radius:5px;background:#0009;color:#fff;font-size:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@media(max-width:700px){
+  .vybee-community-stats{grid-template-columns:repeat(2,1fr)}
+  .vybee-media-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+
 </head>
 
 <body>
@@ -24933,6 +25003,435 @@ if(requestedLive){
   window.vybeeOpenCommunityAudit=openAudit;
   window.vybeeOpenCommunityEvents=openCommunityEvents;
   window.vybeeOpenCommandPalette=openPalette;
+})();
+</script>
+
+
+<div class="vybee-status-panel" id="vybeeStatusPanel">
+  <div class="vybee-status-box">
+    <h3>🟢 Meu status</h3>
+    <p>Escolha como você aparece para seus amigos.</p>
+    <div id="vybeeStatusChoices" class="vybee-status-grid"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:12px">
+      <button type="button" class="btn" id="vybeeStatusClose">Fechar</button>
+    </div>
+  </div>
+</div>
+
+
+<script id="vybee-giant-v6-controller">
+(function(){
+  let dmReadChannel=null;
+  let dmTypingChannel=null;
+  let dmTypingTimer=null;
+  let statusPresenceChannel=null;
+  let currentStatus="online";
+  let statusStarted=false;
+
+  const statuses=[
+    {key:"online",icon:"🟢",label:"Online",desc:"Disponível para conversar."},
+    {key:"away",icon:"🟡",label:"Ausente",desc:"Você pode não responder imediatamente."},
+    {key:"busy",icon:"🔴",label:"Ocupado",desc:"Indique que não quer ser interrompido."},
+    {key:"invisible",icon:"⚫",label:"Invisível",desc:"Fica offline para outras pessoas."}
+  ];
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+
+  async function loadStatus(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    const {data}=await client.from("user_preferences")
+      .select("status,show_online_status,allow_friend_requests,allow_dm_from_nonfriends")
+      .eq("user_id",current.id).maybeSingle();
+
+    currentStatus=data?.status||"online";
+    window.vybeeUserStatus=currentStatus;
+  }
+
+  async function saveStatus(key){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    currentStatus=key;
+    window.vybeeUserStatus=key;
+
+    const {error}=await client.from("user_preferences").upsert(
+      {user_id:current.id,status:key},
+      {onConflict:"user_id"}
+    );
+
+    if(error){
+      toast(error.message||"Não foi possível alterar o status.");
+      return;
+    }
+
+    renderStatusChoices();
+    startPresence();
+  }
+
+  function renderStatusChoices(){
+    const box=el("vybeeStatusChoices");
+    if(!box)return;
+    box.innerHTML=statuses.map(s=>`
+      <div class="vybee-status-choice ${s.key} ${currentStatus===s.key?"active":""}" data-status-choice="${s.key}">
+        <i></i>
+        <div class="vybee-status-choice-main">
+          <strong>${s.icon} ${esc(s.label)}</strong>
+          <span>${esc(s.desc)}</span>
+        </div>
+      </div>
+    `).join("");
+
+    box.querySelectorAll("[data-status-choice]").forEach(
+      b=>b.addEventListener("click",()=>saveStatus(b.dataset.statusChoice))
+    );
+  }
+
+  function openStatus(){
+    el("vybeeStatusPanel")?.classList.add("on");
+    loadStatus().then(renderStatusChoices);
+  }
+  function closeStatus(){
+    el("vybeeStatusPanel")?.classList.remove("on");
+  }
+
+  async function startPresence(){
+    const client=sb(), current=user();
+    if(!client||!current||statusStarted)return;
+    statusStarted=true;
+
+    statusPresenceChannel=client.channel("vybee-global-status",{
+      config:{presence:{key:current.id}}
+    });
+
+    statusPresenceChannel.on(
+      "presence",
+      {event:"sync"},
+      ()=>{
+        window.vybeePresenceState=
+          statusPresenceChannel.presenceState();
+      }
+    ).subscribe(async status=>{
+      if(status==="SUBSCRIBED"){
+        await statusPresenceChannel.track({
+          user_id:current.id,
+          status:currentStatus,
+          online:currentStatus!=="invisible",
+          updated_at:new Date().toISOString()
+        });
+      }
+    });
+  }
+
+  async function updatePresenceStatus(){
+    const client=sb(), current=user();
+    if(!client||!current||!statusPresenceChannel)return;
+    try{
+      await statusPresenceChannel.track({
+        user_id:current.id,
+        status:currentStatus,
+        online:currentStatus!=="invisible",
+        updated_at:new Date().toISOString()
+      });
+    }catch(_){}
+  }
+
+  // Actual DM read/typing support.
+  function startDmRealtimeEnhancements(){
+    const client=sb();
+    if(!client)return;
+
+    document.addEventListener(
+      "vybee-dm-opened",
+      event=>{
+        const conversationId=event.detail?.conversationId;
+        if(!conversationId)return;
+
+        markRead(conversationId);
+        subscribeDmRead(conversationId);
+        subscribeDmTyping(conversationId);
+      }
+    );
+
+    document.addEventListener(
+      "input",
+      event=>{
+        if(
+          !event.target.matches?.("#vybeeDmInput")
+        )return;
+
+        clearTimeout(dmTypingTimer);
+        dmTypingTimer=setTimeout(
+          ()=>sendTypingPulse(window.vybeeCurrentDmId),
+          120
+        );
+      }
+    );
+  }
+
+  async function markRead(conversationId){
+    const client=sb(), current=user();
+    if(!client||!current||!conversationId)return;
+
+    await client.from("direct_message_reads").upsert({
+      conversation_id:conversationId,
+      user_id:current.id,
+      read_at:new Date().toISOString()
+    },{onConflict:"conversation_id,user_id"});
+  }
+
+  async function sendTypingPulse(conversationId){
+    const client=sb(), current=user();
+    if(!client||!current||!conversationId)return;
+
+    try{
+      await client.from("direct_typing").upsert({
+        conversation_id:conversationId,
+        user_id:current.id,
+        updated_at:new Date().toISOString()
+      },{onConflict:"conversation_id,user_id"});
+    }catch(_){}
+  }
+
+  function subscribeDmRead(conversationId){
+    const client=sb(), current=user();
+    if(!client||!conversationId)return;
+
+    if(dmReadChannel){
+      try{client.removeChannel(dmReadChannel)}catch(_){}
+    }
+
+    dmReadChannel=client.channel(
+      "vybee-dm-read-"+conversationId+"-"+Date.now()
+    )
+    .on(
+      "postgres_changes",
+      {
+        event:"*",
+        schema:"public",
+        table:"direct_message_reads",
+        filter:"conversation_id=eq."+conversationId
+      },
+      ()=>renderDmReadState()
+    )
+    .subscribe();
+  }
+
+  function subscribeDmTyping(conversationId){
+    const client=sb(), current=user();
+    if(!client||!current||!conversationId)return;
+
+    if(dmTypingChannel){
+      try{client.removeChannel(dmTypingChannel)}catch(_){}
+    }
+
+    dmTypingChannel=client.channel(
+      "vybee-dm-typing-"+conversationId+"-"+Date.now()
+    )
+    .on(
+      "postgres_changes",
+      {
+        event:"*",
+        schema:"public",
+        table:"direct_typing",
+        filter:"conversation_id=eq."+conversationId
+      },
+      payload=>{
+        if(payload.new?.user_id===current.id)return;
+        const node=el("vybeeDmTypingLine");
+        if(!node)return;
+        const fresh=
+          payload.new?.updated_at &&
+          Date.now()-new Date(payload.new.updated_at).getTime()<4000;
+        node.textContent=fresh?"✍️ Seu contato está digitando...":"";
+      }
+    )
+    .subscribe();
+  }
+
+  async function renderDmReadState(){
+    const client=sb(), current=user();
+    const conversationId=window.vybeeCurrentDmId;
+    if(!client||!current||!conversationId)return;
+
+    try{
+      const {data}=await client.from("direct_message_reads")
+        .select("user_id,read_at")
+        .eq("conversation_id",conversationId);
+
+      const other=(data||[]).find(x=>x.user_id!==current.id);
+      const line=el("vybeeDmReadLine");
+      if(line){
+        line.textContent=
+          other?.read_at
+            ? "✓ Visto às "+new Date(other.read_at).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})
+            : "";
+      }
+    }catch(_){}
+  }
+
+  // Attach typing/read elements into DM screen when it renders.
+  const observer=new MutationObserver(()=>{
+    const input=el("vybeeDmInput");
+    if(input&&!input.dataset.v6Bound){
+      input.dataset.v6Bound="1";
+
+      const form=el("vybeeDmForm");
+      if(form){
+        const typing=document.createElement("div");
+        typing.id="vybeeDmTypingLine";
+        typing.className="vybee-dm-typing-line";
+        form.parentElement.insertBefore(typing,form);
+      }
+
+      const messages=el("vybeeDmMessages");
+      if(messages){
+        const read=document.createElement("div");
+        read.id="vybeeDmReadLine";
+        read.className="vybee-dm-read-line";
+        messages.parentElement.appendChild(read);
+      }
+    }
+  });
+
+  function startObserver(){
+    const page=el("vybeeModernPage");
+    if(!page){
+      setTimeout(startObserver,700);
+      return;
+    }
+    observer.observe(page,{childList:true,subtree:true});
+  }
+
+  // Media gallery from structured message attachments.
+  async function openCommunityMedia(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+
+    const {data,error}=await client
+      .from("message_attachments")
+      .select("id,message_id,bucket,path,name,mime_type,size_bytes,created_at")
+      .order("created_at",{ascending:false})
+      .limit(100);
+
+    if(error){
+      toast("Execute a estrutura de anexos do VYBEE primeiro.");
+      return;
+    }
+
+    const rows=(data||[]).filter(
+      x=>/^(image|video)\//i.test(x.mime_type||"")
+    );
+
+    showPage(
+      "Mídia",
+      "Imagens e vídeos compartilhados no VYBEE.",
+      `<div id="vybeeMediaGallery" class="vybee-media-grid"></div>`
+    );
+
+    const box=el("vybeeMediaGallery");
+    if(!rows.length){
+      box.innerHTML='<div class="vybee-modern-page-empty">Nenhuma mídia encontrada.</div>';
+      return;
+    }
+
+    box.innerHTML=rows.map(row=>`
+      <div class="vybee-media-tile">
+        <span>${esc(row.name)}</span>
+        <div style="font-size:25px">${/^video\//i.test(row.mime_type)?"🎥":"🖼️"}</div>
+      </div>
+    `).join("");
+
+    box.querySelectorAll(".vybee-media-tile").forEach(
+      (tile,i)=>{
+        tile.onclick=async()=>{
+          const row=rows[i];
+          const {data:sign,error:signError}=await client.storage
+            .from(row.bucket)
+            .createSignedUrl(row.path,600);
+          if(signError||!sign?.signedUrl){
+            toast("Não foi possível abrir a mídia.");
+            return;
+          }
+          window.open(sign.signedUrl,"_blank","noopener,noreferrer");
+        };
+      }
+    );
+  }
+
+  // Community overview stats.
+  async function loadCommunityStats(community){
+    const client=sb();
+    if(!client||!community)return null;
+
+    const [members,channels,events]=await Promise.all([
+      client.from("community_members").select("id",{count:"exact",head:true}).eq("community_id",community.id),
+      client.from("channels").select("id",{count:"exact",head:true}).eq("community_id",community.id),
+      client.from("vybee_events").select("id",{count:"exact",head:true}).eq("community_id",community.id).gte("event_at",new Date().toISOString())
+    ]);
+
+    return {
+      members:Number(members.count||0),
+      channels:Number(channels.count||0),
+      events:Number(events.count||0)
+    };
+  }
+
+  async function decorateCommunityStats(){
+    const c=window.vybeeCurrentCommunity?.();
+    if(!c)return;
+    const stats=await loadCommunityStats(c);
+    const host=el("vybeeModernCommunityStats");
+    if(!host||!stats)return;
+    host.innerHTML=`
+      <div class="vybee-community-stat"><strong>${stats.members}</strong><span>Membros</span></div>
+      <div class="vybee-community-stat"><strong>${stats.channels}</strong><span>Canais</span></div>
+      <div class="vybee-community-stat"><strong>${stats.events}</strong><span>Eventos</span></div>
+      <div class="vybee-community-stat"><strong>⚡</strong><span>Ativa</span></div>
+    `;
+  }
+
+  function bind(){
+    el("vybeeStatusClose")?.addEventListener("click",closeStatus);
+    el("vybeeStatusPanel")?.addEventListener(
+      "click",e=>{if(e.target.id==="vybeeStatusPanel")closeStatus()}
+    );
+
+    startObserver();
+    startDmRealtimeEnhancements();
+
+    /*
+     * Comando público para abrir mídia.
+     */
+    window.vybeeOpenCommunityMedia=openCommunityMedia;
+    window.vybeeOpenStatus=openStatus;
+    window.vybeeRefreshCommunityStats=decorateCommunityStats;
+  }
+
+  function wait(){
+    if(sb()&&user()){
+      loadStatus().then(()=>{
+        startPresence();
+        updatePresenceStatus();
+      });
+      bind();
+      return;
+    }
+    setTimeout(wait,600);
+  }
+
+  wait();
+
+  window.addEventListener(
+    "beforeunload",
+    ()=>{
+      try{
+        statusPresenceChannel?.untrack();
+      }catch(_){}
+    }
+  );
 })();
 </script>
 
