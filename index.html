@@ -4642,6 +4642,89 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 .vybee-dm-read{color:#556067;font-size:7px}
 </style>
 
+
+<style id="vybee-giant-v5-style">
+.vybee-audit-panel,.vybee-event-manager{
+  position:fixed;inset:0;z-index:465;display:none;place-items:center;
+  padding:16px;background:#000e;
+}
+.vybee-audit-panel.on,.vybee-event-manager.on{display:grid}
+.vybee-audit-box,.vybee-event-manager-box{
+  width:min(820px,100%);max-height:90vh;overflow:auto;
+  background:#0b0f10;border:1px solid #2b3338;border-radius:18px;
+  box-shadow:0 30px 100px #000d;
+}
+.vybee-v5-head{
+  display:flex;align-items:center;gap:10px;padding:15px 17px;
+  border-bottom:1px solid #20272b;
+}
+.vybee-v5-head h2{margin:0;font-size:17px}
+.vybee-v5-head p{margin:3px 0 0;color:#737c83;font-size:9px}
+.vybee-v5-close{margin-left:auto}
+.vybee-v5-body{padding:15px 17px 19px}
+.vybee-audit-list{display:grid;gap:7px}
+.vybee-audit-row{
+  display:flex;gap:9px;padding:9px;border:1px solid #242a2f;
+  border-radius:10px;background:#101415;
+}
+.vybee-audit-icon{
+  width:30px;height:30px;display:grid;place-items:center;
+  border-radius:8px;background:#171c1e;flex:0 0 30px;
+}
+.vybee-audit-main{min-width:0;flex:1}
+.vybee-audit-main strong{display:block;font-size:9px}
+.vybee-audit-main span{display:block;margin-top:3px;color:#727b82;font-size:8px}
+.vybee-v5-form{display:grid;gap:9px}
+.vybee-v5-form input,.vybee-v5-form textarea,.vybee-v5-form select{
+  width:100%;box-sizing:border-box;padding:9px 10px;
+  border:1px solid #2a3136;border-radius:8px;background:#101415;color:#fff;
+}
+.vybee-v5-form textarea{min-height:86px;resize:vertical}
+.vybee-v5-actions{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+.vybee-event-admin-list{display:grid;gap:7px;margin-top:12px}
+.vybee-event-admin-row{
+  display:flex;gap:9px;align-items:center;padding:9px;border:1px solid #242a2f;
+  border-radius:10px;background:#101415;
+}
+.vybee-event-admin-main{min-width:0;flex:1}
+.vybee-event-admin-main strong{display:block;font-size:10px}
+.vybee-event-admin-main span{display:block;margin-top:3px;color:#737c83;font-size:8px}
+.vybee-event-admin-actions{display:flex;gap:5px}
+.vybee-event-admin-actions button{
+  border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:8px;
+  padding:6px 8px;cursor:pointer;font-size:8px;
+}
+.vybee-event-admin-actions .danger:hover{border-color:#ff4d4d}
+.vybee-command-palette{
+  position:fixed;inset:0;z-index:490;display:none;place-items:start center;
+  padding-top:70px;background:#000b;
+}
+.vybee-command-palette.on{display:grid}
+.vybee-command-box{
+  width:min(620px,calc(100vw - 24px));padding:10px;
+  background:#0b0f10;border:1px solid #2b3338;border-radius:14px;
+  box-shadow:0 30px 90px #000d;
+}
+.vybee-command-box input{
+  width:100%;box-sizing:border-box;padding:11px;
+  border:1px solid #2a3136;border-radius:9px;background:#101415;color:#fff;
+}
+.vybee-command-list{display:grid;gap:5px;margin-top:7px}
+.vybee-command-item{
+  display:flex;align-items:center;gap:9px;padding:9px;border-radius:8px;
+  border:1px solid transparent;background:#101415;color:#fff;cursor:pointer;
+}
+.vybee-command-item:hover{border-color:#39ff14;background:#131a14}
+.vybee-command-item b{font-size:9px}.vybee-command-item span{margin-left:auto;color:#697279;font-size:7px}
+.vybee-command-kbd{
+  display:inline-block;padding:2px 5px;border:1px solid #30383d;border-radius:5px;
+}
+@media(max-width:700px){
+  .vybee-event-admin-row{align-items:flex-start}
+  .vybee-event-admin-actions{margin-left:auto;flex-wrap:wrap}
+}
+</style>
+
 </head>
 
 <body>
@@ -11936,6 +12019,53 @@ if(requestedLive){
 
       actions?.appendChild(
         manageBtn
+      );
+
+      const auditBtn =
+        document.createElement("button");
+
+      auditBtn.className =
+        "vybee-modern-page-button";
+
+      auditBtn.textContent =
+        "📋 Auditoria";
+
+      auditBtn.dataset.vybeeOpenAudit =
+        community.id;
+
+      auditBtn.addEventListener(
+        "click",
+        () => {
+          window.vybeeOpenCommunityAudit?.(
+            community
+          );
+        }
+      );
+
+      actions?.appendChild(
+        auditBtn
+      );
+
+      const eventsBtn =
+        document.createElement("button");
+
+      eventsBtn.className =
+        "vybee-modern-page-button";
+
+      eventsBtn.textContent =
+        "📅 Eventos";
+
+      eventsBtn.addEventListener(
+        "click",
+        () => {
+          window.vybeeOpenCommunityEvents?.(
+            community
+          );
+        }
+      );
+
+      actions?.appendChild(
+        eventsBtn
       );
 
 
@@ -24368,6 +24498,441 @@ if(requestedLive){
   window.vybeeV4BindFeed=decorateFeed;
   watchFeed();
   watchPage();
+})();
+</script>
+
+
+<div class="vybee-audit-panel" id="vybeeCommunityAuditPanel">
+  <div class="vybee-audit-box">
+    <div class="vybee-v5-head">
+      <div>
+        <h2>📋 Auditoria da comunidade</h2>
+        <p id="vybeeAuditSubtitle">Ações administrativas recentes.</p>
+      </div>
+      <button type="button" class="btn vybee-v5-close" id="vybeeAuditClose">✕</button>
+    </div>
+    <div class="vybee-v5-body">
+      <div id="vybeeAuditList" class="vybee-audit-list">
+        <div class="vybee-modern-page-empty">Carregando...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="vybee-event-manager" id="vybeeEventManager">
+  <div class="vybee-event-manager-box">
+    <div class="vybee-v5-head">
+      <div>
+        <h2>📅 Eventos da comunidade</h2>
+        <p id="vybeeEventManagerSubtitle">Crie e administre os próximos eventos.</p>
+      </div>
+      <button type="button" class="btn vybee-v5-close" id="vybeeEventManagerClose">✕</button>
+    </div>
+    <div class="vybee-v5-body">
+      <div class="vybee-v5-form">
+        <input id="vybeeEventName" maxlength="120" placeholder="Nome do evento">
+        <textarea id="vybeeEventDescription" maxlength="1000" placeholder="Descrição"></textarea>
+        <input id="vybeeEventDate" type="datetime-local">
+        <input id="vybeeEventLocation" maxlength="180" placeholder="Local">
+        <div class="vybee-v5-actions">
+          <button type="button" class="btn" id="vybeeEventCancelEdit">Limpar</button>
+          <button type="button" class="btn green" id="vybeeEventSave">➕ Criar evento</button>
+        </div>
+        <div id="vybeeEventManagerStatus" class="muted"></div>
+      </div>
+      <div class="section" style="margin-top:15px">SEUS EVENTOS</div>
+      <div id="vybeeEventAdminList" class="vybee-event-admin-list">
+        <div class="vybee-modern-page-empty">Carregando...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="vybee-command-palette" id="vybeeCommandPalette">
+  <div class="vybee-command-box">
+    <input id="vybeeCommandInput" placeholder="Digite um comando...">
+    <div id="vybeeCommandList" class="vybee-command-list"></div>
+  </div>
+</div>
+
+
+<script id="vybee-giant-v5-controller">
+(function(){
+  let auditCommunity=null;
+  let eventCommunity=null;
+  let editingEventId=null;
+
+  const commands=[
+    {icon:"🏠",label:"Ir para início",action:()=>window.vybeeOpenDashboard?.()},
+    {icon:"♧",label:"Comunidades",action:()=>document.querySelector('[data-home-nav="communities"]')?.click()},
+    {icon:"♙",label:"Amigos",action:()=>document.querySelector('[data-home-nav="friends"]')?.click()},
+    {icon:"▱",label:"Mensagens",action:()=>document.querySelector('[data-home-nav="messages"]')?.click()},
+    {icon:"●",label:"Lives",action:()=>document.querySelector('[data-home-nav="lives"]')?.click()},
+    {icon:"♛",label:"Eventos",action:()=>document.querySelector('[data-home-nav="events"]')?.click()},
+    {icon:"⌕",label:"Explorar",action:()=>document.querySelector('[data-home-nav="explore"]')?.click()},
+    {icon:"⚙",label:"Configurações",action:()=>window.vybeeOpenSettings?.()},
+  ];
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){
+    return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;")
+      .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  }
+  function time(v){
+    const d=new Date(v);
+    return Number.isNaN(d.getTime())?"":d.toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"});
+  }
+
+  // ---------- Audit ----------
+  async function openAudit(community){
+    auditCommunity=community;
+    el("vybeeAuditSubtitle").textContent=
+      (community.name||"Comunidade")+" • histórico administrativo";
+    el("vybeeCommunityAuditPanel")?.classList.add("on");
+    await loadAudit();
+  }
+
+  async function loadAudit(){
+    const client=sb();
+    const current=user();
+    const list=el("vybeeAuditList");
+    if(!client||!current||!auditCommunity||!list)return;
+
+    const {data,error}=
+      await client
+        .from("community_moderation_actions")
+        .select("id,moderator_id,target_user_id,action,duration_minutes,reason,created_at")
+        .eq("community_id",auditCommunity.id)
+        .order("created_at",{ascending:false})
+        .limit(100);
+
+    if(error){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Execute o SQL desta etapa para ativar a auditoria.</div>';
+      return;
+    }
+
+    if(!data?.length){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Nenhuma ação registrada.</div>';
+      return;
+    }
+
+    const ids=[
+      ...new Set(
+        data.flatMap(x=>[
+          x.moderator_id,
+          x.target_user_id
+        ]).filter(Boolean)
+      )
+    ];
+
+    const {data:profiles}=
+      await client
+        .from("profiles")
+        .select("id,display_name,username")
+        .in("id",ids);
+
+    const map=new Map((profiles||[]).map(p=>[p.id,p]));
+
+    const icon={
+      mute:"🔇",
+      voice_block:"🎙️",
+      kick:"🚪",
+      ban:"⛔"
+    };
+
+    const label={
+      mute:"Silenciamento",
+      voice_block:"Bloqueio de voz",
+      kick:"Expulsão",
+      ban:"Banimento"
+    };
+
+    list.innerHTML=
+      data.map(row=>{
+        const mod=map.get(row.moderator_id);
+        const target=map.get(row.target_user_id);
+        return `
+          <div class="vybee-audit-row">
+            <div class="vybee-audit-icon">${icon[row.action]||"🛡️"}</div>
+            <div class="vybee-audit-main">
+              <strong>${esc(label[row.action]||row.action)}</strong>
+              <span>
+                ${esc(mod?.display_name||"Moderador")} → 
+                ${esc(target?.display_name||"Usuário")} •
+                ${esc(time(row.created_at))}
+                ${row.duration_minutes?" • "+row.duration_minutes+" min":""}
+                ${row.reason?" • "+esc(row.reason):""}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join("");
+  }
+
+  function closeAudit(){
+    el("vybeeCommunityAuditPanel")?.classList.remove("on");
+    auditCommunity=null;
+  }
+
+  // ---------- Event administration ----------
+  async function openCommunityEvents(community){
+    eventCommunity=community;
+    editingEventId=null;
+    el("vybeeEventName").value="";
+    el("vybeeEventDescription").value="";
+    el("vybeeEventDate").value="";
+    el("vybeeEventLocation").value="";
+    el("vybeeEventSave").textContent="➕ Criar evento";
+    el("vybeeEventManagerStatus").textContent="";
+    el("vybeeEventManagerSubtitle").textContent=
+      (community.name||"Comunidade")+" • eventos";
+    el("vybeeEventManager").classList.add("on");
+    await loadAdminEvents();
+  }
+
+  async function loadAdminEvents(){
+    const client=sb();
+    const current=user();
+    const list=el("vybeeEventAdminList");
+    if(!client||!current||!eventCommunity||!list)return;
+
+    const {data,error}=
+      await client
+        .from("vybee_events")
+        .select("id,title,description,event_at,location,creator_id")
+        .eq("community_id",eventCommunity.id)
+        .eq("creator_id",current.id)
+        .order("event_at",{ascending:true})
+        .limit(100);
+
+    if(error){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Não foi possível carregar os eventos.</div>';
+      return;
+    }
+
+    if(!data?.length){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Nenhum evento criado por você.</div>';
+      return;
+    }
+
+    list.innerHTML=
+      data.map(e=>`
+        <div class="vybee-event-admin-row">
+          <div class="vybee-event-admin-main">
+            <strong>${esc(e.title)}</strong>
+            <span>${esc(time(e.event_at))}${e.location?" • "+esc(e.location):""}</span>
+          </div>
+          <div class="vybee-event-admin-actions">
+            <button type="button" data-event-edit="${esc(e.id)}">Editar</button>
+            <button type="button" class="danger" data-event-delete="${esc(e.id)}">Excluir</button>
+          </div>
+        </div>
+      `).join("");
+
+    list.querySelectorAll("[data-event-edit]").forEach(
+      b=>b.onclick=()=>{
+        const e=data.find(x=>String(x.id)===String(b.dataset.eventEdit));
+        if(!e)return;
+        editingEventId=e.id;
+        el("vybeeEventName").value=e.title||"";
+        el("vybeeEventDescription").value=e.description||"";
+        el("vybeeEventLocation").value=e.location||"";
+        const d=new Date(e.event_at);
+        const pad=n=>String(n).padStart(2,"0");
+        el("vybeeEventDate").value=
+          `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        el("vybeeEventSave").textContent="💾 Salvar alterações";
+      }
+    );
+
+    list.querySelectorAll("[data-event-delete]").forEach(
+      b=>b.onclick=async()=>{
+        if(!confirm("Excluir este evento?"))return;
+        const {error}=await client
+          .from("vybee_events")
+          .delete()
+          .eq("id",b.dataset.eventDelete)
+          .eq("creator_id",current.id);
+        if(error){
+          el("vybeeEventManagerStatus").textContent=
+            "❌ Não foi possível excluir.";
+          return;
+        }
+        el("vybeeEventManagerStatus").textContent="✅ Evento excluído.";
+        await loadAdminEvents();
+      }
+    );
+  }
+
+  async function saveEvent(){
+    const client=sb();
+    const current=user();
+    if(!client||!current||!eventCommunity)return;
+
+    const title=el("vybeeEventName").value.trim();
+    const description=el("vybeeEventDescription").value.trim();
+    const dateValue=el("vybeeEventDate").value;
+    const location=el("vybeeEventLocation").value.trim();
+    const status=el("vybeeEventManagerStatus");
+
+    if(title.length<2||!dateValue){
+      status.textContent="Informe nome e data/hora.";
+      return;
+    }
+
+    const eventAt=new Date(dateValue);
+    if(Number.isNaN(eventAt.getTime())){
+      status.textContent="Data inválida.";
+      return;
+    }
+
+    status.textContent="Salvando...";
+
+    try{
+      if(editingEventId){
+        const {error}=await client
+          .from("vybee_events")
+          .update({
+            title,
+            description:description||null,
+            event_at:eventAt.toISOString(),
+            location:location||null
+          })
+          .eq("id",editingEventId)
+          .eq("creator_id",current.id);
+        if(error)throw error;
+        status.textContent="✅ Evento atualizado.";
+      }else{
+        const {error}=await client
+          .from("vybee_events")
+          .insert({
+            community_id:eventCommunity.id,
+            creator_id:current.id,
+            title,
+            description:description||null,
+            event_at:eventAt.toISOString(),
+            location:location||null
+          });
+        if(error)throw error;
+        status.textContent="✅ Evento criado.";
+      }
+
+      editingEventId=null;
+      el("vybeeEventName").value="";
+      el("vybeeEventDescription").value="";
+      el("vybeeEventDate").value="";
+      el("vybeeEventLocation").value="";
+      el("vybeeEventSave").textContent="➕ Criar evento";
+      await loadAdminEvents();
+
+    }catch(error){
+      status.textContent=
+        "❌ "+(error?.message||"Não foi possível salvar.");
+    }
+  }
+
+  function closeEvents(){
+    el("vybeeEventManager")?.classList.remove("on");
+    eventCommunity=null;
+    editingEventId=null;
+  }
+
+  // ---------- Command palette ----------
+  function renderCommands(query=""){
+    const list=el("vybeeCommandList");
+    if(!list)return;
+    const q=String(query).toLowerCase().trim();
+    const rows=commands.filter(
+      c=>!q ||
+        c.label.toLowerCase().includes(q) ||
+        c.icon.includes(q)
+    );
+    list.innerHTML=
+      rows.map((c,i)=>`
+        <div class="vybee-command-item" data-command-index="${i}">
+          <b>${c.icon} ${esc(c.label)}</b>
+          <span class="vybee-command-kbd">${i+1}</span>
+        </div>
+      `).join("");
+
+    list.querySelectorAll("[data-command-index]").forEach(
+      item=>{
+        item.onclick=()=>{
+          const cmd=rows[Number(item.dataset.commandIndex)];
+          closePalette();
+          cmd?.action?.();
+        };
+      }
+    );
+  }
+
+  function openPalette(){
+    el("vybeeCommandPalette")?.classList.add("on");
+    el("vybeeCommandInput").value="";
+    renderCommands();
+    setTimeout(()=>el("vybeeCommandInput")?.focus(),0);
+  }
+  function closePalette(){
+    el("vybeeCommandPalette")?.classList.remove("on");
+  }
+
+  function bind(){
+    el("vybeeAuditClose")?.addEventListener("click",closeAudit);
+    el("vybeeCommunityAuditPanel")?.addEventListener(
+      "click",e=>{if(e.target.id==="vybeeCommunityAuditPanel")closeAudit()}
+    );
+
+    el("vybeeEventManagerClose")?.addEventListener("click",closeEvents);
+    el("vybeeEventCancelEdit")?.addEventListener(
+      "click",()=>{
+        editingEventId=null;
+        el("vybeeEventName").value="";
+        el("vybeeEventDescription").value="";
+        el("vybeeEventDate").value="";
+        el("vybeeEventLocation").value="";
+        el("vybeeEventSave").textContent="➕ Criar evento";
+      }
+    );
+    el("vybeeEventSave")?.addEventListener("click",saveEvent);
+    el("vybeeEventManager")?.addEventListener(
+      "click",e=>{if(e.target.id==="vybeeEventManager")closeEvents()}
+    );
+
+    el("vybeeCommandInput")?.addEventListener(
+      "input",e=>renderCommands(e.target.value)
+    );
+    el("vybeeCommandPalette")?.addEventListener(
+      "click",e=>{if(e.target.id==="vybeeCommandPalette")closePalette()}
+    );
+
+    document.addEventListener(
+      "keydown",
+      e=>{
+        if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){
+          e.preventDefault();
+          openPalette();
+          return;
+        }
+        if(e.key==="Escape"){
+          closePalette();
+          closeAudit();
+          closeEvents();
+        }
+      }
+    );
+  }
+
+  bind();
+
+  window.vybeeOpenCommunityAudit=openAudit;
+  window.vybeeOpenCommunityEvents=openCommunityEvents;
+  window.vybeeOpenCommandPalette=openPalette;
 })();
 </script>
 
