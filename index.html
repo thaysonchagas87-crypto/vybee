@@ -3394,6 +3394,153 @@ body.vybee-modern-home-active > .app > footer{
 }
 </style>
 
+
+<style id="vybee-chat-pro-style">
+.vybee-chat-message{
+  position:relative;
+}
+.vybee-chat-message:hover .vybee-chat-tools{
+  opacity:1;
+  pointer-events:auto;
+}
+.vybee-chat-tools{
+  position:absolute;
+  right:7px;
+  top:5px;
+  display:flex;
+  gap:3px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .12s ease;
+}
+.vybee-chat-tool{
+  min-width:25px;
+  height:25px;
+  border:1px solid #2a3136;
+  border-radius:7px;
+  background:#171b1e;
+  color:#fff;
+  cursor:pointer;
+  font-size:11px;
+}
+.vybee-chat-tool:hover{
+  border-color:#53ff1a;
+}
+.vybee-chat-replybar{
+  display:none;
+  align-items:center;
+  gap:7px;
+  padding:7px 10px;
+  border-top:1px solid #22282d;
+  background:#101415;
+  color:#8e979d;
+  font-size:8px;
+}
+.vybee-chat-replybar.on{display:flex}
+.vybee-chat-replybar-main{
+  min-width:0;
+  flex:1;
+}
+.vybee-chat-replybar-main strong{
+  display:block;
+  color:#c8ced2;
+}
+.vybee-chat-replybar-main span{
+  display:block;
+  margin-top:2px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.vybee-chat-replybar button{
+  border:0;
+  background:transparent;
+  color:#9ba4aa;
+  cursor:pointer;
+}
+.vybee-chat-reactions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  margin-top:5px;
+}
+.vybee-chat-reaction{
+  border:1px solid #2b3338;
+  background:#14191b;
+  color:#fff;
+  border-radius:999px;
+  padding:3px 6px;
+  cursor:pointer;
+  font-size:8px;
+}
+.vybee-chat-reaction.active{
+  border-color:#53ff1a;
+  background:#102010;
+}
+.vybee-chat-reaction-picker{
+  position:absolute;
+  right:8px;
+  top:32px;
+  z-index:20;
+  display:none;
+  padding:5px;
+  gap:4px;
+  border:1px solid #2b3338;
+  border-radius:9px;
+  background:#0e1112;
+  box-shadow:0 18px 50px #000b;
+}
+.vybee-chat-reaction-picker.on{
+  display:flex;
+}
+.vybee-chat-reaction-picker button{
+  width:27px;height:27px;
+  border:0;
+  border-radius:7px;
+  background:#161b1d;
+  cursor:pointer;
+}
+.vybee-chat-edited{
+  color:#636d74;
+  font-size:7px;
+}
+.vybee-chat-editing{
+  display:grid;
+  gap:5px;
+  margin-top:4px;
+}
+.vybee-chat-editing textarea{
+  width:100%;
+  min-height:60px;
+  box-sizing:border-box;
+  resize:vertical;
+  border:1px solid #2b3338;
+  border-radius:8px;
+  background:#101415;
+  color:#fff;
+  padding:8px;
+  font:inherit;
+}
+.vybee-chat-editing-actions{
+  display:flex;
+  gap:5px;
+}
+.vybee-chat-editing-actions button{
+  border:1px solid #2b3338;
+  background:#171b1e;
+  color:#fff;
+  border-radius:7px;
+  padding:5px 7px;
+  cursor:pointer;
+  font-size:8px;
+}
+.vybee-chat-editing-actions .save{
+  background:#39ff14;
+  color:#071006;
+  border-color:#39ff14;
+}
+</style>
+
 </head>
 
 <body>
@@ -4629,7 +4776,7 @@ body.vybee-modern-home-active > .app > footer{
       await supabase
         .from("messages")
         .select(
-          "id,user_id,content,created_at"
+          "id,user_id,content,created_at,updated_at,reply_to_id,deleted_at"
         )
         .eq(
           "channel_id",
@@ -17119,6 +17266,7 @@ if(requestedLive){
               <div
                 class="vybee-chat-message"
                 data-message-id="${esc(row.id)}"
+                data-message-user-id="${esc(row.user_id || "")}"
               >
                 <div class="vybee-chat-avatar">👤</div>
 
@@ -17126,9 +17274,43 @@ if(requestedLive){
                   <div class="vybee-chat-message-meta">
                     <strong>${esc(name)}</strong>
                     <span>${esc(formatTime(row.created_at))}</span>
+                    ${row.updated_at ? '<span class="vybee-chat-edited">editada</span>' : ''}
                   </div>
 
-                  <div class="vybee-chat-message-text">${esc(row.content)}</div>
+                  ${
+                    row.reply_to_id
+                      ? `<div style="margin-top:3px;color:#69737a;font-size:8px">↩️ Respondendo a uma mensagem</div>`
+                      : ""
+                  }
+
+                  <div class="vybee-chat-message-text">${
+                    row.deleted_at
+                      ? "<em>Mensagem excluída.</em>"
+                      : esc(row.content)
+                  }</div>
+
+                  <div class="vybee-chat-tools">
+                    <button class="vybee-chat-tool" type="button" data-chat-action="reply" title="Responder">↩</button>
+                    <button class="vybee-chat-tool" type="button" data-chat-action="react" title="Reagir">😊</button>
+                    ${
+                      row.user_id===user()?.id && !row.deleted_at
+                        ? `
+                          <button class="vybee-chat-tool" type="button" data-chat-action="edit" title="Editar">✏️</button>
+                          <button class="vybee-chat-tool" type="button" data-chat-action="delete" title="Excluir">🗑️</button>
+                        `
+                        : ""
+                    }
+                  </div>
+
+                  <div class="vybee-chat-reactions" data-chat-reactions="${esc(row.id)}"></div>
+
+                  <div class="vybee-chat-reaction-picker" data-chat-picker="${esc(row.id)}">
+                    <button type="button" data-reaction="👍">👍</button>
+                    <button type="button" data-reaction="❤️">❤️</button>
+                    <button type="button" data-reaction="😂">😂</button>
+                    <button type="button" data-reaction="🔥">🔥</button>
+                    <button type="button" data-reaction="👏">👏</button>
+                  </div>
                 </div>
               </div>
             `;
@@ -17291,14 +17473,42 @@ if(requestedLive){
               node.dataset.messageId=
                 row.id;
 
+              node.dataset.messageUserId =
+                row.user_id || "";
+
               node.innerHTML=`
                 <div class="vybee-chat-avatar">👤</div>
                 <div class="vybee-chat-message-main">
                   <div class="vybee-chat-message-meta">
                     <strong>${esc(name)}</strong>
                     <span>${esc(formatTime(row.created_at))}</span>
+                    ${row.updated_at ? '<span class="vybee-chat-edited">editada</span>' : ''}
                   </div>
-                  <div class="vybee-chat-message-text">${esc(row.content)}</div>
+                  <div class="vybee-chat-message-text">${
+                    row.deleted_at
+                      ? "<em>Mensagem excluída.</em>"
+                      : esc(row.content)
+                  }</div>
+                  <div class="vybee-chat-tools">
+                    <button class="vybee-chat-tool" type="button" data-chat-action="reply">↩</button>
+                    <button class="vybee-chat-tool" type="button" data-chat-action="react">😊</button>
+                    ${
+                      row.user_id===user()?.id && !row.deleted_at
+                        ? `
+                          <button class="vybee-chat-tool" type="button" data-chat-action="edit">✏️</button>
+                          <button class="vybee-chat-tool" type="button" data-chat-action="delete">🗑️</button>
+                        `
+                        : ""
+                    }
+                  </div>
+                  <div class="vybee-chat-reactions" data-chat-reactions="${esc(row.id)}"></div>
+                  <div class="vybee-chat-reaction-picker" data-chat-picker="${esc(row.id)}">
+                    <button type="button" data-reaction="👍">👍</button>
+                    <button type="button" data-reaction="❤️">❤️</button>
+                    <button type="button" data-reaction="😂">😂</button>
+                    <button type="button" data-reaction="🔥">🔥</button>
+                    <button type="button" data-reaction="👏">👏</button>
+                  </div>
                 </div>
               `;
 
@@ -17473,6 +17683,17 @@ if(requestedLive){
         ></div>
 
         <div
+          id="vybeeModernChatReplyBar"
+          class="vybee-chat-replybar"
+        >
+          <div class="vybee-chat-replybar-main">
+            <strong id="vybeeModernChatReplyName">Respondendo</strong>
+            <span id="vybeeModernChatReplyText"></span>
+          </div>
+          <button type="button" id="vybeeModernChatReplyCancel">✕</button>
+        </div>
+
+        <div
           id="vybeeModernChatTyping"
           class="vybee-chat-typing"
         >Digitando...</div>
@@ -17547,6 +17768,652 @@ if(requestedLive){
 
   window.vybeeOpenModernChatChannel=
     open;
+
+})();
+</script>
+
+
+<script id="vybee-chat-pro-controller">
+(function(){
+  let replyTo=null;
+  let editingId=null;
+  let reactionsChannel=null;
+  const EMOJIS=["👍","❤️","😂","🔥","👏"];
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){
+    return String(v??"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function messageNode(id){
+    return document.querySelector(
+      `[data-message-id="${CSS.escape(String(id))}"]`
+    );
+  }
+
+  function setReply(row){
+    replyTo={
+      id:row.id,
+      name:row.authorName||"Usuário",
+      text:row.content||""
+    };
+
+    el("vybeeModernChatReplyName").textContent=
+      "Respondendo a "+
+      replyTo.name;
+
+    el("vybeeModernChatReplyText").textContent=
+      replyTo.text;
+
+    el("vybeeModernChatReplyBar")
+      ?.classList.add("on");
+
+    el("vybeeModernChatInput")?.focus();
+  }
+
+  function clearReply(){
+    replyTo=null;
+    el("vybeeModernChatReplyBar")
+      ?.classList.remove("on");
+  }
+
+  async function editMessage(id){
+    const node=messageNode(id);
+    if(!node) return;
+
+    const textNode=
+      node.querySelector(
+        ".vybee-chat-message-text"
+      );
+
+    if(!textNode || editingId) return;
+
+    const original=
+      textNode.textContent.trim();
+
+    editingId=id;
+
+    const wrapper=
+      document.createElement("div");
+
+    wrapper.className=
+      "vybee-chat-editing";
+
+    wrapper.innerHTML=`
+      <textarea maxlength="2000"></textarea>
+      <div class="vybee-chat-editing-actions">
+        <button type="button" data-edit-cancel>Cancelar</button>
+        <button type="button" class="save" data-edit-save>Salvar</button>
+      </div>
+    `;
+
+    wrapper.querySelector("textarea").value=
+      original;
+
+    textNode.replaceWith(
+      wrapper
+    );
+
+    wrapper.querySelector(
+      "[data-edit-cancel]"
+    )?.addEventListener(
+      "click",
+      ()=>{
+        wrapper.replaceWith(
+          textNode
+        );
+        editingId=null;
+      }
+    );
+
+    wrapper.querySelector(
+      "[data-edit-save]"
+    )?.addEventListener(
+      "click",
+      async()=>{
+        const value=
+          wrapper
+            .querySelector("textarea")
+            .value.trim();
+
+        if(!value){
+          return;
+        }
+
+        const client=sb();
+        const current=user();
+
+        if(!client||!current){
+          return;
+        }
+
+        const {error}=
+          await client
+            .from("messages")
+            .update({
+              content:value,
+              updated_at:
+                new Date().toISOString()
+            })
+            .eq("id",id)
+            .eq("user_id",current.id);
+
+        if(error){
+          toast(
+            error.message||
+            "Não foi possível editar."
+          );
+          return;
+        }
+
+        /*
+         * O evento UPDATE do Realtime é responsável por
+         * atualizar outros usuários. Para esta própria tela,
+         * atualizamos imediatamente.
+         */
+        textNode.textContent=value;
+        wrapper.replaceWith(
+          textNode
+        );
+
+        editingId=null;
+      }
+    );
+
+    wrapper.querySelector(
+      "textarea"
+    )?.focus();
+  }
+
+  async function deleteMessage(id){
+    const current=user();
+    const client=sb();
+
+    if(
+      !current||
+      !client||
+      !id
+    ){
+      return;
+    }
+
+    if(
+      !window.confirm(
+        "Excluir esta mensagem?"
+      )
+    ){
+      return;
+    }
+
+    const {error}=
+      await client
+        .from("messages")
+        .update({
+          deleted_at:
+            new Date().toISOString()
+        })
+        .eq("id",id)
+        .eq("user_id",current.id);
+
+    if(error){
+      toast(
+        error.message||
+        "Não foi possível excluir."
+      );
+      return;
+    }
+
+    const node=messageNode(id);
+
+    node
+      ?.querySelector(
+        ".vybee-chat-message-text"
+      )
+      ?.replaceChildren(
+        Object.assign(
+          document.createElement("em"),
+          {
+            textContent:
+              "Mensagem excluída."
+          }
+        )
+      );
+  }
+
+  async function togglePicker(id){
+    document
+      .querySelectorAll(
+        ".vybee-chat-reaction-picker.on"
+      )
+      .forEach(
+        p=>p.classList.remove("on")
+      );
+
+    document
+      .querySelector(
+        `[data-chat-picker="${CSS.escape(String(id))}"]`
+      )
+      ?.classList.toggle("on");
+  }
+
+  async function react(id,emoji){
+    const client=sb();
+    const current=user();
+
+    if(!client||!current||!id||!emoji){
+      return;
+    }
+
+    try{
+      const {data:existing}=await client
+        .from("message_reactions")
+        .select("id")
+        .eq(
+          "message_id",
+          id
+        )
+        .eq(
+          "user_id",
+          current.id
+        )
+        .eq(
+          "emoji",
+          emoji
+        )
+        .maybeSingle();
+
+      if(existing?.id){
+        await client
+          .from("message_reactions")
+          .delete()
+          .eq(
+            "id",
+            existing.id
+          );
+      }else{
+        await client
+          .from("message_reactions")
+          .insert({
+            message_id:id,
+            user_id:current.id,
+            emoji
+          });
+      }
+
+      await loadReactions(
+        id
+      );
+
+    }catch(error){
+      console.error(
+        "VYBEE reaction:",
+        error
+      );
+
+      toast(
+        error.message||
+        "Não foi possível reagir."
+      );
+    }
+  }
+
+  async function loadReactions(messageId){
+    const client=sb();
+    const box=
+      document.querySelector(
+        `[data-chat-reactions="${CSS.escape(String(messageId))}"]`
+      );
+
+    if(!client||!box) return;
+
+    const {data,error}=
+      await client
+        .from("message_reactions")
+        .select(
+          "id,user_id,emoji"
+        )
+        .eq(
+          "message_id",
+          messageId
+        );
+
+    if(error){
+      return;
+    }
+
+    const grouped=
+      new Map();
+
+    (data||[]).forEach(
+      row=>{
+        if(!grouped.has(row.emoji)){
+          grouped.set(
+            row.emoji,
+            {
+              count:0,
+              mine:false
+            }
+          );
+        }
+
+        const item=
+          grouped.get(
+            row.emoji
+          );
+
+        item.count++;
+
+        if(
+          row.user_id===
+          user()?.id
+        ){
+          item.mine=true;
+        }
+      }
+    );
+
+    box.innerHTML=
+      [...grouped.entries()]
+        .map(
+          ([emoji,item])=>`
+            <button
+              type="button"
+              class="vybee-chat-reaction ${
+                item.mine?"active":""
+              }"
+              data-reaction-existing="${esc(messageId)}"
+              data-reaction="${esc(emoji)}"
+            >${esc(emoji)} ${item.count}</button>
+          `
+        )
+        .join("");
+  }
+
+  async function loadAllReactions(){
+    document
+      .querySelectorAll(
+        "[data-chat-reactions]"
+      )
+      .forEach(
+        node =>
+          loadReactions(
+            node.dataset.chatReactions
+          )
+      );
+  }
+
+  function rowData(node){
+    const id=
+      node.dataset.messageId;
+
+    const text=
+      node.querySelector(
+        ".vybee-chat-message-text"
+      )?.textContent||
+      "";
+
+    const name=
+      node.querySelector(
+        ".vybee-chat-message-meta strong"
+      )?.textContent||
+      "Usuário";
+
+    return {
+      id,
+      content:text,
+      authorName:name
+    };
+  }
+
+  function bindDelegation(){
+    const box=
+      el("vybeeModernChatMessages");
+
+    if(
+      box &&
+      !box.dataset.vybeeProBound
+    ){
+      box.dataset.vybeeProBound="1";
+
+      box.addEventListener(
+        "click",
+        async event=>{
+          const message=
+            event.target.closest?.(
+              ".vybee-chat-message"
+            );
+
+          if(!message) return;
+
+          const action=
+            event.target.closest?.(
+              "[data-chat-action]"
+            )?.dataset.chatAction;
+
+          if(action==="reply"){
+            setReply(
+              rowData(message)
+            );
+            return;
+          }
+
+          if(action==="edit"){
+            await editMessage(
+              message.dataset.messageId
+            );
+            return;
+          }
+
+          if(action==="delete"){
+            await deleteMessage(
+              message.dataset.messageId
+            );
+            return;
+          }
+
+          if(action==="react"){
+            await togglePicker(
+              message.dataset.messageId
+            );
+            return;
+          }
+
+          const reactionButton=
+            event.target.closest?.(
+              "[data-reaction]"
+            );
+
+          if(
+            reactionButton
+          ){
+            event.stopPropagation();
+
+            const id=
+              message.dataset.messageId;
+
+            await react(
+              id,
+              reactionButton.dataset.reaction
+            );
+
+            return;
+          }
+
+          const existing=
+            event.target.closest?.(
+              "[data-reaction-existing]"
+            );
+
+          if(
+            existing
+          ){
+            await react(
+              existing.dataset.reactionExisting,
+              existing.dataset.reaction
+            );
+          }
+        }
+      );
+    }
+
+    el("vybeeModernChatReplyCancel")
+      ?.addEventListener(
+        "click",
+        clearReply
+      );
+
+    el("vybeeModernChatForm")
+      ?.addEventListener(
+        "submit",
+        async event=>{
+          /*
+           * O envio original ainda está ligado ao form.
+           * Este listener apenas adiciona o reply_to_id depois
+           * do envio normal, quando possível.
+           */
+          if(
+            !replyTo
+          ){
+            return;
+          }
+
+          const input=
+            el("vybeeModernChatInput");
+
+          const value=
+            input?.value.trim();
+
+          if(!value) return;
+
+          const client=sb();
+          const current=user();
+
+          if(!client||!current) return;
+
+          event.preventDefault();
+          event.stopImmediatePropagation();
+
+          try{
+            const payload={
+              channel_id:
+                window.vybeeGetCurrentTextChannel?.() ||
+                null,
+              user_id:
+                current.id,
+              content:value,
+              reply_to_id:
+                replyTo.id
+            };
+
+            if(!payload.channel_id){
+              toast(
+                "Abra um canal de texto primeiro."
+              );
+              return;
+            }
+
+            const {error}=
+              await client
+                .from("messages")
+                .insert(
+                  payload
+                );
+
+            if(error) throw error;
+
+            input.value="";
+            clearReply();
+
+          }catch(error){
+            console.error(
+              "VYBEE reply send:",
+              error
+            );
+
+            toast(
+              error.message||
+              "Não foi possível enviar a resposta."
+            );
+          }
+        },
+        true
+      );
+  }
+
+  function startReactionRealtime(){
+    const client=sb();
+
+    if(
+      !client||
+      reactionsChannel
+    ){
+      return;
+    }
+
+    reactionsChannel=
+      client
+        .channel(
+          "vybee-message-reactions"
+        )
+        .on(
+          "postgres_changes",
+          {
+            event:"*",
+            schema:"public",
+            table:"message_reactions"
+          },
+          payload=>{
+            const id=
+              payload.new?.message_id ||
+              payload.old?.message_id;
+
+            if(id){
+              loadReactions(
+                id
+              );
+            }
+          }
+        )
+        .subscribe();
+  }
+
+  function wait(){
+    if(
+      sb() &&
+      user()
+    ){
+      bindDelegation();
+      startReactionRealtime();
+      loadAllReactions();
+      return;
+    }
+
+    setTimeout(
+      wait,
+      500
+    );
+  }
+
+  wait();
+
+  /*
+   * O controller também é útil para novas mensagens
+   * que o Realtime inserir depois do carregamento inicial.
+   */
+  setInterval(
+    ()=>{
+      bindDelegation();
+      loadAllReactions();
+    },
+    1500
+  );
 
 })();
 </script>
