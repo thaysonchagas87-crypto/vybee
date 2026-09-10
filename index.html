@@ -5007,6 +5007,21 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 }
 </style>
 
+
+<style id="vybee-giant-v13-style">
+.v13-layer{position:fixed;inset:0;z-index:520;display:none;place-items:center;padding:14px;background:#000d}
+.v13-layer.on{display:grid}
+.v13-box{width:min(820px,100%);max-height:90vh;overflow:auto;background:#0b0f10;border:1px solid #2b3338;border-radius:18px;box-shadow:0 35px 110px #000e}
+.v13-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #20272b}.v13-head h2{margin:0;font-size:16px}.v13-head p{margin:3px 0 0;color:#737c83;font-size:8px}.v13-head button{margin-left:auto}
+.v13-body{padding:14px 16px 18px}.v13-grid{display:grid;gap:8px}.v13-row{display:flex;align-items:center;gap:8px}.v13-main{min-width:0;flex:1}.v13-main strong{display:block;font-size:9px}.v13-main span{display:block;margin-top:2px;color:#737c83;font-size:7px}
+.v13-btn{border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:8px;padding:7px 9px;cursor:pointer;font-size:8px}.v13-btn.primary{border-color:#39ff14;background:#39ff14;color:#071006}.v13-btn.danger:hover{border-color:#ff4d4d}
+.v13-form{display:grid;gap:7px}.v13-input,.v13-select,.v13-textarea{width:100%;box-sizing:border-box;padding:9px;border:1px solid #2a3136;border-radius:8px;background:#101415;color:#fff}.v13-textarea{min-height:90px;resize:vertical}
+.v13-table{display:grid;gap:6px}.v13-table-row{display:grid;grid-template-columns:1.2fr 110px 130px;gap:7px;align-items:center;padding:8px;border:1px solid #242a2f;border-radius:9px;background:#101415}.v13-table-row span{font-size:8px}.v13-table-row small{font-size:7px;color:#707980}
+.v13-role-actions{display:flex;gap:4px;flex-wrap:wrap}.v13-role-actions button{border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:7px;padding:5px 7px;cursor:pointer;font-size:7px}.v13-role-actions button.active{background:#39ff14;color:#071006;border-color:#39ff14}
+.v13-mini{color:#667177;font-size:7px;line-height:1.4}
+@media(max-width:700px){.v13-table-row{grid-template-columns:1fr}}
+</style>
+
 </head>
 
 <body>
@@ -27140,6 +27155,190 @@ if(requestedLive){
   window.vybeeIsOnline=()=>online;
   window.vybeeShowGlobalLoading=showLoading;
   window.vybeeHideGlobalLoading=hideLoading;
+})();
+</script>
+
+
+<div class="v13-layer" id="vybeeV13MembersAdmin">
+  <div class="v13-box">
+    <div class="v13-head">
+      <div><h2>👥 Gestão de membros</h2><p>Roles, remoção e controles administrativos.</p></div>
+      <button type="button" class="btn" id="vybeeV13MembersClose">✕</button>
+    </div>
+    <div class="v13-body">
+      <div id="vybeeV13MembersList" class="v13-table"><div class="v13-mini">Carregando...</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="v13-layer" id="vybeeV13CommunitySettings">
+  <div class="v13-box">
+    <div class="v13-head">
+      <div><h2>⚙️ Configurações da comunidade</h2><p>Identidade, visibilidade e acesso.</p></div>
+      <button type="button" class="btn" id="vybeeV13CommunityClose">✕</button>
+    </div>
+    <div class="v13-body">
+      <div class="v13-form">
+        <input id="vybeeV13CommunityName" class="v13-input" maxlength="80" placeholder="Nome">
+        <textarea id="vybeeV13CommunityDesc" class="v13-textarea" maxlength="500" placeholder="Descrição"></textarea>
+        <select id="vybeeV13CommunityVisibility" class="v13-select">
+          <option value="public">Pública</option>
+          <option value="private">Privada</option>
+        </select>
+        <div class="v13-row"><div class="v13-main"><strong>Permitir entrada de membros</strong><span>Controla novas entradas na comunidade.</span></div><button type="button" class="v13-btn" id="vybeeV13CommunityJoinToggle">Ativado</button></div>
+        <div class="v13-row"><div class="v13-main"><strong>Salvar alterações</strong><span>Atualiza a configuração sem sair da comunidade.</span></div><button type="button" class="v13-btn primary" id="vybeeV13CommunitySave">Salvar</button></div>
+        <div id="vybeeV13CommunityStatus" class="v13-mini"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script id="vybee-giant-v13-controller">
+(function(){
+  let activeCommunity=null;
+  let allowJoin=true;
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+  function toastSafe(v){try{window.toast?.(v)}catch(_){}}
+
+  async function openMembersAdmin(community){
+    const client=sb(), current=user();
+    if(!client||!current||!community)return;
+    activeCommunity=community;
+    el("vybeeV13MembersAdmin")?.classList.add("on");
+    const list=el("vybeeV13MembersList");
+    list.innerHTML='<div class="v13-mini">Carregando...</div>';
+
+    const {data,error}=await client.from("community_members")
+      .select("id,user_id,role,created_at")
+      .eq("community_id",community.id)
+      .order("created_at",{ascending:true})
+      .limit(200);
+
+    if(error){
+      list.innerHTML='<div class="v13-mini">Sem permissão ou schema diferente.</div>';
+      return;
+    }
+    const ids=(data||[]).map(x=>x.user_id);
+    const {data:profiles}=ids.length?await client.from("profiles")
+      .select("id,display_name,username").in("id",ids):{data:[]};
+    const map=new Map((profiles||[]).map(p=>[p.id,p]));
+
+    list.innerHTML=(data||[]).map(row=>{
+      const p=map.get(row.user_id);
+      const isOwner=community.owner_id===row.user_id;
+      return `
+        <div class="v13-table-row">
+          <span><strong>${esc(p?.display_name||p?.username||"Usuário")}</strong><small>${p?.username?"@"+esc(p.username):""}</small></span>
+          <span>${esc(row.role||"member")}</span>
+          <div class="v13-role-actions">
+            ${isOwner?'<span class="v13-mini">Owner</span>':`
+              <button type="button" data-v13-role="${esc(row.id)}" data-role="admin" class="${row.role==="admin"?"active":""}">Admin</button>
+              <button type="button" data-v13-role="${esc(row.id)}" data-role="moderator" class="${row.role==="moderator"?"active":""}">Mod</button>
+              <button type="button" data-v13-role="${esc(row.id)}" data-role="member" class="${row.role==="member"?"active":""}">Membro</button>
+              <button type="button" class="danger" data-v13-kick="${esc(row.id)}">Expulsar</button>
+            `}
+          </div>
+        </div>`;
+    }).join("")||'<div class="v13-mini">Nenhum membro.</div>';
+
+    list.querySelectorAll("[data-v13-role]").forEach(btn=>{
+      btn.onclick=()=>setRole(btn.dataset.v13Role,btn.dataset.role);
+    });
+    list.querySelectorAll("[data-v13-kick]").forEach(btn=>{
+      btn.onclick=()=>removeMember(btn.dataset.v13Kick);
+    });
+  }
+
+  async function setRole(memberId,role){
+    const client=sb();
+    if(!client||!memberId||!role)return;
+    const {error}=await client.rpc("set_community_member_role",{
+      p_membership_id:memberId,
+      p_role:role
+    });
+    if(error){toastSafe(error.message||"Não foi possível alterar o cargo.");return}
+    toastSafe("✅ Cargo atualizado.");
+    if(activeCommunity)openMembersAdmin(activeCommunity);
+  }
+
+  async function removeMember(memberId){
+    const client=sb();
+    if(!client||!memberId)return;
+    if(!confirm("Remover este membro da comunidade?"))return;
+    const {error}=await client.rpc("remove_community_member",{
+      p_membership_id:memberId
+    });
+    if(error){toastSafe(error.message||"Não foi possível remover.");return}
+    toastSafe("🚪 Membro removido.");
+    if(activeCommunity)openMembersAdmin(activeCommunity);
+  }
+
+  async function openCommunitySettings(community){
+    const client=sb();
+    if(!client||!community)return;
+    activeCommunity=community;
+    const {data,error}=await client.from("communities")
+      .select("id,name,description,is_public,allow_member_join")
+      .eq("id",community.id).maybeSingle();
+    const c=data||community;
+    if(error){toastSafe("Não foi possível carregar.");return}
+    el("vybeeV13CommunityName").value=c.name||"";
+    el("vybeeV13CommunityDesc").value=c.description||"";
+    el("vybeeV13CommunityVisibility").value=c.is_public===false?"private":"public";
+    allowJoin=c.allow_member_join!==false;
+    updateJoinButton();
+    el("vybeeV13CommunityStatus").textContent="";
+    el("vybeeV13CommunitySettings")?.classList.add("on");
+  }
+
+  function updateJoinButton(){
+    const b=el("vybeeV13CommunityJoinToggle");
+    if(!b)return;
+    b.textContent=allowJoin?"Ativado":"Desativado";
+    b.classList.toggle("primary",allowJoin);
+  }
+
+  async function saveCommunitySettings(){
+    const client=sb(), current=user();
+    if(!client||!current||!activeCommunity)return;
+    const status=el("vybeeV13CommunityStatus");
+    const name=el("vybeeV13CommunityName").value.trim();
+    const description=el("vybeeV13CommunityDesc").value.trim();
+    const visibility=el("vybeeV13CommunityVisibility").value;
+    if(name.length<2){status.textContent="Nome muito curto.";return}
+    status.textContent="Salvando...";
+    const {error}=await client.from("communities").update({
+      name,description:description||null,is_public:visibility==="public",allow_member_join:allowJoin
+    }).eq("id",activeCommunity.id);
+    if(error){status.textContent="❌ "+(error.message||"Não foi possível salvar.");return}
+    status.textContent="✅ Comunidade atualizada.";
+    Object.assign(activeCommunity,{name,description,is_public:visibility==="public",allow_member_join:allowJoin});
+    setTimeout(()=>el("vybeeV13CommunitySettings")?.classList.remove("on"),450);
+  }
+
+  function bind(){
+    el("vybeeV13MembersClose")?.addEventListener("click",()=>el("vybeeV13MembersAdmin")?.classList.remove("on"));
+    el("vybeeV13CommunityClose")?.addEventListener("click",()=>el("vybeeV13CommunitySettings")?.classList.remove("on"));
+    el("vybeeV13CommunityJoinToggle")?.addEventListener("click",()=>{allowJoin=!allowJoin;updateJoinButton()});
+    el("vybeeV13CommunitySave")?.addEventListener("click",saveCommunitySettings);
+    [el("vybeeV13MembersAdmin"),el("vybeeV13CommunitySettings")].forEach(panel=>{
+      panel?.addEventListener("click",e=>{if(e.target===panel)panel.classList.remove("on")});
+    });
+    document.addEventListener("keydown",e=>{
+      if(e.key==="Escape"){
+        el("vybeeV13MembersAdmin")?.classList.remove("on");
+        el("vybeeV13CommunitySettings")?.classList.remove("on");
+      }
+    });
+    window.vybeeOpenMembersAdminV13=openMembersAdmin;
+    window.vybeeOpenCommunitySettingsV13=openCommunitySettings;
+  }
+  bind();
 })();
 </script>
 
