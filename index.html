@@ -4609,6 +4609,39 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 }
 </style>
 
+
+<style id="vybee-giant-v4-style">
+.vybee-post-comments{display:grid;gap:6px;margin-top:8px}
+.vybee-comment{display:flex;gap:7px;padding:7px;border-radius:9px;background:#0e1213;border:1px solid #20272b}
+.vybee-comment-main{min-width:0;flex:1}
+.vybee-comment-main strong{font-size:8px}
+.vybee-comment-main span{display:block;margin-top:2px;color:#c7cdd1;font-size:8px;line-height:1.35}
+.vybee-comment-form{display:flex;gap:5px;margin-top:7px}
+.vybee-comment-form input{flex:1;min-width:0;padding:8px;border:1px solid #2a3136;border-radius:8px;background:#101415;color:#fff}
+.vybee-comment-form button{border:1px solid #39ff14;border-radius:8px;background:#39ff14;color:#071006;cursor:pointer;padding:0 9px;font-weight:900}
+.vybee-post-menu{position:absolute;right:8px;top:30px;display:none;z-index:25;padding:5px;border:1px solid #2b3338;border-radius:9px;background:#0d1112;box-shadow:0 18px 45px #000b}
+.vybee-post-menu.on{display:grid}
+.vybee-post-menu button{border:0;background:transparent;color:#fff;text-align:left;padding:7px 9px;border-radius:6px;cursor:pointer;font-size:8px}
+.vybee-post-menu button:hover{background:#171b1e}
+.vybee-feed-card{position:relative}
+.vybee-post-edit{display:grid;gap:5px}
+.vybee-post-edit textarea{min-height:70px;width:100%;box-sizing:border-box;padding:9px;border:1px solid #2a3136;border-radius:8px;background:#101415;color:#fff}
+.vybee-post-edit-actions{display:flex;justify-content:flex-end;gap:5px}
+.vybee-post-edit-actions button{border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:7px;padding:6px 8px;cursor:pointer;font-size:8px}
+.vybee-post-edit-actions .save{border-color:#39ff14;background:#39ff14;color:#071006}
+.vybee-event-detail{display:grid;gap:10px}
+.vybee-event-hero{padding:15px;border:1px solid #2a3136;border-radius:13px;background:#101415}
+.vybee-event-hero h3{margin:0;font-size:15px}
+.vybee-event-hero p{margin:5px 0 0;color:#7a8389;font-size:9px;line-height:1.45}
+.vybee-event-stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:9px}
+.vybee-event-stat{padding:6px 8px;border:1px solid #283034;border-radius:8px;background:#14191b;color:#cfd5d9;font-size:8px}
+.vybee-event-actions{display:flex;gap:6px;flex-wrap:wrap}
+.vybee-event-actions button{border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:8px;padding:7px 9px;cursor:pointer;font-size:8px}
+.vybee-event-actions .primary{background:#39ff14;color:#071006;border-color:#39ff14}
+.vybee-dm-item-unread{width:7px;height:7px;border-radius:50%;background:#39ff14}
+.vybee-dm-read{color:#556067;font-size:7px}
+</style>
+
 </head>
 
 <body>
@@ -23635,7 +23668,7 @@ if(requestedLive){
         const stat=counts.get(post.id)||{count:0,mine:false};
 
         return `
-          <article class="vybee-feed-card" data-feed-post="${esc(post.id)}">
+          <article class="vybee-feed-card" data-feed-post="${esc(post.id)}" data-post-author-id="${esc(post.author_id)}">
             <div class="vybee-feed-head">
               <div class="vybee-feed-avatar">👤</div>
               <div class="vybee-feed-user">
@@ -24173,6 +24206,168 @@ if(requestedLive){
     }
   );
 
+})();
+</script>
+
+
+<script id="vybee-giant-v4-controller">
+(function(){
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){
+    return String(v??"")
+      .replaceAll("&","&amp;").replaceAll("<","&lt;")
+      .replaceAll(">","&gt;").replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+  function time(v){
+    const d=new Date(v);
+    return Number.isNaN(d.getTime())?"":d.toLocaleString(
+      "pt-BR",{dateStyle:"short",timeStyle:"short"}
+    );
+  }
+
+  async function addComment(postId){
+    const client=sb(), current=user();
+    const input=document.querySelector(
+      `[data-comment-input="${CSS.escape(String(postId))}"]`
+    );
+    const content=input?.value.trim();
+    if(!client||!current||!content)return;
+    const {error}=await client.from("vybee_post_comments").insert({
+      post_id:postId,author_id:current.id,content
+    });
+    if(error){toast(error.message||"Não foi possível comentar.");return;}
+    input.value="";
+    loadComments(postId);
+  }
+
+  async function loadComments(postId){
+    const client=sb();
+    const box=document.querySelector(
+      `[data-post-comments="${CSS.escape(String(postId))}"]`
+    );
+    if(!client||!box)return;
+    const {data,error}=await client.from("vybee_post_comments")
+      .select("id,author_id,content,created_at")
+      .eq("post_id",postId).order("created_at",{ascending:true}).limit(50);
+    if(error){return;}
+    if(!data?.length){
+      box.innerHTML='<div class="muted" style="font-size:8px">Nenhum comentário ainda.</div>';
+      return;
+    }
+    const ids=[...new Set(data.map(x=>x.author_id))];
+    const {data:profiles}=await client.from("profiles")
+      .select("id,display_name,username").in("id",ids);
+    const map=new Map((profiles||[]).map(p=>[p.id,p]));
+    box.innerHTML=data.map(row=>{
+      const p=map.get(row.author_id);
+      return `<div class="vybee-comment"><div class="vybee-social-avatar" style="width:24px;height:24px;flex:0 0 24px;font-size:9px">👤</div><div class="vybee-comment-main"><strong>${esc(p?.display_name||p?.username||"Usuário")} · ${esc(time(row.created_at))}</strong><span>${esc(row.content)}</span></div></div>`;
+    }).join("");
+  }
+
+  async function editPost(postId){
+    const client=sb(), current=user();
+    const card=document.querySelector(`[data-feed-post="${CSS.escape(String(postId))}"]`);
+    if(!client||!current||!card)return;
+    const body=card.querySelector(".vybee-feed-body");
+    if(!body)return;
+    const original=body.textContent.trim();
+    const editor=document.createElement("div");
+    editor.className="vybee-post-edit";
+    editor.innerHTML=`<textarea maxlength="2000"></textarea><div class="vybee-post-edit-actions"><button type="button" data-cancel>Cancelar</button><button type="button" class="save" data-save>Salvar</button></div>`;
+    editor.querySelector("textarea").value=original;
+    body.replaceWith(editor);
+    editor.querySelector("[data-cancel]").onclick=()=>{
+      const node=document.createElement("div");node.className="vybee-feed-body";node.textContent=original;editor.replaceWith(node);
+    };
+    editor.querySelector("[data-save]").onclick=async()=>{
+      const value=editor.querySelector("textarea").value.trim();
+      if(!value)return;
+      const {error}=await client.from("vybee_posts").update({content:value}).eq("id",postId).eq("author_id",current.id);
+      if(error){toast(error.message||"Não foi possível editar.");return;}
+      const node=document.createElement("div");node.className="vybee-feed-body";node.textContent=value;editor.replaceWith(node);
+    };
+  }
+
+  async function deletePost(postId){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    if(!confirm("Excluir esta publicação?"))return;
+    const {error}=await client.from("vybee_posts").delete().eq("id",postId).eq("author_id",current.id);
+    if(error){toast(error.message||"Não foi possível excluir.");return;}
+    document.querySelector(`[data-feed-post="${CSS.escape(String(postId))}"]`)?.remove();
+  }
+
+  function decorateFeed(){
+    document.querySelectorAll("#vybeeFeedList .vybee-feed-card").forEach(card=>{
+      const id=card.dataset.feedPost;
+      if(card.dataset.v4Bound)return;
+      card.dataset.v4Bound="1";
+      const author=card.dataset.postAuthorId;
+      const actions=card.querySelector(".vybee-feed-actions");
+      if(user()?.id===author){
+        const menuBtn=document.createElement("button");
+        menuBtn.type="button";menuBtn.textContent="⋯";
+        menuBtn.style.cssText="position:absolute;right:8px;top:8px;border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:7px;padding:4px 7px;cursor:pointer;font-size:10px";
+        menuBtn.onclick=e=>{
+          e.stopPropagation();
+          const menu=document.createElement("div");
+          menu.className="vybee-post-menu on";
+          menu.innerHTML='<button type="button">✏️ Editar</button><button type="button">🗑️ Excluir</button>';
+          menu.children[0].onclick=()=>{menu.remove();editPost(id)};
+          menu.children[1].onclick=()=>{menu.remove();deletePost(id)};
+          card.appendChild(menu);
+        };
+        card.appendChild(menuBtn);
+      }
+      if(actions){
+        const cbtn=document.createElement("button");
+        cbtn.type="button";cbtn.textContent="💬 Comentários";
+        cbtn.style.cssText="border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:8px";
+        cbtn.onclick=()=>{
+          let wrap=card.querySelector(".vybee-post-comments-wrap");
+          if(wrap){wrap.remove();return;}
+          wrap=document.createElement("div");wrap.className="vybee-post-comments-wrap";
+          wrap.innerHTML=`<div class="vybee-post-comments" data-post-comments="${esc(id)}"></div><div class="vybee-comment-form"><input data-comment-input="${esc(id)}" maxlength="500" placeholder="Escreva um comentário..."><button type="button">➤</button></div>`;
+          card.appendChild(wrap);
+          wrap.querySelector("button").onclick=()=>addComment(id);
+          loadComments(id);
+        };
+        actions.appendChild(cbtn);
+      }
+    });
+  }
+
+  const observer=new MutationObserver(decorateFeed);
+  function watchFeed(){
+    const list=el("vybeeFeedList");
+    if(!list){setTimeout(watchFeed,600);return;}
+    observer.observe(list,{childList:true,subtree:true});
+    decorateFeed();
+  }
+
+  function bindEvents(){
+    document.querySelectorAll("[data-event-details]").forEach(btn=>{
+      if(btn.dataset.v4Bound)return;
+      btn.dataset.v4Bound="1";
+      btn.onclick=()=>window.vybeeOpenEventDetail?.(btn.dataset.eventDetails);
+    });
+  }
+
+  function watchPage(){
+    const page=el("vybeeModernPage");
+    if(!page){setTimeout(watchPage,700);return;}
+    new MutationObserver(()=>{
+      decorateFeed();
+      bindEvents();
+    }).observe(page,{childList:true,subtree:true});
+  }
+
+  window.vybeeV4BindFeed=decorateFeed;
+  watchFeed();
+  watchPage();
 })();
 </script>
 
