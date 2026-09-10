@@ -4847,6 +4847,61 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 }
 </style>
 
+
+<style id="vybee-giant-v8-style">
+.vybee-v8-card{padding:12px;border:1px solid #252c31;border-radius:12px;background:#101415}
+.vybee-v8-grid{display:grid;gap:9px}
+.vybee-v8-row{display:flex;gap:9px;align-items:center}
+.vybee-v8-row-main{min-width:0;flex:1}
+.vybee-v8-row-main strong{display:block;font-size:10px}
+.vybee-v8-row-main span{display:block;margin-top:2px;color:#737c83;font-size:8px}
+.vybee-v8-btn{
+  border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:8px;
+  padding:7px 9px;cursor:pointer;font-size:8px
+}
+.vybee-v8-btn.primary{border-color:#39ff14;background:#39ff14;color:#071006}
+.vybee-v8-btn.danger:hover{border-color:#ff4d4d}
+.vybee-search-toolbar-v8{display:flex;gap:7px;flex-wrap:wrap}
+.vybee-search-toolbar-v8 input,.vybee-search-toolbar-v8 select{
+  flex:1;min-width:160px;box-sizing:border-box;padding:9px;
+  border:1px solid #2a3136;border-radius:8px;background:#101415;color:#fff
+}
+.vybee-pinned-list-v8{display:grid;gap:6px}
+.vybee-pinned-row-v8{
+  display:flex;gap:8px;padding:8px;border:1px solid #252c31;
+  border-radius:9px;background:#0e1213
+}
+.vybee-poll-v8{margin-top:7px;padding:8px;border:1px solid #242a2f;border-radius:9px;background:#0d1112}
+.vybee-poll-v8 strong{display:block;font-size:9px}
+.vybee-poll-option-v8{
+  display:flex;gap:6px;align-items:center;margin-top:6px;
+  padding:6px;border-radius:7px;background:#14191b;cursor:pointer
+}
+.vybee-poll-option-v8 input{accent-color:auto}
+.vybee-poll-bar-v8{height:4px;background:#242b2f;border-radius:99px;overflow:hidden;margin-top:4px}
+.vybee-poll-bar-v8 i{display:block;height:100%;background:#39ff14}
+.vybee-poll-meta-v8{color:#69737a;font-size:7px;margin-top:4px}
+.vybee-report-content-v8{
+  display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;
+  padding:8px;border:1px solid #252c31;border-radius:9px;background:#101415
+}
+.vybee-badge-v8{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:17px;height:17px;padding:0 5px;border-radius:99px;
+  background:#39ff14;color:#071006;font-size:7px;font-weight:900
+}
+.vybee-admin-table-v8{display:grid;gap:6px}
+.vybee-admin-table-row-v8{
+  display:grid;grid-template-columns:1fr 110px 85px;gap:8px;align-items:center;
+  padding:8px;border:1px solid #242a2f;border-radius:8px;background:#101415
+}
+.vybee-admin-table-row-v8 span{font-size:8px;color:#bfc6ca}
+.vybee-admin-table-row-v8 small{font-size:7px;color:#6d767c}
+@media(max-width:700px){
+  .vybee-admin-table-row-v8{grid-template-columns:1fr}
+}
+</style>
+
 </head>
 
 <body>
@@ -25751,6 +25806,291 @@ if(requestedLive){
     window.vybeeOpenCommunityOverview=openCommunityOverview;
     window.vybeeOpenCommunityMediaV7=loadCommunityMediaV7;
     window.vybeeOpenSecurityCenter=openSecurityCenter;
+  }
+
+  bind();
+})();
+</script>
+
+
+<script id="vybee-giant-v8-controller">
+(function(){
+  let searchTimer=null;
+  let activeSearchQuery="";
+  let pinnedChannelId=null;
+  let pollId=null;
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){
+    return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;")
+      .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  }
+  function toastSafe(msg){try{window.toast?.(msg)}catch(_){}}
+
+  // -------- Message search / pinned messages --------
+  async function openMessageSearch(channelId,channelName){
+    pinnedChannelId=channelId;
+    showPage(
+      "Pesquisar mensagens",
+      "# "+(channelName||"canal")+" • busca e fixados",
+      `
+        <div class="vybee-v8-grid">
+          <div class="vybee-v8-card">
+            <div class="vybee-search-toolbar-v8">
+              <input id="vybeeMessageSearchInput" placeholder="Buscar texto nas mensagens...">
+              <button type="button" class="vybee-v8-btn primary" id="vybeeMessageSearchButton">Buscar</button>
+              <button type="button" class="vybee-v8-btn" id="vybeePinnedButton">📌 Fixadas</button>
+            </div>
+          </div>
+          <div id="vybeeMessageSearchResults" class="vybee-v8-grid">
+            <div class="vybee-modern-page-empty">Digite uma busca.</div>
+          </div>
+        </div>
+      `
+    );
+    el("vybeeMessageSearchButton")?.addEventListener("click",searchMessages);
+    el("vybeeMessageSearchInput")?.addEventListener("keydown",e=>{
+      if(e.key==="Enter")searchMessages();
+    });
+    el("vybeePinnedButton")?.addEventListener("click",()=>loadPinned(channelId));
+  }
+
+  async function searchMessages(){
+    const client=sb();
+    if(!client||!pinnedChannelId)return;
+    const q=el("vybeeMessageSearchInput")?.value.trim();
+    const box=el("vybeeMessageSearchResults");
+    if(!q||q.length<2){
+      box.innerHTML='<div class="vybee-modern-page-empty">Digite pelo menos 2 caracteres.</div>';
+      return;
+    }
+    box.innerHTML='<div class="vybee-modern-page-empty">🔎 Buscando...</div>';
+
+    const {data,error}=await client.from("messages")
+      .select("id,user_id,content,created_at")
+      .eq("channel_id",pinnedChannelId)
+      .ilike("content","%"+q+"%")
+      .order("created_at",{ascending:false})
+      .limit(80);
+
+    if(error){box.innerHTML='<div class="vybee-modern-page-empty">Busca indisponível.</div>';return}
+    if(!data?.length){box.innerHTML='<div class="vybee-modern-page-empty">Nenhuma mensagem encontrada.</div>';return}
+
+    box.innerHTML=data.map(row=>`
+      <div class="vybee-v8-card">
+        <div class="vybee-v8-row">
+          <div class="vybee-social-avatar">💬</div>
+          <div class="vybee-v8-row-main">
+            <strong>${esc(row.content)}</strong>
+            <span>${esc(new Date(row.created_at).toLocaleString("pt-BR"))}</span>
+          </div>
+          <button type="button" class="vybee-v8-btn" data-copy-message="${esc(row.id)}">Copiar</button>
+        </div>
+      </div>
+    `).join("");
+
+    box.querySelectorAll("[data-copy-message]").forEach(b=>{
+      b.onclick=async()=>{
+        const row=data.find(x=>String(x.id)===String(b.dataset.copyMessage));
+        if(row){
+          await navigator.clipboard?.writeText(row.content||"");
+          toastSafe("📋 Mensagem copiada.");
+        }
+      };
+    });
+  }
+
+  async function loadPinned(channelId){
+    const client=sb();
+    const box=el("vybeeMessageSearchResults");
+    if(!client||!channelId||!box)return;
+
+    const {data,error}=await client.from("message_pins")
+      .select("id,message_id,pinned_by,created_at")
+      .eq("channel_id",channelId)
+      .order("created_at",{ascending:false})
+      .limit(50);
+
+    if(error){
+      box.innerHTML='<div class="vybee-modern-page-empty">Crie a estrutura de mensagens fixadas pelo SQL desta etapa.</div>';
+      return;
+    }
+    if(!data?.length){
+      box.innerHTML='<div class="vybee-modern-page-empty">Nenhuma mensagem fixada.</div>';
+      return;
+    }
+
+    const ids=data.map(x=>x.message_id);
+    const {data:messages}=await client.from("messages")
+      .select("id,user_id,content,created_at")
+      .in("id",ids);
+
+    const map=new Map((messages||[]).map(m=>[m.id,m]));
+    box.innerHTML=data.map(pin=>{
+      const m=map.get(pin.message_id);
+      return `
+        <div class="vybee-pinned-row-v8">
+          <div>📌</div>
+          <div class="vybee-v8-row-main">
+            <strong>${esc(m?.content||"Mensagem")}</strong>
+            <span>Fixada em ${esc(new Date(pin.created_at).toLocaleString("pt-BR"))}</span>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  // -------- Polls --------
+  async function openPollCreator(channelId){
+    const client=sb(), current=user();
+    if(!client||!current||!channelId)return;
+    const question=prompt("Pergunta da enquete:");
+    if(!question?.trim())return;
+    const raw=prompt("Opções separadas por |");
+    if(!raw)return;
+    const options=raw.split("|").map(x=>x.trim()).filter(Boolean).slice(0,8);
+    if(options.length<2){toastSafe("A enquete precisa de pelo menos 2 opções.");return}
+
+    const {data,error}=await client.from("message_polls").insert({
+      channel_id:channelId,
+      creator_id:current.id,
+      question:question.trim(),
+      options,
+      closed:false
+    }).select("id").single();
+
+    if(error){toastSafe(error.message||"Não foi possível criar a enquete.");return}
+
+    const optionText=
+      "📊 "+question.trim()+"\n"+
+      options.map((x,i)=>(i+1)+". "+x).join("\n")+
+      "\n__VYBEE_POLL__"+data.id;
+
+    await client.from("messages").insert({
+      channel_id:channelId,
+      user_id:current.id,
+      content:optionText
+    });
+    toastSafe("✅ Enquete criada.");
+  }
+
+  // -------- Admin reports center --------
+  async function openReportsCenter(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+
+    showPage(
+      "Denúncias",
+      "Central de análise de denúncias.",
+      `<div id="vybeeAdminReports" class="vybee-v8-grid"><div class="vybee-modern-page-empty">Carregando...</div></div>`
+    );
+
+    const {data,error}=await client.from("user_reports")
+      .select("id,reporter_id,target_user_id,reason,details,status,created_at")
+      .order("created_at",{ascending:false})
+      .limit(100);
+
+    const box=el("vybeeAdminReports");
+    if(error){
+      box.innerHTML='<div class="vybee-modern-page-empty">A central de denúncias requer permissões de moderador/admin.</div>';
+      return;
+    }
+    if(!data?.length){
+      box.innerHTML='<div class="vybee-modern-page-empty">Nenhuma denúncia.</div>';
+      return;
+    }
+
+    const ids=[...new Set(data.flatMap(x=>[x.reporter_id,x.target_user_id]))];
+    const {data:profiles}=await client.from("profiles")
+      .select("id,display_name,username").in("id",ids);
+    const map=new Map((profiles||[]).map(p=>[p.id,p]));
+
+    box.innerHTML=data.map(row=>{
+      const target=map.get(row.target_user_id);
+      const reporter=map.get(row.reporter_id);
+      return `
+        <div class="vybee-report-content-v8">
+          <span class="vybee-badge-v8">${esc(row.status)}</span>
+          <div class="vybee-v8-row-main">
+            <strong>${esc(row.reason)} • ${esc(target?.display_name||"Usuário")}</strong>
+            <span>Denunciante: ${esc(reporter?.display_name||"Usuário")} ${row.details?" • "+esc(row.details):""}</span>
+          </div>
+          <select data-report-status="${esc(row.id)}" style="padding:6px;border:1px solid #2b3338;border-radius:7px;background:#171b1e;color:#fff">
+            <option value="open" ${row.status==="open"?"selected":""}>Aberta</option>
+            <option value="reviewing" ${row.status==="reviewing"?"selected":""}>Analisando</option>
+            <option value="resolved" ${row.status==="resolved"?"selected":""}>Resolvida</option>
+            <option value="dismissed" ${row.status==="dismissed"?"selected":""}>Descartada</option>
+          </select>
+        </div>
+      `;
+    }).join("");
+
+    box.querySelectorAll("[data-report-status]").forEach(select=>{
+      select.onchange=async()=>{
+        const {error}=await client.from("user_reports").update({status:select.value})
+          .eq("id",select.dataset.reportStatus);
+        if(error)toastSafe(error.message||"Sem permissão.");
+      };
+    });
+  }
+
+  // -------- Member audit / community dashboard quick actions --------
+  async function openCommunityDashboard(community){
+    const client=sb();
+    if(!client||!community)return;
+
+    const [members,channels,events,posts]=await Promise.all([
+      client.from("community_members").select("id",{count:"exact",head:true}).eq("community_id",community.id),
+      client.from("channels").select("id",{count:"exact",head:true}).eq("community_id",community.id),
+      client.from("vybee_events").select("id",{count:"exact",head:true}).eq("community_id",community.id).gte("event_at",new Date().toISOString()),
+      client.from("messages").select("id",{count:"exact",head:true}).in(
+        "channel_id",
+        (await client.from("channels").select("id").eq("community_id",community.id)).data?.map(x=>x.id)||[]
+      )
+    ]);
+
+    showPage(
+      "Painel da comunidade",
+      community.name||"Comunidade",
+      `
+      <div class="vybee-v8-grid">
+        <div class="vybee-role-grid-v7">
+          <div class="vybee-role-card-v7"><strong>${Number(members.count||0)}</strong><span>Membros</span></div>
+          <div class="vybee-role-card-v7"><strong>${Number(channels.count||0)}</strong><span>Canais</span></div>
+          <div class="vybee-role-card-v7"><strong>${Number(events.count||0)}</strong><span>Eventos</span></div>
+          <div class="vybee-role-card-v7"><strong>${Number(posts.count||0)}</strong><span>Mensagens</span></div>
+        </div>
+        <div class="vybee-v8-card">
+          <div class="vybee-v8-row">
+            <div class="vybee-v8-row-main">
+              <strong>Atalhos administrativos</strong>
+              <span>Ferramentas rápidas da comunidade.</span>
+            </div>
+          </div>
+          <div class="vybee-setting-actions-v7">
+            <button class="vybee-v8-btn" id="vybeeV8Members">👥 Membros</button>
+            <button class="vybee-v8-btn" id="vybeeV8Channels">🎛️ Canais</button>
+            <button class="vybee-v8-btn" id="vybeeV8Audit">📋 Auditoria</button>
+            <button class="vybee-v8-btn" id="vybeeV8Events">📅 Eventos</button>
+          </div>
+        </div>
+      </div>
+      `
+    );
+
+    el("vybeeV8Members")?.addEventListener("click",()=>window.vybeeOpenMembers?.(community));
+    el("vybeeV8Channels")?.addEventListener("click",()=>window.vybeeOpenChannelManager?.(community));
+    el("vybeeV8Audit")?.addEventListener("click",()=>window.vybeeOpenCommunityAudit?.(community));
+    el("vybeeV8Events")?.addEventListener("click",()=>window.vybeeOpenCommunityEvents?.(community));
+  }
+
+  function bind(){
+    window.vybeeOpenMessageSearchV8=openMessageSearch;
+    window.vybeeOpenPollCreatorV8=openPollCreator;
+    window.vybeeOpenReportsCenterV8=openReportsCenter;
+    window.vybeeOpenCommunityDashboardV8=openCommunityDashboard;
   }
 
   bind();
