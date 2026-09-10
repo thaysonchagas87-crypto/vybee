@@ -15320,6 +15320,264 @@ if(requestedLive){
 })();
 </script>
 
+
+<script id="vybee-community-permissions-secure-controller">
+(function(){
+  /*
+   * Segurança dos cargos:
+   * o navegador não decide quem pode promover/remover.
+   * As ações sensíveis passam a usar RPCs que verificam
+   * Owner/Admin/Moderador no Supabase.
+   */
+  const ALLOWED =
+    ["member","moderator","admin"];
+
+  function sb(){
+    return window.vybeeSupabase || null;
+  }
+
+  function el(id){
+    return document.getElementById(id);
+  }
+
+  function setStatus(text){
+    el("vybeeMembersStatus")?.replaceChildren(
+      document.createTextNode(
+        text || ""
+      )
+    );
+  }
+
+  async function secureUpdateRole(
+    membershipId,
+    role
+  ){
+    const client=sb();
+
+    if(
+      !client ||
+      !membershipId ||
+      !ALLOWED.includes(role)
+    ){
+      return false;
+    }
+
+    setStatus(
+      "Salvando cargo..."
+    );
+
+    try{
+      const {error} =
+        await client.rpc(
+          "manage_community_member_role",
+          {
+            p_membership_id:
+              membershipId,
+            p_role:
+              role
+          }
+        );
+
+      if(error) throw error;
+
+      setStatus(
+        "✅ Cargo atualizado com sucesso."
+      );
+
+      return true;
+
+    }catch(error){
+      console.error(
+        "VYBEE secure role:",
+        error
+      );
+
+      setStatus(
+        "❌ Sem permissão para alterar este cargo."
+      );
+
+      return false;
+    }
+  }
+
+  async function secureRemove(
+    membershipId
+  ){
+    const client=sb();
+
+    if(
+      !client ||
+      !membershipId
+    ){
+      return false;
+    }
+
+    if(
+      !window.confirm(
+        "Remover este membro da comunidade?"
+      )
+    ){
+      return false;
+    }
+
+    setStatus(
+      "Removendo membro..."
+    );
+
+    try{
+      const {error} =
+        await client.rpc(
+          "manage_community_member_remove",
+          {
+            p_membership_id:
+              membershipId
+          }
+        );
+
+      if(error) throw error;
+
+      setStatus(
+        "✅ Membro removido."
+      );
+
+      return true;
+
+    }catch(error){
+      console.error(
+        "VYBEE secure remove:",
+        error
+      );
+
+      setStatus(
+        "❌ Sem permissão para remover este membro."
+      );
+
+      return false;
+    }
+  }
+
+  /*
+   * Intercepta os selects/botões renderizados pelo módulo
+   * de membros e usa as RPCs seguras.
+   */
+  function install(){
+    const list=
+      el("vybeeMembersList");
+
+    if(
+      !list ||
+      list.dataset.vybeeSecureBound
+    ){
+      return;
+    }
+
+    list.dataset.vybeeSecureBound="1";
+
+    list.addEventListener(
+      "change",
+      async event=>{
+        const select=
+          event.target.closest?.(
+            "[data-member-role]"
+          );
+
+        if(!select) return;
+
+        const original =
+          select.dataset.vybeeOriginalRole ||
+          select.value;
+
+        const previous =
+          [...select.options]
+            .find(
+              option =>
+                option.dataset.previous === "1"
+            );
+
+        const previousValue =
+          select.dataset.vybeePreviousValue ||
+          previous?.value ||
+          select.value;
+
+        const ok=
+          await secureUpdateRole(
+            select.dataset.memberRole,
+            select.value
+          );
+
+        if(!ok){
+          select.value=
+            previousValue;
+        }
+
+        select.dataset.vybeePreviousValue=
+          select.value;
+      },
+      true
+    );
+
+    list.addEventListener(
+      "click",
+      async event=>{
+        const button=
+          event.target.closest?.(
+            "[data-member-remove]"
+          );
+
+        if(!button) return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        const ok=
+          await secureRemove(
+            button.dataset.memberRemove
+          );
+
+        if(ok){
+          try{
+            await window.vybeeRefreshCommunityMembers?.();
+          }catch(_){}
+        }
+      },
+      true
+    );
+  }
+
+  const observer=
+    new MutationObserver(
+      install
+    );
+
+  function start(){
+    install();
+
+    const list=
+      el("vybeeMembersList");
+
+    if(list){
+      observer.observe(
+        list,
+        {
+          childList:true,
+          subtree:true
+        }
+      );
+    }
+  }
+
+  start();
+  setTimeout(start,500);
+  setTimeout(start,1200);
+
+  window.vybeeSecureUpdateRole =
+    secureUpdateRole;
+
+  window.vybeeSecureRemoveMember =
+    secureRemove;
+})();
+</script>
+
 </body>
 
 </html>
