@@ -3541,6 +3541,105 @@ body.vybee-modern-home-active > .app > footer{
 }
 </style>
 
+
+<style id="vybee-chat-attachments-style">
+.vybee-chat-composer{
+  flex-wrap:wrap;
+}
+.vybee-chat-attach{
+  width:40px;
+  min-width:40px;
+  border:1px solid #2b3338;
+  background:#171b1e;
+  color:#fff;
+  border-radius:9px;
+  cursor:pointer;
+  font-size:13px;
+}
+.vybee-chat-attach:hover{
+  border-color:#53ff1a;
+}
+.vybee-chat-file-input{
+  display:none;
+}
+.vybee-chat-attachment-list{
+  width:100%;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  padding:0 10px 8px;
+}
+.vybee-chat-attachment-chip{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:6px 8px;
+  border:1px solid #293136;
+  border-radius:9px;
+  background:#131819;
+  max-width:260px;
+}
+.vybee-chat-attachment-chip span{
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  font-size:8px;
+  color:#c4cbd0;
+}
+.vybee-chat-attachment-chip button{
+  border:0;
+  background:transparent;
+  color:#7a848a;
+  cursor:pointer;
+}
+.vybee-chat-attachment-progress{
+  height:3px;
+  border-radius:99px;
+  background:#252b2f;
+  overflow:hidden;
+  margin-top:3px;
+}
+.vybee-chat-attachment-progress i{
+  display:block;
+  height:100%;
+  width:0;
+  background:#39ff14;
+  transition:width .15s ease;
+}
+.vybee-chat-attachment-card{
+  margin-top:6px;
+  padding:7px;
+  border:1px solid #252d32;
+  border-radius:9px;
+  background:#111516;
+}
+.vybee-chat-attachment-card a{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#e7ecef;
+  text-decoration:none;
+  font-size:9px;
+}
+.vybee-chat-attachment-card a:hover{
+  color:#53ff1a;
+}
+.vybee-chat-attachment-preview{
+  max-width:min(380px,100%);
+  max-height:280px;
+  display:block;
+  margin-top:5px;
+  border-radius:8px;
+  object-fit:contain;
+  background:#080a0b;
+}
+.vybee-chat-attachment-meta{
+  color:#6e777d;
+  font-size:7px;
+  margin-top:3px;
+}
+</style>
+
 </head>
 
 <body>
@@ -17702,6 +17801,26 @@ if(requestedLive){
           id="vybeeModernChatForm"
           class="vybee-chat-composer"
         >
+          <button
+            type="button"
+            class="vybee-chat-attach"
+            id="vybeeModernChatAttach"
+            title="Anexar arquivo"
+          >📎</button>
+
+          <input
+            id="vybeeModernChatFile"
+            class="vybee-chat-file-input"
+            type="file"
+            multiple
+            accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip"
+          >
+
+          <div
+            id="vybeeModernChatAttachments"
+            class="vybee-chat-attachment-list"
+          ></div>
+
           <input
             id="vybeeModernChatInput"
             class="vybee-chat-input"
@@ -18415,6 +18534,669 @@ if(requestedLive){
     1500
   );
 
+})();
+</script>
+
+
+<script id="vybee-chat-attachments-controller">
+(function(){
+  let pendingFiles=[];
+  let uploading=false;
+
+  const MAX_FILES=5;
+  const MAX_SIZE=25*1024*1024;
+  const BUCKET="vybee-chat";
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){
+    return String(v??"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function isImage(file){
+    return /^image\//i.test(
+      file.type||""
+    );
+  }
+
+  function isVideo(file){
+    return /^video\//i.test(
+      file.type||""
+    );
+  }
+
+  function formatBytes(bytes){
+    if(bytes<1024) return bytes+" B";
+    if(bytes<1024*1024)
+      return (bytes/1024).toFixed(1)+" KB";
+    if(bytes<1024*1024*1024)
+      return (bytes/1024/1024).toFixed(1)+" MB";
+    return (bytes/1024/1024/1024).toFixed(1)+" GB";
+  }
+
+  function renderPending(){
+    const box=el(
+      "vybeeModernChatAttachments"
+    );
+
+    if(!box) return;
+
+    box.innerHTML=
+      pendingFiles.map(
+        (file,index)=>`
+          <div class="vybee-chat-attachment-chip">
+            <span>
+              ${isImage(file)?"🖼️":isVideo(file)?"🎥":"📄"}
+              ${esc(file.name)}
+              • ${formatBytes(file.size)}
+            </span>
+            <button
+              type="button"
+              data-remove-file="${index}"
+              title="Remover"
+            >✕</button>
+          </div>
+        `
+      ).join("");
+
+    box
+      .querySelectorAll(
+        "[data-remove-file]"
+      )
+      .forEach(
+        button=>{
+          button.addEventListener(
+            "click",
+            ()=>{
+              pendingFiles.splice(
+                Number(
+                  button.dataset.removeFile
+                ),
+                1
+              );
+              renderPending();
+            }
+          );
+        }
+      );
+  }
+
+  function validateFiles(files){
+    const next=[...files];
+
+    for(
+      const file of next
+    ){
+      if(file.size>MAX_SIZE){
+        toast(
+          "Arquivo acima do limite de 25 MB: "+
+          file.name
+        );
+        return false;
+      }
+    }
+
+    if(
+      pendingFiles.length+
+      next.length>
+      MAX_FILES
+    ){
+      toast(
+        "Você pode anexar no máximo "+
+        MAX_FILES+
+        " arquivos por mensagem."
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  function addFiles(files){
+    if(!validateFiles(files)){
+      return;
+    }
+
+    pendingFiles.push(
+      ...files
+    );
+
+    renderPending();
+  }
+
+  function makePath(file){
+    const current=user();
+
+    const safeName=
+      String(file.name||"arquivo")
+        .normalize("NFKD")
+        .replace(
+          /[\u0300-\u036f]/g,
+          ""
+        )
+        .replace(
+          /[^a-zA-Z0-9._-]/g,
+          "_"
+        )
+        .slice(0,120);
+
+    return [
+      current?.id||
+        "anonymous",
+      Date.now(),
+      Math.random()
+        .toString(36)
+        .slice(2,10),
+      safeName
+    ].join("/");
+  }
+
+  async function uploadFile(file){
+    const client=sb();
+
+    if(!client) {
+      throw new Error(
+        "Supabase não está disponível."
+      );
+    }
+
+    const path=
+      makePath(file);
+
+    const {error}=
+      await client.storage
+        .from(BUCKET)
+        .upload(
+          path,
+          file,
+          {
+            cacheControl:"3600",
+            upsert:false,
+            contentType:
+              file.type||
+              "application/octet-stream"
+          }
+        );
+
+    if(error) throw error;
+
+    return {
+      bucket:
+        BUCKET,
+      path,
+      name:
+        file.name,
+      type:
+        file.type||
+        "application/octet-stream",
+      size:
+        file.size
+    };
+  }
+
+  async function sendAttachmentMessage(){
+    const client=sb();
+    const current=user();
+
+    if(
+      uploading||
+      !client||
+      !current
+    ){
+      return;
+    }
+
+    const channelId=
+      window.vybeeGetCurrentTextChannel?.();
+
+    if(!channelId){
+      toast(
+        "Abra um canal de texto primeiro."
+      );
+      return;
+    }
+
+    if(
+      window.vybeeIsChatMuted?.()
+    ){
+      toast(
+        "🔇 Você está silenciado nesta comunidade."
+      );
+      return;
+    }
+
+    const input=
+      el("vybeeModernChatInput");
+
+    const value=
+      input?.value.trim()||
+      "";
+
+    if(
+      !value &&
+      !pendingFiles.length
+    ){
+      return;
+    }
+
+    uploading=true;
+
+    const button=
+      el("vybeeModernChatSend");
+
+    if(button){
+      button.disabled=true;
+      button.textContent="⏳";
+    }
+
+    try{
+      const attachments=[];
+
+      for(
+        const file of
+        pendingFiles
+      ){
+        const uploaded=
+          await uploadFile(
+            file
+          );
+
+        attachments.push(
+          uploaded
+        );
+      }
+
+      /*
+       * Mantemos a mensagem compatível com o modelo atual
+       * usando o conteúdo textual e metadata JSON no final.
+       * O frontend interpreta automaticamente e apresenta os anexos.
+       *
+       * Para bancos que já possuem metadata JSON, esta etapa pode
+       * migrar posteriormente para uma coluna própria.
+       */
+      let content=value;
+
+      if(attachments.length){
+        content +=
+          (
+            content
+              ? "\n\n"
+              : ""
+          )+
+          "__VYBEE_ATTACHMENTS__"+
+          JSON.stringify(
+            attachments
+          );
+      }
+
+      const {data,error}=
+        await client
+          .from("messages")
+          .insert({
+            channel_id:
+              channelId,
+            user_id:
+              current.id,
+            content
+          })
+          .select(
+            "id,user_id,content,created_at,updated_at,reply_to_id,deleted_at"
+          )
+          .single();
+
+      if(error) throw error;
+
+      input.value="";
+      pendingFiles=[];
+      renderPending();
+
+      /*
+       * A própria mensagem pode chegar via Realtime.
+       * Não inserimos manualmente para evitar duplicidade.
+       */
+    }catch(error){
+      console.error(
+        "VYBEE attachments:",
+        error
+      );
+
+      toast(
+        error?.message||
+        "Não foi possível enviar o anexo."
+      );
+    }finally{
+      uploading=false;
+
+      if(button){
+        button.disabled=false;
+        button.textContent="➤";
+      }
+
+      input?.focus();
+    }
+  }
+
+  function parseContent(content){
+    const marker=
+      "__VYBEE_ATTACHMENTS__";
+
+    const index=
+      String(content||"")
+        .indexOf(marker);
+
+    if(index<0){
+      return {
+        text:
+          String(content||""),
+        attachments:[]
+      };
+    }
+
+    const text=
+      String(content||"")
+        .slice(
+          0,
+          index
+        )
+        .trim();
+
+    let attachments=[];
+
+    try{
+      attachments=
+        JSON.parse(
+          String(content||"")
+            .slice(
+              index+
+              marker.length
+            )
+            .trim()
+        );
+    }catch(_){
+      attachments=[];
+    }
+
+    return {
+      text,
+      attachments:
+        Array.isArray(attachments)
+          ? attachments
+          : []
+    };
+  }
+
+  function attachmentHtml(
+    attachment
+  ){
+    if(!attachment) return "";
+
+    const client=sb();
+
+    const bucket=
+      attachment.bucket||
+      BUCKET;
+
+    const path=
+      attachment.path||
+      "";
+
+    const type=
+      attachment.type||
+      "";
+
+    const name=
+      attachment.name||
+      "Arquivo";
+
+    /*
+     * Arquivos do chat ficam privados por padrão.
+     * Geramos URL assinada temporária quando a mensagem é renderizada.
+     */
+    return `
+      <div
+        class="vybee-chat-attachment-card"
+        data-attachment-bucket="${esc(bucket)}"
+        data-attachment-path="${esc(path)}"
+      >
+        <a
+          href="#"
+          data-chat-file
+          data-file-bucket="${esc(bucket)}"
+          data-file-path="${esc(path)}"
+          data-file-type="${esc(type)}"
+          data-file-name="${esc(name)}"
+        >
+          ${isImage({type})?"🖼️":isVideo({type})?"🎥":"📄"}
+          <span>${esc(name)}</span>
+        </a>
+        <div class="vybee-chat-attachment-meta">
+          ${formatBytes(Number(attachment.size||0))}
+        </div>
+      </div>
+    `;
+  }
+
+  async function decorateMessageNode(
+    node
+  ){
+    if(!node) return;
+
+    const textNode=
+      node.querySelector(
+        ".vybee-chat-message-text"
+      );
+
+    if(!textNode) return;
+
+    const raw=
+      textNode.dataset.rawContent||
+      textNode.textContent||
+      "";
+
+    const parsed=
+      parseContent(
+        raw
+      );
+
+    textNode.dataset.rawContent=
+      raw;
+
+    /*
+     * O texto original já foi escapado antes.
+     * Só exibimos o texto limpo e os anexos.
+     */
+    textNode.innerHTML=
+      esc(
+        parsed.text
+      );
+
+    parsed.attachments.forEach(
+      attachment=>{
+        const wrapper=
+          document.createElement(
+            "div"
+          );
+
+        wrapper.innerHTML=
+          attachmentHtml(
+            attachment
+          );
+
+        textNode.appendChild(
+          wrapper.firstElementChild
+        );
+      }
+    );
+  }
+
+  async function openFile(
+    anchor
+  ){
+    const client=sb();
+
+    if(
+      !client
+    ){
+      return;
+    }
+
+    const bucket=
+      anchor.dataset.fileBucket||
+      BUCKET;
+
+    const path=
+      anchor.dataset.filePath||
+      "";
+
+    if(!path) return;
+
+    try{
+      const {data,error}=
+        await client.storage
+          .from(bucket)
+          .createSignedUrl(
+            path,
+            600
+          );
+
+      if(error) throw error;
+
+      const url=
+        data?.signedUrl;
+
+      if(
+        !url
+      ) throw new Error(
+        "URL não criada."
+      );
+
+      window.open(
+        url,
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+    }catch(error){
+      console.error(
+        "VYBEE file:",
+        error
+      );
+
+      toast(
+        "Não foi possível abrir este arquivo."
+      );
+    }
+  }
+
+  function decorateAll(){
+    document
+      .querySelectorAll(
+        "#vybeeModernChatMessages .vybee-chat-message"
+      )
+      .forEach(
+        node=>{
+          const text=
+            node.querySelector(
+              ".vybee-chat-message-text"
+            );
+
+          if(
+            text &&
+            !text.dataset.attachmentDecorated
+          ){
+            text.dataset.attachmentDecorated="1";
+            decorateMessageNode(
+              node
+            );
+          }
+        }
+      );
+  }
+
+  function bind(){
+    el("vybeeModernChatAttach")
+      ?.addEventListener(
+        "click",
+        ()=>{
+          el("vybeeModernChatFile")
+            ?.click();
+        }
+      );
+
+    el("vybeeModernChatFile")
+      ?.addEventListener(
+        "change",
+        event=>{
+          addFiles(
+            [
+              ...(event.target.files||[])
+            ]
+          );
+
+          event.target.value="";
+        }
+      );
+
+    /*
+     * Captura o submit somente se houver anexos.
+     * Sem anexos, o sender normal continua intacto.
+     */
+    el("vybeeModernChatForm")
+      ?.addEventListener(
+        "submit",
+        event=>{
+          if(
+            pendingFiles.length
+          ){
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            sendAttachmentMessage();
+          }
+        },
+        true
+      );
+
+    document.addEventListener(
+      "click",
+      event=>{
+        const anchor=
+          event.target.closest?.(
+            "[data-chat-file]"
+          );
+
+        if(
+          !anchor
+        ){
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        openFile(
+          anchor
+        );
+      }
+    );
+
+    setInterval(
+      decorateAll,
+      800
+    );
+  }
+
+  bind();
+
+  window.vybeeChatPendingFiles=
+    () => pendingFiles;
+
+  window.vybeeParseChatContent=
+    parseContent;
 })();
 </script>
 
