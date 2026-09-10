@@ -4411,6 +4411,204 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 }
 </style>
 
+
+<style id="vybee-giant-pack-style">
+.vybee-feed{
+  display:grid;
+  gap:10px;
+}
+.vybee-compose{
+  padding:12px;
+  border:1px solid #252c31;
+  border-radius:12px;
+  background:#101415;
+}
+.vybee-compose textarea{
+  width:100%;
+  min-height:78px;
+  box-sizing:border-box;
+  resize:vertical;
+  padding:10px;
+  border:1px solid #2a3136;
+  border-radius:9px;
+  background:#0e1213;
+  color:#fff;
+}
+.vybee-compose-row{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  align-items:center;
+  margin-top:8px;
+}
+.vybee-feed-card{
+  padding:12px;
+  border:1px solid #252c31;
+  border-radius:12px;
+  background:#101415;
+}
+.vybee-feed-head{
+  display:flex;
+  gap:9px;
+  align-items:center;
+}
+.vybee-feed-avatar{
+  width:34px;height:34px;
+  border-radius:50%;
+  display:grid;place-items:center;
+  background:#181d20;
+}
+.vybee-feed-user{min-width:0;flex:1}
+.vybee-feed-user strong{display:block;font-size:10px}
+.vybee-feed-user span{display:block;margin-top:2px;color:#707980;font-size:8px}
+.vybee-feed-body{
+  margin-top:9px;
+  color:#d4dadd;
+  font-size:10px;
+  line-height:1.5;
+  white-space:pre-wrap;
+}
+.vybee-feed-actions{
+  display:flex;
+  gap:5px;
+  margin-top:9px;
+}
+.vybee-feed-actions button{
+  border:1px solid #2b3338;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:6px 8px;
+  cursor:pointer;
+  font-size:8px;
+}
+.vybee-feed-actions button.active{
+  border-color:#53ff1a;
+  background:#121a12;
+}
+.vybee-event-list{
+  display:grid;
+  gap:9px;
+}
+.vybee-event-card{
+  display:grid;
+  grid-template-columns:64px minmax(0,1fr) auto;
+  gap:11px;
+  align-items:center;
+  padding:11px;
+  border:1px solid #252c31;
+  border-radius:12px;
+  background:#101415;
+}
+.vybee-event-date{
+  padding:8px 5px;
+  border:1px solid #30373c;
+  border-radius:9px;
+  text-align:center;
+  background:#151a1c;
+}
+.vybee-event-date strong{
+  display:block;
+  font-size:15px;
+}
+.vybee-event-date span{
+  display:block;
+  margin-top:2px;
+  color:#6f787e;
+  font-size:7px;
+}
+.vybee-event-main{min-width:0}
+.vybee-event-main strong{display:block;font-size:11px}
+.vybee-event-main p{margin:4px 0 0;color:#737c83;font-size:8px;line-height:1.4}
+.vybee-event-rsvp{
+  display:flex;
+  gap:5px;
+}
+.vybee-event-rsvp button{
+  border:1px solid #2b3338;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:6px 8px;
+  cursor:pointer;
+  font-size:8px;
+}
+.vybee-event-rsvp .primary{
+  background:#39ff14;
+  color:#071006;
+  border-color:#39ff14;
+}
+.vybee-save-list{
+  display:grid;
+  gap:8px;
+}
+.vybee-save-row{
+  display:flex;
+  gap:9px;
+  align-items:flex-start;
+  padding:10px;
+  border:1px solid #242a2f;
+  border-radius:11px;
+  background:#101415;
+}
+.vybee-save-main{min-width:0;flex:1}
+.vybee-save-main strong{display:block;font-size:10px}
+.vybee-save-main span{display:block;margin-top:3px;color:#737c83;font-size:8px;line-height:1.45}
+.vybee-save-row button{
+  border:1px solid #2b3338;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:6px 8px;
+  cursor:pointer;
+  font-size:8px;
+}
+.vybee-pref-grid{
+  display:grid;
+  gap:8px;
+}
+.vybee-pref-row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  padding:11px;
+  border:1px solid #242a2f;
+  border-radius:10px;
+  background:#101415;
+}
+.vybee-pref-main{min-width:0;flex:1}
+.vybee-pref-main strong{display:block;font-size:10px}
+.vybee-pref-main span{display:block;margin-top:2px;color:#737c83;font-size:8px}
+.vybee-toggle{
+  width:40px;height:22px;
+  border:1px solid #2b3338;
+  border-radius:99px;
+  background:#161b1d;
+  position:relative;
+  cursor:pointer;
+}
+.vybee-toggle i{
+  position:absolute;
+  top:3px;left:3px;
+  width:14px;height:14px;
+  border-radius:50%;
+  background:#7b848a;
+  transition:left .15s;
+}
+.vybee-toggle.on{
+  border-color:#39ff14;
+  background:#182116;
+}
+.vybee-toggle.on i{
+  left:21px;
+  background:#39ff14;
+}
+@media(max-width:700px){
+  .vybee-event-card{grid-template-columns:54px 1fr}
+  .vybee-event-rsvp{grid-column:1/-1}
+}
+</style>
+
 </head>
 
 <body>
@@ -11079,6 +11277,9 @@ if(requestedLive){
       <nav class="vybee-home-nav">
         <button class="active" data-home-nav="home">
           <span class="nav-icon">⌂</span> Início
+        </button>
+        <button data-home-nav="feed">
+          <span class="nav-icon">⌁</span> Feed
         </button>
         <button data-home-nav="communities">
           <span class="nav-icon">♧</span> Comunidades
@@ -23290,6 +23491,684 @@ if(requestedLive){
       ){
         event.preventDefault();
         openSearch();
+      }
+    }
+  );
+
+})();
+</script>
+
+
+<script id="vybee-giant-platform-pack-controller">
+(function(){
+  let feedLikeState=new Map();
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){
+    return String(v??"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+  function showToast(message){
+    try{window.toast?.(message)}catch(_){}
+  }
+  function time(v){
+    const d=new Date(v);
+    return Number.isNaN(d.getTime())
+      ? ""
+      : d.toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"});
+  }
+
+  async function renderFeed(){
+    const client=sb();
+    const current=user();
+
+    showPage(
+      "Feed",
+      "Publicações recentes das pessoas e comunidades.",
+      `
+        <div class="vybee-feed">
+          <div class="vybee-compose">
+            <textarea id="vybeeFeedComposer" maxlength="2000" placeholder="O que você quer compartilhar?"></textarea>
+            <div class="vybee-compose-row">
+              <span class="muted">Compartilhe uma ideia, novidade ou atualização.</span>
+              <button type="button" class="btn green" id="vybeeFeedPublish">Publicar</button>
+            </div>
+          </div>
+          <div id="vybeeFeedList" class="vybee-feed">
+            <div class="vybee-modern-page-empty">Carregando feed...</div>
+          </div>
+        </div>
+      `
+    );
+
+    if(!client||!current){
+      el("vybeeFeedList").innerHTML=
+        '<div class="vybee-modern-page-empty">Faça login para usar o Feed.</div>';
+      return;
+    }
+
+    el("vybeeFeedPublish")?.addEventListener(
+      "click",
+      publishPost
+    );
+
+    await loadFeed();
+  }
+
+  async function loadFeed(){
+    const client=sb();
+    const list=el("vybeeFeedList");
+    if(!client||!list) return;
+
+    const {data,error}=
+      await client
+        .from("vybee_posts")
+        .select(
+          "id,author_id,content,created_at"
+        )
+        .order(
+          "created_at",
+          {ascending:false}
+        )
+        .limit(80);
+
+    if(error){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Execute o SQL desta etapa para ativar o Feed.</div>';
+      return;
+    }
+
+    const posts=data||[];
+    if(!posts.length){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Nenhuma publicação ainda.</div>';
+      return;
+    }
+
+    const ids=[
+      ...new Set(
+        posts.map(p=>p.author_id)
+      )
+    ];
+
+    const {data:profiles}=
+      await client
+        .from("profiles")
+        .select("id,display_name,username,avatar_url")
+        .in("id",ids);
+
+    const map=
+      new Map(
+        (profiles||[]).map(
+          p=>[p.id,p]
+        )
+      );
+
+    const postIds=posts.map(p=>p.id);
+
+    let reactions=[];
+    const r=
+      await client
+        .from("vybee_post_reactions")
+        .select("post_id,user_id")
+        .in("post_id",postIds);
+
+    reactions=r.data||[];
+
+    const counts=new Map();
+    reactions.forEach(row=>{
+      const item=counts.get(row.post_id)||{count:0,mine:false};
+      item.count++;
+      if(row.user_id===user()?.id) item.mine=true;
+      counts.set(row.post_id,item);
+    });
+
+    list.innerHTML=
+      posts.map(post=>{
+        const profile=map.get(post.author_id);
+        const stat=counts.get(post.id)||{count:0,mine:false};
+
+        return `
+          <article class="vybee-feed-card" data-feed-post="${esc(post.id)}">
+            <div class="vybee-feed-head">
+              <div class="vybee-feed-avatar">👤</div>
+              <div class="vybee-feed-user">
+                <strong>${esc(profile?.display_name||profile?.username||"Usuário")}</strong>
+                <span>${profile?.username?"@"+esc(profile.username)+" • ":""}${esc(time(post.created_at))}</span>
+              </div>
+            </div>
+            <div class="vybee-feed-body">${esc(post.content)}</div>
+            <div class="vybee-feed-actions">
+              <button type="button" class="${stat.mine?"active":""}" data-feed-like="${esc(post.id)}">
+                ❤️ ${stat.count}
+              </button>
+              <button type="button" data-feed-save="${esc(post.id)}">🔖 Salvar</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+    list.querySelectorAll("[data-feed-like]").forEach(
+      b=>b.addEventListener("click",()=>togglePostLike(b.dataset.feedLike))
+    );
+
+    list.querySelectorAll("[data-feed-save]").forEach(
+      b=>b.addEventListener("click",()=>savePost(b.dataset.feedSave))
+    );
+  }
+
+  async function publishPost(){
+    const client=sb();
+    const current=user();
+    const input=el("vybeeFeedComposer");
+    const content=input?.value.trim();
+
+    if(!client||!current||!content) return;
+
+    const {error}=
+      await client
+        .from("vybee_posts")
+        .insert({
+          author_id:current.id,
+          content
+        });
+
+    if(error){
+      showToast(error.message||"Não foi possível publicar.");
+      return;
+    }
+
+    input.value="";
+    showToast("✅ Publicação criada.");
+    window.vybeeAddActivity?.({
+      id:"feed-post:"+Date.now(),
+      icon:"📝",
+      title:"Nova publicação",
+      text:"Uma publicação foi criada no Feed."
+    });
+    await loadFeed();
+  }
+
+  async function togglePostLike(postId){
+    const client=sb();
+    const current=user();
+    if(!client||!current) return;
+
+    const {data:existing}=
+      await client
+        .from("vybee_post_reactions")
+        .select("id")
+        .eq("post_id",postId)
+        .eq("user_id",current.id)
+        .maybeSingle();
+
+    if(existing?.id){
+      await client
+        .from("vybee_post_reactions")
+        .delete()
+        .eq("id",existing.id);
+    }else{
+      const {error}=
+        await client
+          .from("vybee_post_reactions")
+          .insert({
+            post_id:postId,
+            user_id:current.id
+          });
+
+      if(error){
+        showToast(error.message||"Não foi possível reagir.");
+        return;
+      }
+    }
+
+    await loadFeed();
+  }
+
+  async function savePost(postId){
+    const client=sb();
+    const current=user();
+    if(!client||!current) return;
+
+    const {error}=
+      await client
+        .from("vybee_saved_posts")
+        .insert({
+          user_id:current.id,
+          post_id:postId
+        });
+
+    if(
+      error &&
+      !String(error.message||"").toLowerCase().includes("duplicate")
+    ){
+      showToast(error.message||"Não foi possível salvar.");
+      return;
+    }
+
+    showToast("🔖 Publicação salva.");
+  }
+
+  async function renderEventsReal(){
+    const client=sb();
+    const current=user();
+
+    showPage(
+      "Eventos",
+      "Eventos reais criados no VYBEE.",
+      `
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+          <button type="button" class="btn green" id="vybeeCreateEvent">➕ Criar evento</button>
+        </div>
+        <div id="vybeeEventList" class="vybee-event-list">
+          <div class="vybee-modern-page-empty">Carregando eventos...</div>
+        </div>
+      `
+    );
+
+    el("vybeeCreateEvent")?.addEventListener(
+      "click",
+      openEventCreator
+    );
+
+    if(!client||!current) return;
+
+    const {data,error}=
+      await client
+        .from("vybee_events")
+        .select(
+          "id,community_id,creator_id,title,description,event_at,location"
+        )
+        .gte(
+          "event_at",
+          new Date().toISOString()
+        )
+        .order(
+          "event_at",
+          {ascending:true}
+        )
+        .limit(50);
+
+    const list=el("vybeeEventList");
+
+    if(error){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Execute o SQL desta etapa para ativar Eventos.</div>';
+      return;
+    }
+
+    if(!data?.length){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Nenhum evento próximo.</div>';
+      return;
+    }
+
+    list.innerHTML=
+      data.map(event=>{
+        const d=new Date(event.event_at);
+        return `
+          <article class="vybee-event-card">
+            <div class="vybee-event-date">
+              <strong>${String(d.getDate()).padStart(2,"0")}</strong>
+              <span>${d.toLocaleString("pt-BR",{month:"short"}).toUpperCase()}</span>
+            </div>
+            <div class="vybee-event-main">
+              <strong>${esc(event.title)}</strong>
+              <p>${esc(event.description||"Evento VYBEE.")}${event.location?" • "+esc(event.location):""}</p>
+            </div>
+            <div class="vybee-event-rsvp">
+              <button type="button" class="primary" data-event-rsvp="${esc(event.id)}">✓ Participar</button>
+              <button type="button" data-event-save="${esc(event.id)}">🔖</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+    list.querySelectorAll("[data-event-rsvp]").forEach(
+      b=>b.addEventListener(
+        "click",
+        ()=>rsvpEvent(b.dataset.eventRsvp)
+      )
+    );
+  }
+
+  async function openEventCreator(){
+    const client=sb();
+    const current=user();
+    if(!client||!current) return;
+
+    const title=prompt("Nome do evento:");
+    if(!title?.trim()) return;
+
+    const when=prompt("Data/hora (AAAA-MM-DDTHH:MM):");
+    if(!when) return;
+
+    const description=prompt("Descrição:")||"";
+    const location=prompt("Local (opcional):")||"";
+
+    const eventAt=new Date(when);
+    if(Number.isNaN(eventAt.getTime())){
+      showToast("Data inválida.");
+      return;
+    }
+
+    const {error}=
+      await client
+        .from("vybee_events")
+        .insert({
+          creator_id:current.id,
+          title:title.trim(),
+          description:description.trim()||null,
+          event_at:eventAt.toISOString(),
+          location:location.trim()||null
+        });
+
+    if(error){
+      showToast(error.message||"Não foi possível criar.");
+      return;
+    }
+
+    showToast("✅ Evento criado.");
+    await renderEventsReal();
+  }
+
+  async function rsvpEvent(eventId){
+    const client=sb();
+    const current=user();
+    if(!client||!current) return;
+
+    const {error}=
+      await client
+        .from("vybee_event_rsvps")
+        .upsert({
+          event_id:eventId,
+          user_id:current.id,
+          status:"going"
+        },{
+          onConflict:"event_id,user_id"
+        });
+
+    if(error){
+      showToast(error.message||"Não foi possível confirmar presença.");
+      return;
+    }
+
+    showToast("✅ Presença confirmada.");
+  }
+
+  async function renderSaved(){
+    const client=sb();
+    const current=user();
+
+    showPage(
+      "Salvos",
+      "Publicações e itens que você guardou.",
+      '<div id="vybeeSavedList" class="vybee-save-list"><div class="vybee-modern-page-empty">Carregando...</div></div>'
+    );
+
+    if(!client||!current) return;
+
+    const {data,error}=
+      await client
+        .from("vybee_saved_posts")
+        .select(
+          "id,post_id,created_at,vybee_posts(id,author_id,content,created_at)"
+        )
+        .eq("user_id",current.id)
+        .order("created_at",{ascending:false})
+        .limit(100);
+
+    const list=el("vybeeSavedList");
+
+    if(error){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Execute o SQL desta etapa para ativar Salvos.</div>';
+      return;
+    }
+
+    if(!data?.length){
+      list.innerHTML=
+        '<div class="vybee-modern-page-empty">Nenhum item salvo.</div>';
+      return;
+    }
+
+    const ids=(data||[])
+      .map(x=>x.vybee_posts?.author_id)
+      .filter(Boolean);
+
+    const {data:profiles}=
+      await client
+        .from("profiles")
+        .select("id,display_name,username")
+        .in("id",ids);
+
+    const map=new Map((profiles||[]).map(p=>[p.id,p]));
+
+    list.innerHTML=
+      data.map(row=>{
+        const post=row.vybee_posts;
+        const profile=map.get(post?.author_id);
+
+        return `
+          <div class="vybee-save-row">
+            <div class="vybee-social-avatar">🔖</div>
+            <div class="vybee-save-main">
+              <strong>${esc(profile?.display_name||"Usuário")}</strong>
+              <span>${esc(post?.content||"")}</span>
+            </div>
+            <button type="button" data-unsave-post="${esc(row.id)}">Remover</button>
+          </div>
+        `;
+      }).join("");
+
+    list.querySelectorAll("[data-unsave-post]").forEach(
+      b=>b.addEventListener(
+        "click",
+        async()=>{
+          await client
+            .from("vybee_saved_posts")
+            .delete()
+            .eq("id",b.dataset.unsavePost)
+            .eq("user_id",current.id);
+
+          renderSaved();
+        }
+      )
+    );
+  }
+
+  async function renderPreferences(){
+    const client=sb();
+    const current=user();
+
+    showPage(
+      "Preferências",
+      "Controle a experiência e as notificações do VYBEE.",
+      `
+        <div class="vybee-pref-grid" id="vybeePreferences">
+          <div class="vybee-modern-page-empty">Carregando...</div>
+        </div>
+      `
+    );
+
+    if(!client||!current) return;
+
+    const {data}=await client
+      .from("user_preferences")
+      .select(
+        "notify_friend_requests,notify_messages,notify_lives,notify_events"
+      )
+      .eq("user_id",current.id)
+      .maybeSingle();
+
+    const prefs=data||{
+      notify_friend_requests:true,
+      notify_messages:true,
+      notify_lives:true,
+      notify_events:true
+    };
+
+    const items=[
+      ["notify_friend_requests","Solicitações de amizade","Avisar quando alguém enviar um pedido."],
+      ["notify_messages","Mensagens privadas","Avisar quando chegar uma DM."],
+      ["notify_lives","Lives","Avisar sobre transmissões relevantes."],
+      ["notify_events","Eventos","Avisar sobre eventos e lembretes."]
+    ];
+
+    el("vybeePreferences").innerHTML=
+      items.map(([key,title,desc])=>`
+        <div class="vybee-pref-row">
+          <div class="vybee-pref-main">
+            <strong>${title}</strong>
+            <span>${desc}</span>
+          </div>
+          <button
+            type="button"
+            class="vybee-toggle ${prefs[key]!==false?"on":""}"
+            data-pref-key="${key}"
+            aria-pressed="${prefs[key]!==false}"
+          ><i></i></button>
+        </div>
+      `).join("");
+
+    el("vybeePreferences")
+      .querySelectorAll("[data-pref-key]")
+      .forEach(
+        button=>{
+          button.addEventListener(
+            "click",
+            async()=>{
+              const key=button.dataset.prefKey;
+              const next=
+                !button.classList.contains("on");
+
+              button.classList.toggle(
+                "on",
+                next
+              );
+
+              await client
+                .from("user_preferences")
+                .upsert(
+                  {
+                    user_id:current.id,
+                    [key]:next
+                  },
+                  {
+                    onConflict:"user_id"
+                  }
+                );
+            }
+          );
+        }
+      );
+  }
+
+  function bindRouter(){
+    const originalOpen=
+      window.vybeeOpenDashboard;
+
+    /*
+     * Reforça rotas do pacote sem substituir o mecanismo legado.
+     */
+    document
+      .querySelectorAll(
+        '[data-home-nav="feed"]'
+      )
+      .forEach(
+        b=>{
+          b.addEventListener(
+            "click",
+            event=>{
+              event.preventDefault();
+              renderFeed();
+            }
+          );
+        }
+      );
+
+    /*
+     * O botão de Eventos usa a função nova quando clicado.
+     * Capture evita a rota antiga.
+     */
+    document
+      .querySelectorAll(
+        '[data-home-nav="events"]'
+      )
+      .forEach(
+        b=>{
+          b.addEventListener(
+            "click",
+            event=>{
+              event.preventDefault();
+              event.stopImmediatePropagation();
+              renderEventsReal();
+            },
+            true
+          );
+        }
+      );
+  }
+
+  function installShortcut(){
+    /*
+     * Adiciona um botão Salvos/Preferências dentro da página
+     * de Mensagens sem alterar o menu principal.
+     */
+    const oldRenderMessages=
+      window.vybeeRenderDirectMessages;
+
+    window.vybeeOpenSaved=
+      renderSaved;
+
+    window.vybeeOpenPreferences=
+      renderPreferences;
+  }
+
+  function wait(){
+    if(
+      sb()&&
+      user()
+    ){
+      bindRouter();
+      installShortcut();
+      return;
+    }
+    setTimeout(wait,500);
+  }
+
+  wait();
+
+  /*
+   * Atalhos:
+   * Ctrl+Shift+S = Salvos
+   * Ctrl+Shift+, = Preferências
+   */
+  document.addEventListener(
+    "keydown",
+    event=>{
+      if(
+        (event.ctrlKey||event.metaKey)&&
+        event.shiftKey&&
+        event.key.toLowerCase()==="s"
+      ){
+        event.preventDefault();
+        renderSaved();
+      }
+
+      if(
+        (event.ctrlKey||event.metaKey)&&
+        event.shiftKey&&
+        event.key===","
+      ){
+        event.preventDefault();
+        renderPreferences();
       }
     }
   );
