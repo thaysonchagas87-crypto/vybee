@@ -4937,6 +4937,55 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 }
 </style>
 
+
+<style id="vybee-final-mega-v10-style">
+.vybee-v10-overlay{position:fixed;inset:0;z-index:510;display:none;place-items:center;padding:14px;background:#000d}
+.vybee-v10-overlay.on{display:grid}
+.vybee-v10-modal{width:min(860px,100%);max-height:90vh;overflow:auto;background:#0b0f10;border:1px solid #2b3338;border-radius:18px;box-shadow:0 35px 110px #000e}
+.vybee-v10-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #20272b}
+.vybee-v10-head h2{margin:0;font-size:16px}.vybee-v10-head p{margin:3px 0 0;color:#737c83;font-size:8px}.vybee-v10-head button{margin-left:auto}
+.vybee-v10-body{padding:14px 16px 18px}
+.vybee-v10-grid{display:grid;gap:8px}
+.vybee-v10-card{padding:10px;border:1px solid #252c31;border-radius:11px;background:#101415}
+.vybee-v10-row{display:flex;align-items:center;gap:8px}
+.vybee-v10-main{min-width:0;flex:1}.vybee-v10-main strong{display:block;font-size:9px}.vybee-v10-main span{display:block;margin-top:2px;color:#737c83;font-size:7px}
+.vybee-v10-btn{border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:8px}
+.vybee-v10-btn.primary{border-color:#39ff14;background:#39ff14;color:#071006}.vybee-v10-btn.danger:hover{border-color:#ff4d4d}
+.vybee-v10-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.vybee-v10-kpi{padding:10px;text-align:center;border:1px solid #242a2f;border-radius:9px;background:#111516}
+.vybee-v10-kpi strong{display:block;font-size:14px}.vybee-v10-kpi span{display:block;margin-top:2px;color:#6f787e;font-size:7px}
+.vybee-v10-table{display:grid;gap:6px}.vybee-v10-table-row{display:grid;grid-template-columns:1.2fr 1fr 90px 80px;gap:7px;align-items:center;padding:8px;border:1px solid #242a2f;border-radius:8px;background:#101415}
+.vybee-v10-table-row span{font-size:8px}.vybee-v10-table-row small{font-size:7px;color:#687178}
+.vybee-v10-textarea,.vybee-v10-input,.vybee-v10-select{width:100%;box-sizing:border-box;padding:9px;border:1px solid #2a3136;border-radius:8px;background:#101415;color:#fff}
+.vybee-v10-form{display:grid;gap:7px}.vybee-v10-actions{display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.vybee-v10-toast{position:fixed;right:16px;bottom:16px;z-index:530;display:none;max-width:min(360px,calc(100vw - 32px));padding:10px 12px;border:1px solid #2b3338;border-radius:10px;background:#101415;box-shadow:0 20px 60px #000b;color:#e9edef;font-size:9px}
+.vybee-v10-toast.on{display:block}
+.vybee-v10-empty{padding:16px;border:1px dashed #2a3136;border-radius:10px;color:#727b82;text-align:center;font-size:8px}
+.vybee-v10-health{display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid #252c31;border-radius:8px;background:#0f1314}
+.vybee-v10-health i{width:8px;height:8px;border-radius:50%;background:#39ff14}.vybee-v10-health.warn i{background:#f0b400}.vybee-v10-health.bad i{background:#ff4d4d}
+.vybee-v10-health-main{min-width:0;flex:1}.vybee-v10-health-main strong{display:block;font-size:8px}.vybee-v10-health-main span{display:block;margin-top:2px;color:#737c83;font-size:7px}
+@media(max-width:700px){
+  .vybee-v10-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .vybee-v10-table-row{grid-template-columns:1fr}
+}
+</style>
+
+
+<style id="vybee-all-in-one-v11-style">
+.v11-grid{display:grid;gap:9px}.v11-card{padding:11px;border:1px solid #252c31;border-radius:12px;background:#101415}
+.v11-row{display:flex;gap:8px;align-items:center}.v11-main{min-width:0;flex:1}
+.v11-main strong{display:block;font-size:9px}.v11-main span{display:block;margin-top:2px;color:#737c83;font-size:7px}
+.v11-btn{border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:8px}
+.v11-btn.primary{border-color:#39ff14;background:#39ff14;color:#071006}.v11-btn.danger:hover{border-color:#ff4d4d}
+.v11-tabs{display:flex;gap:5px;flex-wrap:wrap}.v11-tab{border:1px solid #2b3338;background:#111516;color:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:8px}.v11-tab.active{border-color:#39ff14;background:#142013}
+.v11-table{display:grid;gap:5px}.v11-table-row{display:grid;grid-template-columns:1fr 110px 100px;gap:7px;align-items:center;padding:8px;border:1px solid #242a2f;border-radius:8px;background:#101415}
+.v11-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 5px;border-radius:999px;background:#39ff14;color:#071006;font-size:7px;font-weight:900}
+.v11-switch{width:40px;height:22px;border-radius:99px;border:1px solid #2b3338;background:#171b1e;position:relative;cursor:pointer}.v11-switch i{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#737c83;transition:left .15s}.v11-switch.on{border-color:#39ff14;background:#142013}.v11-switch.on i{left:21px;background:#39ff14}
+.v11-progress{height:6px;border-radius:99px;background:#242a2f;overflow:hidden}.v11-progress i{display:block;height:100%;background:#39ff14;width:0}
+.v11-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.v11-stat{padding:9px;text-align:center;border:1px solid #242a2f;border-radius:9px;background:#111516}.v11-stat strong{display:block;font-size:13px}.v11-stat span{display:block;margin-top:2px;color:#6f787e;font-size:7px}
+@media(max-width:700px){.v11-stat-grid{grid-template-columns:repeat(2,1fr)}.v11-table-row{grid-template-columns:1fr}}
+</style>
+
 </head>
 
 <body>
@@ -26338,6 +26387,505 @@ if(requestedLive){
 
   window.vybeeOpenChannelToolsV9=openChannelTools;
   start();
+})();
+</script>
+
+
+<div class="vybee-v10-overlay" id="vybeeV10AdminPanel">
+  <div class="vybee-v10-modal">
+    <div class="vybee-v10-head">
+      <div><h2>🧰 Painel Geral VYBEE</h2><p>Administração, saúde do sistema e ferramentas avançadas.</p></div>
+      <button type="button" class="btn" id="vybeeV10AdminClose">✕</button>
+    </div>
+    <div class="vybee-v10-body">
+      <div id="vybeeV10AdminKpis" class="vybee-v10-kpi-grid"></div>
+      <div class="section" style="margin-top:14px">SAÚDE</div>
+      <div id="vybeeV10Health" class="vybee-v10-grid"></div>
+      <div class="section" style="margin-top:14px">FERRAMENTAS</div>
+      <div class="vybee-v10-actions" style="justify-content:flex-start">
+        <button type="button" class="vybee-v10-btn" id="vybeeV10OpenReports">🚩 Denúncias</button>
+        <button type="button" class="vybee-v10-btn" id="vybeeV10OpenLogs">📋 Logs</button>
+        <button type="button" class="vybee-v10-btn" id="vybeeV10ExportData">💾 Exportar dados</button>
+        <button type="button" class="vybee-v10-btn" id="vybeeV10ClearCache">🧹 Limpar cache local</button>
+      </div>
+      <div id="vybeeV10AdminStatus" class="muted" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="vybee-v10-overlay" id="vybeeV10LogsPanel">
+  <div class="vybee-v10-modal">
+    <div class="vybee-v10-head">
+      <div><h2>📋 Logs da conta</h2><p>Atividade recente registrada pelo VYBEE.</p></div>
+      <button type="button" class="btn" id="vybeeV10LogsClose">✕</button>
+    </div>
+    <div class="vybee-v10-body">
+      <div id="vybeeV10LogsList" class="vybee-v10-grid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="vybee-v10-overlay" id="vybeeV10OnboardingPanel">
+  <div class="vybee-v10-modal">
+    <div class="vybee-v10-head">
+      <div><h2>🐝 Bem-vindo ao VYBEE</h2><p>Configuração inicial rápida.</p></div>
+      <button type="button" class="btn" id="vybeeV10OnboardClose">✕</button>
+    </div>
+    <div class="vybee-v10-body">
+      <div class="vybee-v10-grid">
+        <div class="vybee-v10-card"><strong style="font-size:10px">1. Complete seu perfil</strong><div class="muted" style="margin-top:3px">Foto, nome e bio.</div></div>
+        <div class="vybee-v10-card"><strong style="font-size:10px">2. Encontre pessoas</strong><div class="muted" style="margin-top:3px">Use a busca e adicione amigos.</div></div>
+        <div class="vybee-v10-card"><strong style="font-size:10px">3. Entre em comunidades</strong><div class="muted" style="margin-top:3px">Explore e participe das comunidades.</div></div>
+        <div class="vybee-v10-card"><strong style="font-size:10px">4. Converse e compartilhe</strong><div class="muted" style="margin-top:3px">Use chat, DMs, eventos, mídia e LIVE.</div></div>
+      </div>
+      <div class="vybee-v10-actions" style="margin-top:11px">
+        <button type="button" class="vybee-v10-btn primary" id="vybeeV10OnboardDone">Começar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="vybee-v10-toast" id="vybeeV10Toast"></div>
+
+
+<script id="vybee-final-mega-v10-controller">
+(function(){
+  let toastTimer=null;
+
+  const baseNav=[
+    ["🏠","Início","home"],
+    ["⌁","Feed","feed"],
+    ["♧","Comunidades","communities"],
+    ["♙","Amigos","friends"],
+    ["▱","Mensagens","messages"],
+    ["●","Lives","lives"],
+    ["♛","Eventos","events"],
+    ["⌕","Explorar","explore"]
+  ];
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+  function showToast(msg){
+    const node=el("vybeeV10Toast"); if(!node)return;
+    node.textContent=msg; node.classList.add("on");
+    clearTimeout(toastTimer); toastTimer=setTimeout(()=>node.classList.remove("on"),2600);
+  }
+
+  // ---------- Account/system dashboard ----------
+  async function openAdmin(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    el("vybeeV10AdminPanel")?.classList.add("on");
+    await refreshAdmin();
+  }
+
+  async function refreshAdmin(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+
+    const [
+      friendRes,
+      communityRes,
+      eventRes,
+      notifRes
+    ]=await Promise.all([
+      client.from("friendships").select("id",{count:"exact",head:true}).eq("status","accepted").or(`user_a.eq.${current.id},user_b.eq.${current.id}`),
+      client.from("community_members").select("id",{count:"exact",head:true}).eq("user_id",current.id),
+      client.from("vybee_events").select("id",{count:"exact",head:true}).gte("event_at",new Date().toISOString()),
+      client.from("notifications").select("id",{count:"exact",head:true}).eq("user_id",current.id).eq("is_read",false)
+    ]);
+
+    el("vybeeV10AdminKpis").innerHTML=[
+      ["👥",friendRes.count||0,"Amigos"],
+      ["♧",communityRes.count||0,"Comunidades"],
+      ["📅",eventRes.count||0,"Próximos eventos"],
+      ["🔔",notifRes.count||0,"Não lidas"]
+    ].map(x=>`<div class="vybee-v10-kpi"><strong>${x[0]} ${Number(x[1])}</strong><span>${x[2]}</span></div>`).join("");
+
+    const checks=[
+      ["Banco","Supabase acessível",!friendRes.error],
+      ["Sessão","Usuário autenticado",!!current],
+      ["Notificações","Tabela disponível",!notifRes.error],
+      ["Comunidades","Membros acessíveis",!communityRes.error]
+    ];
+
+    el("vybeeV10Health").innerHTML=checks.map(c=>`
+      <div class="vybee-v10-health ${c[2]?"":"bad"}">
+        <i></i><div class="vybee-v10-health-main"><strong>${c[0]}</strong><span>${esc(c[1])}</span></div>
+        <span>${c[2]?"OK":"ERRO"}</span>
+      </div>
+    `).join("");
+  }
+
+  async function exportAccountData(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    const status=el("vybeeV10AdminStatus");
+    status.textContent="Preparando exportação...";
+
+    try{
+      const [profile,notifications,friends,requests]=await Promise.all([
+        client.from("profiles").select("*").eq("id",current.id).maybeSingle(),
+        client.from("notifications").select("*").eq("user_id",current.id).limit(500),
+        client.from("friendships").select("*").or(`user_a.eq.${current.id},user_b.eq.${current.id}`).limit(500),
+        client.from("friend_requests").select("*").or(`sender_id.eq.${current.id},receiver_id.eq.${current.id}`).limit(500)
+      ]);
+
+      const payload={
+        exported_at:new Date().toISOString(),
+        profile:profile.data||null,
+        notifications:notifications.data||[],
+        friendships:friends.data||[],
+        friend_requests:requests.data||[]
+      };
+
+      const blob=new Blob(
+        [JSON.stringify(payload,null,2)],
+        {type:"application/json"}
+      );
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;a.download="vybee-account-export.json";a.click();
+      URL.revokeObjectURL(url);
+      status.textContent="✅ Exportação concluída.";
+    }catch(error){
+      status.textContent="❌ Não foi possível exportar.";
+    }
+  }
+
+  function clearLocalCache(){
+    try{
+      const keep=["vybee_auth","vybee_remember"];
+      const saved={};
+      keep.forEach(k=>{const v=localStorage.getItem(k);if(v!==null)saved[k]=v});
+      localStorage.clear();
+      Object.entries(saved).forEach(([k,v])=>localStorage.setItem(k,v));
+      showToast("🧹 Cache local limpo.");
+    }catch(_){}
+  }
+
+  // ---------- Logs ----------
+  async function openLogs(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    el("vybeeV10LogsPanel")?.classList.add("on");
+
+    const list=el("vybeeV10LogsList");
+    list.innerHTML='<div class="vybee-v10-empty">Carregando...</div>';
+
+    const {data,error}=await client.from("community_moderation_actions")
+      .select("id,community_id,action,duration_minutes,created_at,reason")
+      .eq("moderator_id",current.id)
+      .order("created_at",{ascending:false})
+      .limit(80);
+
+    if(error){
+      list.innerHTML='<div class="vybee-v10-empty">Nenhum log administrativo disponível.</div>';
+      return;
+    }
+
+    if(!data?.length){
+      list.innerHTML='<div class="vybee-v10-empty">Nenhuma ação registrada nesta conta.</div>';
+      return;
+    }
+
+    list.innerHTML=data.map(row=>`
+      <div class="vybee-v10-card">
+        <div class="vybee-v10-row">
+          <div class="vybee-social-avatar">🛡️</div>
+          <div class="vybee-v10-main">
+            <strong>${esc(row.action)}</strong>
+            <span>${esc(new Date(row.created_at).toLocaleString("pt-BR"))}${row.duration_minutes?" • "+row.duration_minutes+" min":""}${row.reason?" • "+esc(row.reason):""}</span>
+          </div>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  // ---------- Onboarding ----------
+  async function maybeOnboard(){
+    const current=user();
+    if(!current)return;
+    const key="vybee_onboard_done_"+current.id;
+    if(localStorage.getItem(key)==="1")return;
+
+    try{
+      const {data}=await sb().from("profiles").select("display_name,username,bio").eq("id",current.id).maybeSingle();
+      const complete=!!(
+        data?.display_name &&
+        (data?.username||data?.bio)
+      );
+      if(!complete){
+        el("vybeeV10OnboardingPanel")?.classList.add("on");
+      }else{
+        localStorage.setItem(key,"1");
+      }
+    }catch(_){}
+  }
+
+  // ---------- DM enhancements bridges ----------
+  function bridgeDMState(){
+    const input=el("vybeeDmInput");
+    if(input){
+      const form=el("vybeeDmForm");
+      if(form&&!form.querySelector(".vybee-v10-dm-tools")){
+        const tools=document.createElement("div");
+        tools.className="vybee-v10-dm-tools";
+        tools.style.cssText="display:flex;gap:5px;margin-bottom:6px";
+        tools.innerHTML='<button type="button" class="vybee-v10-btn" id="vybeeV10DmRead">✓ Marcar como lida</button>';
+        form.parentElement.insertBefore(tools,form);
+        tools.querySelector("#vybeeV10DmRead").onclick=()=>{
+          document.dispatchEvent(new CustomEvent("vybee-dm-read-request"));
+          showToast("✓ Conversa marcada como lida.");
+        };
+      }
+    }
+  }
+
+  // ---------- Community quick actions ----------
+  function addCommunityToolbar(){
+    document.querySelectorAll('[data-vybee-open-audit]').forEach(btn=>{
+      if(btn.dataset.v10Bound)return;
+      btn.dataset.v10Bound="1";
+      const communityId=btn.dataset.vybeeOpenAudit;
+      const extra=document.createElement("button");
+      extra.className="vybee-modern-page-button";
+      extra.textContent="🧰 Painel";
+      extra.onclick=()=>{
+        if(window.vybeeOpenCommunityDashboardV8){
+          window.vybeeOpenCommunityDashboardV8(
+            window.vybeeGetCurrentCommunity?.()||{id:communityId,name:"Comunidade"}
+          );
+        }
+      };
+      btn.parentElement?.appendChild(extra);
+    });
+  }
+
+  function bind(){
+    el("vybeeV10AdminClose")?.addEventListener("click",()=>el("vybeeV10AdminPanel")?.classList.remove("on"));
+    el("vybeeV10AdminPanel")?.addEventListener("click",e=>{if(e.target.id==="vybeeV10AdminPanel")e.currentTarget.classList.remove("on")});
+    el("vybeeV10LogsClose")?.addEventListener("click",()=>el("vybeeV10LogsPanel")?.classList.remove("on"));
+    el("vybeeV10OpenLogs")?.addEventListener("click",openLogs);
+    el("vybeeV10OpenReports")?.addEventListener("click",()=>window.vybeeOpenReportsCenterV8?.());
+    el("vybeeV10ExportData")?.addEventListener("click",exportAccountData);
+    el("vybeeV10ClearCache")?.addEventListener("click",clearLocalCache);
+    el("vybeeV10OnboardClose")?.addEventListener("click",()=>el("vybeeV10OnboardingPanel")?.classList.remove("on"));
+    el("vybeeV10OnboardDone")?.addEventListener("click",()=>{
+      const current=user();
+      if(current)localStorage.setItem("vybee_onboard_done_"+current.id,"1");
+      el("vybeeV10OnboardingPanel")?.classList.remove("on");
+      window.vybeeOpenProfileEditor?.();
+    });
+
+    [el("vybeeV10AdminPanel"),el("vybeeV10LogsPanel"),el("vybeeV10OnboardingPanel")].forEach(panel=>{
+      panel?.addEventListener("click",e=>{
+        if(e.target===panel)panel.classList.remove("on");
+      });
+    });
+
+    document.addEventListener("keydown",e=>{
+      if(e.key==="Escape"){
+        [el("vybeeV10AdminPanel"),el("vybeeV10LogsPanel"),el("vybeeV10OnboardingPanel")].forEach(x=>x?.classList.remove("on"));
+      }
+    });
+
+    window.vybeeOpenFinalAdminPanel=openAdmin;
+    window.vybeeShowFinalToast=showToast;
+
+    const observer=new MutationObserver(()=>{
+      bridgeDMState();
+      addCommunityToolbar();
+    });
+    observer.observe(document.body,{childList:true,subtree:true});
+
+    setInterval(bridgeDMState,1000);
+    setInterval(addCommunityToolbar,1000);
+  }
+
+  function wait(){
+    if(sb()&&user()){
+      bind();
+      maybeOnboard();
+      return;
+    }
+    setTimeout(wait,600);
+  }
+
+  wait();
+})();
+</script>
+
+
+<div class="vybee-v10-overlay" id="vybeeV11Center">
+  <div class="vybee-v10-modal">
+    <div class="vybee-v10-head">
+      <div><h2>🚀 Central VYBEE</h2><p>Controle unificado da plataforma.</p></div>
+      <button type="button" class="btn" id="vybeeV11CenterClose">✕</button>
+    </div>
+    <div class="vybee-v10-body">
+      <div class="v11-stat-grid" id="vybeeV11Stats"></div>
+      <div class="section" style="margin-top:14px">MÓDULOS</div>
+      <div class="v11-tabs" id="vybeeV11Modules"></div>
+      <div id="vybeeV11ModuleBody" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+
+<script id="vybee-all-in-one-v11-controller">
+(function(){
+  const modules=[
+    ["👤","Conta","account"],
+    ["🔔","Notificações","notifications"],
+    ["👥","Amigos","friends"],
+    ["💬","Mensagens","messages"],
+    ["♧","Comunidades","communities"],
+    ["🛡️","Moderação","moderation"],
+    ["📊","Relatórios","reports"],
+    ["⚙️","Preferências","preferences"],
+  ];
+  let active="account";
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+  function toastSafe(v){try{window.toast?.(v)}catch(_){}}
+
+  async function openCenter(){
+    el("vybeeV11Center")?.classList.add("on");
+    renderModules();
+    await loadStats();
+    await renderModule(active);
+  }
+  function closeCenter(){el("vybeeV11Center")?.classList.remove("on")}
+
+  function renderModules(){
+    const box=el("vybeeV11Modules"); if(!box)return;
+    box.innerHTML=modules.map(([icon,label,key])=>
+      `<button type="button" class="v11-tab ${active===key?"active":""}" data-v11-module="${key}">${icon} ${label}</button>`
+    ).join("");
+    box.querySelectorAll("[data-v11-module]").forEach(b=>{
+      b.onclick=async()=>{
+        active=b.dataset.v11Module;
+        renderModules();
+        await renderModule(active);
+      };
+    });
+  }
+
+  async function loadStats(){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    const [n,f,c,e]=await Promise.all([
+      client.from("notifications").select("id",{count:"exact",head:true}).eq("user_id",current.id).eq("is_read",false),
+      client.from("friendships").select("id",{count:"exact",head:true}).eq("status","accepted").or(`user_a.eq.${current.id},user_b.eq.${current.id}`),
+      client.from("community_members").select("id",{count:"exact",head:true}).eq("user_id",current.id),
+      client.from("vybee_events").select("id",{count:"exact",head:true}).gte("event_at",new Date().toISOString())
+    ]);
+    el("vybeeV11Stats").innerHTML=[
+      ["🔔",n.count||0,"Não lidas"],["👥",f.count||0,"Amigos"],["♧",c.count||0,"Comunidades"],["📅",e.count||0,"Eventos"]
+    ].map(x=>`<div class="v11-stat"><strong>${x[0]} ${Number(x[1])}</strong><span>${x[2]}</span></div>`).join("");
+  }
+
+  async function renderModule(key){
+    const body=el("vybeeV11ModuleBody"); if(!body)return;
+    const client=sb(), current=user();
+    if(!client||!current){body.innerHTML='<div class="v11-card">Faça login.</div>';return}
+
+    if(key==="account"){
+      const {data}=await client.from("profiles").select("display_name,username,bio,avatar_url").eq("id",current.id).maybeSingle();
+      body.innerHTML=`
+        <div class="v11-grid">
+          <div class="v11-card"><div class="v11-row"><div class="vybee-social-avatar">👤</div><div class="v11-main"><strong>${esc(data?.display_name||"Usuário")}</strong><span>${data?.username?"@"+esc(data.username):"sem username"}</span></div></div><div style="margin-top:8px;color:#c8cdd1;font-size:8px;line-height:1.4">${esc(data?.bio||"Sem bio.")}</div></div>
+          <div class="v11-card"><div class="v11-row"><div class="v11-main"><strong>Perfil</strong><span>Edite foto, nome, usuário e bio.</span></div><button type="button" class="v11-btn primary" id="v11EditProfile">✏️ Editar</button></div></div>
+          <div class="v11-card"><div class="v11-row"><div class="v11-main"><strong>Segurança</strong><span>Abra a central de segurança.</span></div><button type="button" class="v11-btn" id="v11Security">🔐 Abrir</button></div></div>
+        </div>`;
+      el("v11EditProfile")?.addEventListener("click",()=>window.vybeeOpenProfileEditor?.());
+      el("v11Security")?.addEventListener("click",()=>window.vybeeOpenSecurityCenter?.());
+      return;
+    }
+
+    if(key==="notifications"){
+      const {data,error}=await client.from("notifications").select("id,title,body,is_read,created_at").eq("user_id",current.id).order("created_at",{ascending:false}).limit(30);
+      if(error){body.innerHTML='<div class="v11-card">Não foi possível carregar notificações.</div>';return}
+      body.innerHTML=`<div class="v11-grid">${(data||[]).map(n=>`
+        <div class="v11-card"><div class="v11-row"><div class="v11-main"><strong>${esc(n.title||"Notificação")}</strong><span>${esc(n.body||"")} • ${new Date(n.created_at).toLocaleString("pt-BR")}</span></div><span class="v11-badge">${n.is_read?"LIDA":"NOVA"}</span></div></div>
+      `).join("")||'<div class="v11-card">Nenhuma notificação.</div>'}</div>`;
+      return;
+    }
+
+    if(key==="friends"){
+      const {data,error}=await client.from("friend_requests").select("id,sender_id,status,created_at").eq("receiver_id",current.id).eq("status","pending").limit(50);
+      const pending=data||[];
+      body.innerHTML=`<div class="v11-card"><div class="v11-row"><div class="v11-main"><strong>Solicitações pendentes</strong><span>${pending.length} solicitação(ões)</span></div><button type="button" class="v11-btn" id="v11Friends">👥 Abrir Amigos</button></div></div>`;
+      el("v11Friends")?.addEventListener("click",()=>window.vybeeOpenSocialFriends?.());
+      return;
+    }
+
+    if(key==="messages"){
+      body.innerHTML=`
+        <div class="v11-grid">
+          <div class="v11-card"><div class="v11-row"><div class="v11-main"><strong>Mensagens privadas</strong><span>Conversas 1×1 em tempo real.</span></div><button type="button" class="v11-btn primary" id="v11DM">💬 Abrir DMs</button></div></div>
+          <div class="v11-card"><div class="v11-row"><div class="v11-main"><strong>Pesquisa e histórico</strong><span>Use o chat e as ferramentas do canal.</span></div><button type="button" class="v11-btn" id="v11Feed">⌕ Buscar</button></div></div>
+        </div>`;
+      el("v11DM")?.addEventListener("click",()=>window.vybeeRenderDirectMessages?.());
+      el("v11Feed")?.addEventListener("click",()=>window.vybeeOpenCommandPalette?.());
+      return;
+    }
+
+    if(key==="communities"){
+      const {data,error}=await client.from("community_members").select("community_id,role").eq("user_id",current.id).limit(100);
+      if(error){body.innerHTML='<div class="v11-card">Não foi possível carregar comunidades.</div>';return}
+      const ids=(data||[]).map(x=>x.community_id);
+      const {data:comms}=ids.length?await client.from("communities").select("id,name,description").in("id",ids):{data:[]};
+      body.innerHTML=`<div class="v11-grid">${(comms||[]).map(c=>`<div class="v11-card"><div class="v11-row"><div class="v11-main"><strong>${esc(c.name)}</strong><span>${esc(c.description||"Comunidade")}</span></div><button type="button" class="v11-btn" data-v11-community="${esc(c.id)}">Abrir</button></div></div>`).join("")||'<div class="v11-card">Nenhuma comunidade.</div>'}</div>`;
+      body.querySelectorAll("[data-v11-community]").forEach(b=>b.onclick=async()=>{
+        const c=(comms||[]).find(x=>String(x.id)===String(b.dataset.v11Community));
+        closeCenter(); window.vybeeOpenModernCommunity?.(c);
+      });
+      return;
+    }
+
+    if(key==="moderation"){
+      const {data}=await client.from("community_moderation_actions").select("action,created_at,duration_minutes,community_id").eq("moderator_id",current.id).order("created_at",{ascending:false}).limit(20);
+      body.innerHTML=`<div class="v11-table">${(data||[]).map(r=>`<div class="v11-table-row"><span>🛡️ ${esc(r.action)}</span><small>${new Date(r.created_at).toLocaleString("pt-BR")}</small><small>${r.duration_minutes?r.duration_minutes+" min":""}</small></div>`).join("")||'<div class="v11-card">Nenhuma ação de moderação.</div>'}</div>`;
+      return;
+    }
+
+    if(key==="reports"){
+      const {data,error}=await client.from("user_reports").select("id,reason,status,created_at").order("created_at",{ascending:false}).limit(30);
+      if(error){body.innerHTML='<div class="v11-card">Central de denúncias disponível somente para staff.</div>';return}
+      body.innerHTML=`<div class="v11-table">${(data||[]).map(r=>`<div class="v11-table-row"><span>🚩 ${esc(r.reason)}</span><small>${esc(r.status)}</small><small>${new Date(r.created_at).toLocaleDateString("pt-BR")}</small></div>`).join("")||'<div class="v11-card">Nenhuma denúncia.</div>'}</div>`;
+      return;
+    }
+
+    if(key==="preferences"){
+      const {data}=await client.from("user_preferences").select("notify_friend_requests,notify_messages,notify_lives,notify_events,show_online_status,allow_friend_requests,allow_dm_from_nonfriends").eq("user_id",current.id).maybeSingle();
+      const p=data||{};
+      const items=[
+        ["notify_friend_requests","Solicitações"],["notify_messages","Mensagens"],["notify_lives","Lives"],["notify_events","Eventos"],
+        ["show_online_status","Status online"],["allow_friend_requests","Pedidos"],["allow_dm_from_nonfriends","DM não-amigos"]
+      ];
+      body.innerHTML=`<div class="v11-grid">${items.map(([k,l])=>`<div class="v11-card"><div class="v11-row"><div class="v11-main"><strong>${l}</strong><span>Ativar/desativar</span></div><button type="button" class="v11-switch ${p[k]!==false?"on":""}" data-v11-switch="${k}" data-val="${p[k]!==false}"><i></i></button></div></div>`).join("")}</div>`;
+      body.querySelectorAll("[data-v11-switch]").forEach(b=>b.onclick=async()=>{
+        const next=b.dataset.val!=="true";b.dataset.val=String(next);b.classList.toggle("on",next);
+        await client.from("user_preferences").upsert({user_id:current.id,[b.dataset.v11Switch]:next},{onConflict:"user_id"});
+      });
+      return;
+    }
+  }
+
+  function bind(){
+    el("vybeeV11CenterClose")?.addEventListener("click",closeCenter);
+    el("vybeeV11Center")?.addEventListener("click",e=>{if(e.target.id==="vybeeV11Center")closeCenter()});
+    document.addEventListener("keydown",e=>{if(e.key==="Escape")closeCenter()});
+    window.vybeeOpenFinalCenter=openCenter;
+  }
+  bind();
 })();
 </script>
 
