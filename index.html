@@ -4902,6 +4902,41 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 }
 </style>
 
+
+<style id="vybee-giant-v9-style">
+.vybee-channel-toolbar-v9{
+  display:flex;gap:5px;align-items:center;flex-wrap:wrap;
+  padding:7px 10px;border-bottom:1px solid #22282d;background:#0d1112
+}
+.vybee-channel-toolbar-v9 button{
+  border:1px solid #2b3338;background:#171b1e;color:#fff;border-radius:7px;
+  padding:6px 8px;cursor:pointer;font-size:8px
+}
+.vybee-channel-toolbar-v9 button:hover{border-color:#53ff1a}
+.vybee-poll-card-v9{
+  margin-top:7px;padding:8px;border:1px solid #2a3136;border-radius:9px;
+  background:#111516
+}
+.vybee-poll-card-v9 strong{display:block;font-size:9px}
+.vybee-poll-option-v9{
+  display:flex;gap:7px;align-items:center;margin-top:6px;padding:7px;
+  border:1px solid #242a2f;border-radius:7px;background:#151a1c;cursor:pointer
+}
+.vybee-poll-option-v9:hover{border-color:#53ff1a}
+.vybee-poll-option-v9.voted{border-color:#39ff14;background:#132013}
+.vybee-poll-progress-v9{height:4px;background:#252c31;border-radius:99px;overflow:hidden;margin-top:4px}
+.vybee-poll-progress-v9 i{display:block;height:100%;background:#39ff14}
+.vybee-poll-meta-v9{margin-top:5px;color:#69737a;font-size:7px}
+.vybee-pin-pill-v9{
+  display:inline-flex;align-items:center;gap:4px;margin:4px 0 0;
+  padding:3px 5px;border-radius:5px;background:#171d18;color:#96a29a;font-size:7px
+}
+.vybee-dm-unread-badge-v9{
+  min-width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:999px;background:#39ff14;color:#071006;font-size:7px;font-weight:900
+}
+</style>
+
 </head>
 
 <body>
@@ -26094,6 +26129,215 @@ if(requestedLive){
   }
 
   bind();
+})();
+</script>
+
+
+<script id="vybee-giant-v9-controller">
+(function(){
+  let channelId=null;
+  let pollCache=new Map();
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+  function toastSafe(v){try{window.toast?.(v)}catch(_){}}
+
+  async function openChannelTools(id,name){
+    channelId=id;
+    showPage(
+      "# "+(name||"canal"),
+      "Ferramentas do canal.",
+      `
+        <div class="vybee-v8-grid">
+          <div class="vybee-v8-card">
+            <div class="vybee-channel-toolbar-v9">
+              <button id="vybeeV9Search">🔎 Pesquisar</button>
+              <button id="vybeeV9Pinned">📌 Fixadas</button>
+              <button id="vybeeV9Poll">📊 Enquete</button>
+            </div>
+            <div class="muted" style="margin-top:8px">
+              Acesse rapidamente recursos avançados deste canal.
+            </div>
+          </div>
+        </div>
+      `
+    );
+    el("vybeeV9Search")?.addEventListener(
+      "click",
+      ()=>window.vybeeOpenMessageSearchV8?.(id,name)
+    );
+    el("vybeeV9Pinned")?.addEventListener(
+      "click",
+      ()=>window.vybeeOpenMessageSearchV8?.(id,name)
+    );
+    el("vybeeV9Poll")?.addEventListener(
+      "click",
+      ()=>window.vybeeOpenPollCreatorV8?.(id)
+    );
+  }
+
+  async function loadPoll(pollId){
+    const client=sb(), current=user();
+    if(!client||!pollId)return null;
+    const {data,error}=await client.from("message_polls")
+      .select("id,channel_id,question,options,closed,creator_id,created_at")
+      .eq("id",pollId).maybeSingle();
+    if(error||!data)return null;
+
+    const {data:votes}=await client.from("message_poll_votes")
+      .select("user_id,option_index")
+      .eq("poll_id",pollId);
+
+    const options=Array.isArray(data.options)?data.options:[];
+    const counts=options.map(()=>0);
+    let mine=null;
+    (votes||[]).forEach(v=>{
+      if(counts[v.option_index]!=null)counts[v.option_index]++;
+      if(v.user_id===current?.id)mine=v.option_index;
+    });
+
+    const total=(votes||[]).length;
+    pollCache.set(pollId,{data,counts,total,mine});
+    return pollCache.get(pollId);
+  }
+
+  async function renderPollInto(node,pollId){
+    const state=await loadPoll(pollId);
+    if(!state||!node)return;
+    const options=Array.isArray(state.data.options)?state.data.options:[];
+    node.innerHTML=`
+      <div class="vybee-poll-card-v9">
+        <strong>📊 ${esc(state.data.question)}</strong>
+        ${options.map((opt,i)=>{
+          const pct=state.total?Math.round((state.counts[i]/state.total)*100):0;
+          return `
+            <div class="vybee-poll-option-v9 ${state.mine===i?"voted":""}" data-poll-option="${esc(pollId)}" data-option-index="${i}">
+              <span>${state.mine===i?"🔘":"⚪"}</span>
+              <div style="min-width:0;flex:1">
+                <div style="font-size:8px">${esc(opt)}</div>
+                <div class="vybee-poll-progress-v9"><i style="width:${pct}%"></i></div>
+                <div class="vybee-poll-meta-v9">${state.counts[i]} voto(s) • ${pct}%</div>
+              </div>
+            </div>`;
+        }).join("")}
+        <div class="vybee-poll-meta-v9">${state.total} voto(s)${state.data.closed?" • encerrada":""}</div>
+      </div>
+    `;
+
+    node.querySelectorAll("[data-poll-option]").forEach(
+      b=>b.addEventListener("click",()=>votePoll(
+        b.dataset.pollOption,
+        Number(b.dataset.optionIndex)
+      ))
+    );
+  }
+
+  async function votePoll(pollId,optionIndex){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    const state=pollCache.get(pollId)||await loadPoll(pollId);
+    if(!state)return;
+    if(state.data.closed){
+      toastSafe("Esta enquete está encerrada.");
+      return;
+    }
+
+    const {error}=await client.from("message_poll_votes").upsert(
+      {poll_id:pollId,user_id:current.id,option_index:optionIndex},
+      {onConflict:"poll_id,user_id"}
+    );
+    if(error){
+      toastSafe(error.message||"Não foi possível votar.");
+      return;
+    }
+
+    const node=document.querySelector(`[data-v9-poll="${CSS.escape(String(pollId))}"]`);
+    if(node)await renderPollInto(node,pollId);
+  }
+
+  async function decoratePollMessages(){
+    document.querySelectorAll(
+      "#vybeeModernChatMessages .vybee-chat-message-text"
+    ).forEach(async text=>{
+      const raw=text.dataset.rawContent||text.textContent||"";
+      const m=raw.match(/__VYBEE_POLL__([a-zA-Z0-9-]+)/);
+      if(!m)return;
+      const pollId=m[1];
+      if(text.dataset.v9PollBound)return;
+      text.dataset.v9PollBound="1";
+      text.textContent="";
+      const host=document.createElement("div");
+      host.dataset.v9Poll=pollId;
+      text.appendChild(host);
+      await renderPollInto(host,pollId);
+    });
+  }
+
+  async function pinMessage(messageId,channel){
+    const client=sb(), current=user();
+    if(!client||!current||!messageId||!channel)return;
+    const {error}=await client.from("message_pins").insert({
+      channel_id:channel,message_id:messageId,pinned_by:current.id
+    });
+    if(error){
+      toastSafe(error.message||"Não foi possível fixar.");
+      return;
+    }
+    toastSafe("📌 Mensagem fixada.");
+  }
+
+  async function unpinMessage(messageId){
+    const client=sb(), current=user();
+    if(!client||!current)return;
+    const {error}=await client.from("message_pins")
+      .delete().eq("message_id",messageId).eq("pinned_by",current.id);
+    if(error){
+      toastSafe(error.message||"Não foi possível remover fixação.");
+      return;
+    }
+    toastSafe("📌 Fixação removida.");
+  }
+
+  function addPinControls(){
+    document.querySelectorAll(
+      "#vybeeModernChatMessages .vybee-chat-message"
+    ).forEach(node=>{
+      if(node.dataset.v9PinnedBound)return;
+      node.dataset.v9PinnedBound="1";
+      const tools=node.querySelector(".vybee-chat-tools");
+      if(!tools)return;
+
+      const pin=document.createElement("button");
+      pin.type="button";
+      pin.className="vybee-chat-tool";
+      pin.textContent="📌";
+      pin.title="Fixar";
+      pin.addEventListener("click",async()=>{
+        const id=node.dataset.messageId;
+        const cid=window.vybeeGetCurrentTextChannel?.();
+        if(id&&cid)await pinMessage(id,cid);
+      });
+      tools.appendChild(pin);
+    });
+  }
+
+  const obs=new MutationObserver(()=>{
+    decoratePollMessages();
+    addPinControls();
+  });
+
+  function start(){
+    const box=el("vybeeModernChatMessages");
+    if(!box){setTimeout(start,700);return}
+    obs.observe(box,{childList:true,subtree:true});
+    decoratePollMessages();
+    addPinControls();
+  }
+
+  window.vybeeOpenChannelToolsV9=openChannelTools;
+  start();
 })();
 </script>
 
