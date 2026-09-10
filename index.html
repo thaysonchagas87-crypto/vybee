@@ -18795,44 +18795,16 @@ if(requestedLive){
       button.textContent="⏳";
     }
 
-    try{
-      const attachments=[];
+    const uploadedFiles=[];
 
+    try{
       for(
         const file of
         pendingFiles
       ){
-        const uploaded=
-          await uploadFile(
-            file
-          );
-
-        attachments.push(
-          uploaded
+        uploadedFiles.push(
+          await uploadFile(file)
         );
-      }
-
-      /*
-       * Mantemos a mensagem compatível com o modelo atual
-       * usando o conteúdo textual e metadata JSON no final.
-       * O frontend interpreta automaticamente e apresenta os anexos.
-       *
-       * Para bancos que já possuem metadata JSON, esta etapa pode
-       * migrar posteriormente para uma coluna própria.
-       */
-      let content=value;
-
-      if(attachments.length){
-        content +=
-          (
-            content
-              ? "\n\n"
-              : ""
-          )+
-          "__VYBEE_ATTACHMENTS__"+
-          JSON.stringify(
-            attachments
-          );
       }
 
       const {data,error}=
@@ -18843,7 +18815,9 @@ if(requestedLive){
               channelId,
             user_id:
               current.id,
-            content
+            content:
+              value ||
+              "📎 Arquivo"
           })
           .select(
             "id,user_id,content,created_at,updated_at,reply_to_id,deleted_at"
@@ -18852,14 +18826,69 @@ if(requestedLive){
 
       if(error) throw error;
 
+      if(
+        uploadedFiles.length
+      ){
+        const rows=
+          uploadedFiles.map(
+            file=>({
+              message_id:
+                data.id,
+              bucket:
+                file.bucket||BUCKET,
+              path:
+                file.path,
+              name:
+                file.name,
+              mime_type:
+                file.type,
+              size_bytes:
+                file.size
+            })
+          );
+
+        const {error:attachmentError}=
+          await client
+            .from("message_attachments")
+            .insert(rows);
+
+        if(attachmentError){
+          /*
+           * Não deixamos lixo órfão se a gravação do metadata falhar.
+           */
+          console.error(
+            "VYBEE attachment metadata:",
+            attachmentError
+          );
+
+          for(
+            const file of
+            uploadedFiles
+          ){
+            try{
+              await client.storage
+                .from(
+                  file.bucket||BUCKET
+                )
+                .remove([
+                  file.path
+                ]);
+            }catch(_){}
+          }
+
+          throw attachmentError;
+        }
+      }
+
       input.value="";
       pendingFiles=[];
       renderPending();
 
       /*
-       * A própria mensagem pode chegar via Realtime.
-       * Não inserimos manualmente para evitar duplicidade.
+       * Realtime cria a mensagem. O observer carrega os anexos
+       * da tabela message_attachments.
        */
+
     }catch(error){
       console.error(
         "VYBEE attachments:",
@@ -19197,6 +19226,270 @@ if(requestedLive){
 
   window.vybeeParseChatContent=
     parseContent;
+})();
+</script>
+
+
+<script id="vybee-message-attachments-table-controller">
+(function(){
+  const BUCKET="vybee-chat";
+
+  function sb(){return window.vybeeSupabase||null}
+  function esc(v){
+    return String(v??"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+  function isImage(type){return /^image\//i.test(String(type||""))}
+  function isVideo(type){return /^video\//i.test(String(type||""))}
+  function bytes(n){
+    n=Number(n||0);
+    if(n<1024) return n+" B";
+    if(n<1024*1024) return (n/1024).toFixed(1)+" KB";
+    return (n/1024/1024).toFixed(1)+" MB";
+  }
+  function icon(type){
+    if(isImage(type)) return "🖼️";
+    if(isVideo(type)) return "🎥";
+    if(/^audio\//i.test(String(type||""))) return "🎵";
+    if(String(type||"").includes("pdf")) return "📕";
+    return "📄";
+  }
+
+  async function loadForMessageIds(ids){
+    const client=sb();
+    if(!client||!ids.length) return;
+
+    const unique=[...new Set(ids.filter(Boolean).map(String))];
+
+    const {data,error}=
+      await client
+        .from("message_attachments")
+        .select(
+          "id,message_id,bucket,path,name,mime_type,size_bytes,created_at"
+        )
+        .in(
+          "message_id",
+          unique
+        )
+        .order(
+          "created_at",
+          {ascending:true}
+        );
+
+    if(error){
+      console.warn(
+        "VYBEE message attachments:",
+        error
+      );
+      return;
+    }
+
+    const byMessage=new Map();
+
+    (data||[]).forEach(row=>{
+      if(!byMessage.has(String(row.message_id))){
+        byMessage.set(
+          String(row.message_id),
+          []
+        );
+      }
+      byMessage.get(
+        String(row.message_id)
+      ).push(row);
+    });
+
+    unique.forEach(messageId=>{
+      const node=document.querySelector(
+        `[data-message-id="${CSS.escape(messageId)}"]`
+      );
+      if(!node) return;
+
+      const text=node.querySelector(
+        ".vybee-chat-message-text"
+      );
+      if(!text) return;
+
+      let box=node.querySelector(
+        ".vybee-chat-attachments-db"
+      );
+
+      if(!box){
+        box=document.createElement("div");
+        box.className=
+          "vybee-chat-attachments-db";
+        text.appendChild(box);
+      }
+
+      const rows=
+        byMessage.get(messageId)||[];
+
+      box.innerHTML=
+        rows.map(row=>`
+          <div class="vybee-chat-attachment-card">
+            <a
+              href="#"
+              data-db-file
+              data-db-file-bucket="${esc(row.bucket||BUCKET)}"
+              data-db-file-path="${esc(row.path||"")}"
+              data-db-file-type="${esc(row.mime_type||"")}"
+              data-db-file-name="${esc(row.name||"Arquivo")}"
+            >
+              ${icon(row.mime_type)}
+              <span>${esc(row.name||"Arquivo")}</span>
+            </a>
+            <div class="vybee-chat-attachment-meta">
+              ${bytes(row.size_bytes)}
+            </div>
+          </div>
+        `).join("");
+    });
+  }
+
+  document.addEventListener(
+    "click",
+    async event=>{
+      const link=event.target.closest?.(
+        "[data-db-file]"
+      );
+
+      if(!link) return;
+
+      event.preventDefault();
+
+      const client=sb();
+      if(!client) return;
+
+      try{
+        const {data,error}=
+          await client.storage
+            .from(
+              link.dataset.dbFileBucket||BUCKET
+            )
+            .createSignedUrl(
+              link.dataset.dbFilePath,
+              600
+            );
+
+        if(error) throw error;
+
+        if(data?.signedUrl){
+          window.open(
+            data.signedUrl,
+            "_blank",
+            "noopener,noreferrer"
+          );
+        }
+      }catch(error){
+        console.error(
+          "VYBEE attachment open:",
+          error
+        );
+        toast(
+          "Não foi possível abrir o arquivo."
+        );
+      }
+    }
+  );
+
+  /*
+   * Observa mensagens que entram no DOM.
+   */
+  const observer=
+    new MutationObserver(
+      mutations=>{
+        const ids=[];
+
+        mutations.forEach(
+          mutation=>{
+            mutation.addedNodes.forEach(
+              node=>{
+                if(
+                  node.nodeType!==1
+                ) return;
+
+                const message=
+                  node.matches?.(
+                    "[data-message-id]"
+                  )
+                    ? node
+                    : node.querySelector?.(
+                        "[data-message-id]"
+                      );
+
+                if(message){
+                  ids.push(
+                    message.dataset.messageId
+                  );
+                }
+              }
+            );
+          }
+        );
+
+        if(ids.length){
+          loadForMessageIds(
+            ids
+          );
+        }
+      }
+    );
+
+  function start(){
+    const box=
+      document.getElementById(
+        "vybeeModernChatMessages"
+      );
+
+    if(!box){
+      setTimeout(
+        start,
+        500
+      );
+      return;
+    }
+
+    observer.observe(
+      box,
+      {
+        childList:true,
+        subtree:true
+      }
+    );
+
+    const ids=[
+      ...box.querySelectorAll(
+        "[data-message-id]"
+      )
+    ].map(
+      node=>node.dataset.messageId
+    );
+
+    loadForMessageIds(
+      ids
+    );
+  }
+
+  start();
+
+  window.vybeeLoadMessageAttachments =
+    loadForMessageIds;
+})();
+</script>
+
+
+<script id="vybee-attachment-legacy-compat">
+(function(){
+  /*
+   * Mensagens antigas que ainda possuem o marcador inline continuam
+   * funcionando; novas mensagens usam message_attachments.
+   *
+   * O marcador antigo é mantido apenas para compatibilidade.
+   */
+  window.vybeeUseStructuredAttachments=true;
 })();
 </script>
 
