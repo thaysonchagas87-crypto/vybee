@@ -4185,6 +4185,232 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 }
 </style>
 
+
+<style id="vybee-discovery-safety-style">
+.vybee-global-search{
+  position:fixed;
+  inset:0;
+  z-index:455;
+  display:none;
+  place-items:start center;
+  padding-top:74px;
+  background:#000b;
+}
+.vybee-global-search.on{display:grid}
+.vybee-global-search-box{
+  width:min(700px,calc(100vw - 24px));
+  max-height:78vh;
+  overflow:auto;
+  background:#0b0f10;
+  border:1px solid #2b3338;
+  border-radius:15px;
+  box-shadow:0 30px 100px #000d;
+}
+.vybee-global-search-head{
+  display:flex;
+  gap:9px;
+  align-items:center;
+  padding:11px;
+  border-bottom:1px solid #22282d;
+}
+.vybee-global-search-input{
+  flex:1;
+  min-width:0;
+  padding:10px;
+  border:1px solid #2a3136;
+  border-radius:9px;
+  background:#101415;
+  color:#fff;
+  outline:none;
+}
+.vybee-global-search-close{
+  border:1px solid #2b3338;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:7px 9px;
+  cursor:pointer;
+}
+.vybee-global-search-results{
+  display:grid;
+  gap:6px;
+  padding:10px;
+}
+.vybee-discovery-group{
+  margin-bottom:6px;
+}
+.vybee-discovery-title{
+  color:#6f787e;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:1px;
+  padding:7px 3px;
+}
+.vybee-discovery-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:9px;
+  border:1px solid #242a2f;
+  border-radius:10px;
+  background:#101415;
+}
+.vybee-discovery-avatar{
+  width:34px;height:34px;
+  display:grid;place-items:center;
+  border-radius:10px;
+  background:#171c1e;
+  flex:0 0 34px;
+}
+.vybee-discovery-main{
+  min-width:0;
+  flex:1;
+}
+.vybee-discovery-main strong{
+  display:block;
+  font-size:10px;
+}
+.vybee-discovery-main span{
+  display:block;
+  margin-top:2px;
+  color:#747d84;
+  font-size:8px;
+}
+.vybee-discovery-actions{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+}
+.vybee-discovery-actions button{
+  border:1px solid #2b3338;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:6px 8px;
+  cursor:pointer;
+  font-size:8px;
+}
+.vybee-discovery-actions .primary{
+  border-color:#39ff14;
+  background:#39ff14;
+  color:#071006;
+}
+.vybee-public-profile{
+  position:fixed;
+  inset:0;
+  z-index:448;
+  display:none;
+  place-items:center;
+  padding:16px;
+  background:#000d;
+}
+.vybee-public-profile.on{display:grid}
+.vybee-public-profile-box{
+  width:min(540px,100%);
+  max-height:88vh;
+  overflow:auto;
+  padding:18px;
+  border:1px solid #2b3338;
+  border-radius:18px;
+  background:#0b0f10;
+  box-shadow:0 30px 100px #000d;
+}
+.vybee-public-profile-head{
+  display:flex;
+  gap:11px;
+  align-items:center;
+}
+.vybee-public-profile-avatar{
+  width:66px;height:66px;
+  border-radius:17px;
+  overflow:hidden;
+  display:grid;place-items:center;
+  background:#171c1e;
+  font-size:25px;
+}
+.vybee-public-profile-avatar img{
+  width:100%;height:100%;object-fit:cover;
+}
+.vybee-public-profile-main{min-width:0;flex:1}
+.vybee-public-profile-main strong{
+  display:block;font-size:16px;
+}
+.vybee-public-profile-main span{
+  display:block;margin-top:3px;color:#747d84;font-size:9px;
+}
+.vybee-public-profile-bio{
+  margin-top:14px;
+  color:#c4cbd0;
+  font-size:9px;
+  line-height:1.55;
+  white-space:pre-wrap;
+}
+.vybee-public-profile-actions{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.vybee-public-profile-actions button{
+  border:1px solid #2b3338;
+  background:#171b1e;
+  color:#fff;
+  border-radius:9px;
+  padding:8px 10px;
+  cursor:pointer;
+  font-size:9px;
+}
+.vybee-public-profile-actions .primary{
+  border-color:#39ff14;
+  background:#39ff14;
+  color:#071006;
+}
+.vybee-report-panel{
+  position:fixed;
+  inset:0;
+  z-index:470;
+  display:none;
+  place-items:center;
+  padding:16px;
+  background:#000d;
+}
+.vybee-report-panel.on{display:grid}
+.vybee-report-box{
+  width:min(470px,100%);
+  padding:17px;
+  border:1px solid #30383d;
+  border-radius:15px;
+  background:#0b0f10;
+}
+.vybee-report-box h3{margin:0;font-size:15px}
+.vybee-report-box p{margin:4px 0 12px;color:#737c83;font-size:8px}
+.vybee-report-box select,
+.vybee-report-box textarea{
+  width:100%;
+  box-sizing:border-box;
+  padding:9px;
+  border:1px solid #2a3136;
+  border-radius:8px;
+  background:#101415;
+  color:#fff;
+}
+.vybee-report-box textarea{
+  min-height:80px;
+  margin-top:8px;
+  resize:vertical;
+}
+.vybee-report-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:7px;
+  margin-top:10px;
+}
+@media(max-width:700px){
+  .vybee-discovery-row{align-items:flex-start}
+  .vybee-discovery-actions{margin-left:auto}
+}
+</style>
+
 </head>
 
 <body>
@@ -9065,6 +9291,14 @@ if(requestedLive){
               class="vybee-profile-action"
               data-add-friend="${esc(p.id)}"
             >🤝 Adicionar</button>
+            <button
+              type="button"
+              class="vybee-profile-action"
+              data-open-profile-dm="${esc(p.id)}"
+              data-open-profile-dm-name="${esc(
+                p.display_name || p.username || "Usuário"
+              )}"
+            >💬 Mensagem</button>
           </div>
         `).join("");
 
@@ -22300,6 +22534,765 @@ if(requestedLive){
   }
 
   wait();
+
+})();
+</script>
+
+
+<div class="vybee-global-search" id="vybeeGlobalSearch">
+  <div class="vybee-global-search-box">
+    <div class="vybee-global-search-head">
+      <input
+        id="vybeeGlobalSearchInput"
+        class="vybee-global-search-input"
+        placeholder="Buscar pessoas, comunidades..."
+        autocomplete="off"
+      >
+      <button type="button" class="vybee-global-search-close" id="vybeeGlobalSearchClose">✕</button>
+    </div>
+    <div id="vybeeGlobalSearchResults" class="vybee-global-search-results">
+      <div class="vybee-modern-page-empty">Digite para pesquisar.</div>
+    </div>
+  </div>
+</div>
+
+<div class="vybee-public-profile" id="vybeePublicProfilePanel">
+  <div class="vybee-public-profile-box">
+    <div class="vybee-public-profile-head">
+      <div class="vybee-public-profile-avatar">
+        <img id="vybeePublicProfileAvatar" alt="">
+        <span id="vybeePublicProfileEmoji">👤</span>
+      </div>
+      <div class="vybee-public-profile-main">
+        <strong id="vybeePublicProfileName">Usuário</strong>
+        <span id="vybeePublicProfileUsername">@usuario</span>
+      </div>
+      <button type="button" class="btn" id="vybeePublicProfileClose">✕</button>
+    </div>
+    <div id="vybeePublicProfileBio" class="vybee-public-profile-bio"></div>
+    <div id="vybeePublicProfileActions" class="vybee-public-profile-actions"></div>
+  </div>
+</div>
+
+<div class="vybee-report-panel" id="vybeeReportPanel">
+  <div class="vybee-report-box">
+    <h3>🚩 Denunciar usuário</h3>
+    <p>O relatório será enviado para análise da moderação.</p>
+    <select id="vybeeReportReason">
+      <option value="spam">Spam</option>
+      <option value="harassment">Assédio</option>
+      <option value="hate">Discurso de ódio</option>
+      <option value="scam">Golpe/fraude</option>
+      <option value="other">Outro</option>
+    </select>
+    <textarea id="vybeeReportDetails" maxlength="500" placeholder="Detalhes (opcional)"></textarea>
+    <div class="vybee-report-actions">
+      <button type="button" class="btn" id="vybeeReportCancel">Cancelar</button>
+      <button type="button" class="btn green" id="vybeeReportSubmit">Enviar denúncia</button>
+    </div>
+    <div id="vybeeReportStatus" class="muted" style="margin-top:7px"></div>
+  </div>
+</div>
+
+
+<script id="vybee-discovery-safety-controller">
+(function(){
+  let reportUserId=null;
+  let reportUserName="";
+  let publicProfile=null;
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){
+    return String(v??"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function openSearch(){
+    el("vybeeGlobalSearch")?.classList.add("on");
+    setTimeout(
+      ()=>el("vybeeGlobalSearchInput")?.focus(),
+      0
+    );
+  }
+
+  function closeSearch(){
+    el("vybeeGlobalSearch")?.classList.remove("on");
+  }
+
+  async function search(){
+    const client=sb();
+    const current=user();
+    const input=el("vybeeGlobalSearchInput");
+    const results=el("vybeeGlobalSearchResults");
+
+    if(!client||!input||!results) return;
+
+    const q=input.value.trim();
+
+    if(q.length<2){
+      results.innerHTML=
+        '<div class="vybee-modern-page-empty">Digite pelo menos 2 caracteres.</div>';
+      return;
+    }
+
+    results.innerHTML=
+      '<div class="vybee-modern-page-empty">🔎 Buscando...</div>';
+
+    const safe=
+      q.replaceAll("%","\\%")
+       .replaceAll("_","\\_");
+
+    try{
+      const [profilesRes,communitiesRes]=
+        await Promise.all([
+          client
+            .from("profiles")
+            .select("id,display_name,username,avatar_url,bio")
+            .or(
+              `display_name.ilike.%${safe}%,username.ilike.%${safe}%`
+            )
+            .neq(
+              "id",
+              current?.id||"00000000-0000-0000-0000-000000000000"
+            )
+            .limit(12),
+
+          client
+            .from("communities")
+            .select("id,name,description,is_public,owner_id")
+            .ilike(
+              "name",
+              "%"+q+"%"
+            )
+            .limit(12)
+        ]);
+
+      if(profilesRes.error)
+        throw profilesRes.error;
+
+      if(communitiesRes.error)
+        throw communitiesRes.error;
+
+      const profiles=
+        profilesRes.data||[];
+
+      const communities=
+        communitiesRes.data||[];
+
+      if(
+        !profiles.length &&
+        !communities.length
+      ){
+        results.innerHTML=
+          '<div class="vybee-modern-page-empty">Nenhum resultado encontrado.</div>';
+        return;
+      }
+
+      results.innerHTML="";
+
+      if(profiles.length){
+        const group=
+          document.createElement("div");
+
+        group.className=
+          "vybee-discovery-group";
+
+        group.innerHTML=
+          '<div class="vybee-discovery-title">PESSOAS</div>';
+
+        profiles.forEach(
+          profile=>{
+            const row=
+              document.createElement("div");
+
+            row.className=
+              "vybee-discovery-row";
+
+            row.innerHTML=`
+              <div class="vybee-discovery-avatar">👤</div>
+              <div class="vybee-discovery-main">
+                <strong>${esc(
+                  profile.display_name||
+                  profile.username||
+                  "Usuário"
+                )}</strong>
+                <span>${
+                  profile.username
+                    ? "@"+esc(profile.username)
+                    : "Usuário VYBEE"
+                }</span>
+              </div>
+              <div class="vybee-discovery-actions">
+                <button
+                  type="button"
+                  class="primary"
+                  data-discovery-profile="${esc(profile.id)}"
+                >Perfil</button>
+                <button
+                  type="button"
+                  data-discovery-dm="${esc(profile.id)}"
+                  data-discovery-dm-name="${esc(
+                    profile.display_name||
+                    profile.username||
+                    "Usuário"
+                  )}"
+                >💬</button>
+              </div>
+            `;
+
+            row
+              .querySelector(
+                "[data-discovery-profile]"
+              )
+              ?.addEventListener(
+                "click",
+                ()=>
+                  openPublicProfile(
+                    profile
+                  )
+              );
+
+            row
+              .querySelector(
+                "[data-discovery-dm]"
+              )
+              ?.addEventListener(
+                "click",
+                ()=>
+                  window.vybeeRenderDirectMessages
+                    ? (
+                        closeSearch(),
+                        document.dispatchEvent(
+                          new CustomEvent(
+                            "vybee-open-dm",
+                            {
+                              detail:{
+                                userId:
+                                  profile.id,
+                                userName:
+                                  profile.display_name||
+                                  profile.username||
+                                  "Usuário"
+                              }
+                            }
+                          )
+                        )
+                      )
+                    : null
+              );
+
+            group.appendChild(
+              row
+            );
+          }
+        );
+
+        results.appendChild(
+          group
+        );
+      }
+
+      if(communities.length){
+        const group=
+          document.createElement("div");
+
+        group.className=
+          "vybee-discovery-group";
+
+        group.innerHTML=
+          '<div class="vybee-discovery-title">COMUNIDADES</div>';
+
+        communities.forEach(
+          community=>{
+            const row=
+              document.createElement("div");
+
+            row.className=
+              "vybee-discovery-row";
+
+            row.innerHTML=`
+              <div class="vybee-discovery-avatar">🐝</div>
+              <div class="vybee-discovery-main">
+                <strong>${esc(community.name)}</strong>
+                <span>${esc(
+                  community.description||
+                  "Comunidade VYBEE"
+                )}</span>
+              </div>
+              <div class="vybee-discovery-actions">
+                <button
+                  type="button"
+                  class="primary"
+                  data-discovery-community="${esc(community.id)}"
+                >Abrir</button>
+              </div>
+            `;
+
+            row
+              .querySelector(
+                "[data-discovery-community]"
+              )
+              ?.addEventListener(
+                "click",
+                ()=>{
+                  closeSearch();
+                  window.vybeeOpenModernCommunity?.(
+                    community
+                  );
+                }
+              );
+
+            group.appendChild(
+              row
+            );
+          }
+        );
+
+        results.appendChild(
+          group
+        );
+      }
+
+    }catch(error){
+      console.error(
+        "VYBEE global search:",
+        error
+      );
+
+      results.innerHTML=
+        '<div class="vybee-modern-page-empty">Não foi possível realizar a busca.</div>';
+    }
+  }
+
+  function openPublicProfile(profile){
+    publicProfile=profile;
+
+    el("vybeePublicProfileName").textContent=
+      profile.display_name||
+      profile.username||
+      "Usuário";
+
+    el("vybeePublicProfileUsername").textContent=
+      profile.username
+        ? "@"+profile.username
+        : "Usuário VYBEE";
+
+    el("vybeePublicProfileBio").textContent=
+      profile.bio||
+      "Este usuário ainda não adicionou uma bio.";
+
+    const img=
+      el("vybeePublicProfileAvatar");
+
+    const emoji=
+      el("vybeePublicProfileEmoji");
+
+    if(profile.avatar_url){
+      img.src=
+        profile.avatar_url;
+      img.style.display=
+        "block";
+      emoji.style.display=
+        "none";
+    }else{
+      img.removeAttribute("src");
+      img.style.display=
+        "none";
+      emoji.style.display=
+        "inline";
+    }
+
+    const actions=
+      el("vybeePublicProfileActions");
+
+    const current=user();
+
+    actions.innerHTML=`
+      <button
+        type="button"
+        class="primary"
+        id="vybeePublicProfileMessage"
+      >💬 Mensagem</button>
+
+      <button
+        type="button"
+        id="vybeePublicProfileAdd"
+      >➕ Adicionar</button>
+
+      <button
+        type="button"
+        id="vybeePublicProfileBlock"
+      >🚫 Bloquear</button>
+
+      <button
+        type="button"
+        id="vybeePublicProfileReport"
+      >🚩 Denunciar</button>
+    `;
+
+    actions
+      .querySelector(
+        "#vybeePublicProfileMessage"
+      )
+      ?.addEventListener(
+        "click",
+        ()=>{
+          closePublicProfile();
+
+          document.dispatchEvent(
+            new CustomEvent(
+              "vybee-open-dm",
+              {
+                detail:{
+                  userId:profile.id,
+                  userName:
+                    profile.display_name||
+                    profile.username||
+                    "Usuário"
+                }
+              }
+            )
+          );
+        }
+      );
+
+    actions
+      .querySelector(
+        "#vybeePublicProfileAdd"
+      )
+      ?.addEventListener(
+        "click",
+        async()=>{
+          const client=sb();
+          const currentUser=user();
+
+          if(!client||!currentUser) return;
+
+          const {error}=
+            await client.rpc(
+              "send_friend_request",
+              {
+                p_receiver_id:
+                  profile.id
+              }
+            );
+
+          if(error){
+            toast(
+              error.message||
+              "Não foi possível enviar a solicitação."
+            );
+            return;
+          }
+
+          toast(
+            "✅ Solicitação enviada."
+          );
+        }
+      );
+
+    actions
+      .querySelector(
+        "#vybeePublicProfileBlock"
+      )
+      ?.addEventListener(
+        "click",
+        ()=>blockUser(
+          profile.id
+        )
+      );
+
+    actions
+      .querySelector(
+        "#vybeePublicProfileReport"
+      )
+      ?.addEventListener(
+        "click",
+        ()=>{
+          closePublicProfile();
+          openReport(
+            profile.id,
+            profile.display_name||
+            profile.username||
+            "Usuário"
+          );
+        }
+      );
+
+    el("vybeePublicProfilePanel")
+      ?.classList.add("on");
+  }
+
+  function closePublicProfile(){
+    el("vybeePublicProfilePanel")
+      ?.classList.remove("on");
+
+    publicProfile=null;
+  }
+
+  async function blockUser(targetId){
+    const client=sb();
+    const current=user();
+
+    if(!client||!current||!targetId) return;
+
+    if(
+      !confirm(
+        "Bloquear este usuário? Ele não poderá enviar novas mensagens privadas para você."
+      )
+    ){
+      return;
+    }
+
+    const {error}=
+      await client.rpc(
+        "block_user",
+        {
+          p_target_user_id:
+            targetId
+        }
+      );
+
+    if(error){
+      toast(
+        error.message||
+        "Não foi possível bloquear."
+      );
+      return;
+    }
+
+    toast(
+      "🚫 Usuário bloqueado."
+    );
+
+    closePublicProfile();
+  }
+
+  function openReport(id,name){
+    reportUserId=id;
+    reportUserName=name;
+
+    el("vybeeReportStatus").textContent=
+      "";
+
+    el("vybeeReportPanel")
+      ?.classList.add("on");
+  }
+
+  function closeReport(){
+    el("vybeeReportPanel")
+      ?.classList.remove("on");
+
+    reportUserId=null;
+    reportUserName="";
+  }
+
+  async function submitReport(){
+    const client=sb();
+    const current=user();
+
+    if(!client||!current||!reportUserId){
+      return;
+    }
+
+    const reason=
+      el("vybeeReportReason")
+        .value;
+
+    const details=
+      el("vybeeReportDetails")
+        .value.trim();
+
+    const status=
+      el("vybeeReportStatus");
+
+    status.textContent=
+      "Enviando...";
+
+    try{
+      const {error}=
+        await client.rpc(
+          "report_user",
+          {
+            p_target_user_id:
+              reportUserId,
+            p_reason:
+              reason,
+            p_details:
+              details||null
+          }
+        );
+
+      if(error) throw error;
+
+      status.textContent=
+        "✅ Denúncia enviada.";
+
+      setTimeout(
+        closeReport,
+        500
+      );
+
+    }catch(error){
+      console.error(
+        "VYBEE report:",
+        error
+      );
+
+      status.textContent=
+        "❌ Não foi possível enviar a denúncia.";
+    }
+  }
+
+  document.addEventListener(
+    "vybee-open-dm",
+    async event=>{
+      const detail=event.detail;
+
+      if(
+        !detail||
+        !detail.userId
+      ){
+        return;
+      }
+
+      /*
+       * O controlador de DMs expõe renderDirectMessages; 
+       * localizamos seu botão de conversa após a tela abrir.
+       */
+      window.vybeeRenderDirectMessages?.();
+
+      setTimeout(
+        ()=>{
+          document
+            .querySelector(
+              `[data-dm-user="${CSS.escape(String(detail.userId))}"]`
+            )
+            ?.click();
+        },
+        350
+      );
+
+      /*
+       * fallback: guardar dados para a próxima renderização
+       */
+      window.vybeePendingDmTarget=
+        detail;
+    }
+  );
+
+  /*
+   * Integração com o botão de busca da Dashboard moderna,
+   * caso exista um id compatível.
+   */
+  [
+    "vybeeHomeSearch",
+    "vybeeModernSearchButton",
+    "vybeeSearchButton"
+  ].forEach(
+    id=>{
+      el(id)?.addEventListener(
+        "click",
+        openSearch
+      );
+    }
+  );
+
+  el("vybeeGlobalSearchInput")
+    ?.addEventListener(
+      "input",
+      ()=>{
+        clearTimeout(
+          el("vybeeGlobalSearchInput")
+            ._vybeeSearchTimer
+        );
+
+        el("vybeeGlobalSearchInput")
+          ._vybeeSearchTimer=
+            setTimeout(
+              search,
+              220
+            );
+      }
+    );
+
+  el("vybeeGlobalSearchClose")
+    ?.addEventListener(
+      "click",
+      closeSearch
+    );
+
+  el("vybeePublicProfileClose")
+    ?.addEventListener(
+      "click",
+      closePublicProfile
+    );
+
+  el("vybeeReportCancel")
+    ?.addEventListener(
+      "click",
+      closeReport
+    );
+
+  el("vybeeReportSubmit")
+    ?.addEventListener(
+      "click",
+      submitReport
+    );
+
+  document.addEventListener(
+    "keydown",
+    event=>{
+      if(
+        event.key!=="Escape"
+      ) return;
+
+      if(
+        el("vybeeGlobalSearch")
+          ?.classList.contains("on")
+      ){
+        closeSearch();
+        return;
+      }
+
+      if(
+        el("vybeePublicProfilePanel")
+          ?.classList.contains("on")
+      ){
+        closePublicProfile();
+        return;
+      }
+
+      if(
+        el("vybeeReportPanel")
+          ?.classList.contains("on")
+      ){
+        closeReport();
+      }
+    }
+  );
+
+  /*
+   * Fallback: atalho Ctrl+K abre a busca global.
+   */
+  document.addEventListener(
+    "keydown",
+    event=>{
+      if(
+        (event.ctrlKey||event.metaKey) &&
+        event.key.toLowerCase()==="k"
+      ){
+        event.preventDefault();
+        openSearch();
+      }
+    }
+  );
 
 })();
 </script>
