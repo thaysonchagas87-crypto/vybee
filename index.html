@@ -4986,6 +4986,27 @@ document.documentElement.dataset.vybeeBuild="master-v1";
 @media(max-width:700px){.v11-stat-grid{grid-template-columns:repeat(2,1fr)}.v11-table-row{grid-template-columns:1fr}}
 </style>
 
+
+<style id="vybee-integration-v12-style">
+.v12-connection-bar{position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:540;display:none;padding:6px 10px;border:1px solid #3a4349;border-radius:999px;background:#101415eF;color:#e8ecee;font-size:8px;box-shadow:0 12px 35px #0008}
+.v12-connection-bar.on{display:block}.v12-connection-bar.off{border-color:#ff4d4d}.v12-connection-bar.warn{border-color:#d4a100}
+.v12-loader{position:fixed;inset:0;z-index:535;display:none;place-items:center;background:#0009}.v12-loader.on{display:grid}
+.v12-loader-box{padding:12px 15px;border:1px solid #2b3338;border-radius:10px;background:#0b0f10;font-size:9px}
+.v12-skeleton{height:42px;border-radius:9px;background:#151a1c;position:relative;overflow:hidden}
+.v12-skeleton:after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,#22292d,transparent);animation:v12sk 1.25s infinite}
+@keyframes v12sk{to{transform:translateX(100%)}}
+.v12-mobile-actions{display:none;position:fixed;right:12px;bottom:12px;z-index:525;gap:6px}
+.v12-mobile-actions button{width:42px;height:42px;border:1px solid #2b3338;border-radius:12px;background:#101415;color:#fff;cursor:pointer;font-size:15px;box-shadow:0 15px 40px #0009}
+.v12-quick-panel{position:fixed;right:12px;bottom:62px;width:min(320px,calc(100vw - 24px));z-index:526;display:none;padding:10px;border:1px solid #2b3338;border-radius:12px;background:#0b0f10;box-shadow:0 25px 80px #000c}
+.v12-quick-panel.on{display:grid;gap:6px}
+.v12-quick-panel button{border:1px solid #252c31;background:#121719;color:#fff;border-radius:8px;padding:8px;text-align:left;font-size:8px;cursor:pointer}
+.v12-quick-panel button:hover{border-color:#39ff14}
+@media(max-width:800px){
+  .v12-mobile-actions{display:flex}
+  .v12-connection-bar{top:5px}
+}
+</style>
+
 </head>
 
 <body>
@@ -26886,6 +26907,239 @@ if(requestedLive){
     window.vybeeOpenFinalCenter=openCenter;
   }
   bind();
+})();
+</script>
+
+
+<div class="v12-connection-bar" id="vybeeV12ConnectionBar">🟢 Conectado</div>
+<div class="v12-loader" id="vybeeV12Loader">
+  <div class="v12-loader-box" id="vybeeV12LoaderText">Carregando...</div>
+</div>
+<div class="v12-mobile-actions">
+  <button type="button" id="vybeeV12QuickButton" title="Ações rápidas">☰</button>
+</div>
+<div class="v12-quick-panel" id="vybeeV12QuickPanel">
+  <button type="button" data-v12-quick="home">🏠 Início</button>
+  <button type="button" data-v12-quick="friends">👥 Amigos</button>
+  <button type="button" data-v12-quick="messages">💬 Mensagens</button>
+  <button type="button" data-v12-quick="communities">♧ Comunidades</button>
+  <button type="button" data-v12-quick="notifications">🔔 Notificações</button>
+  <button type="button" data-v12-quick="profile">👤 Perfil</button>
+</div>
+
+
+<script id="vybee-integration-v12-controller">
+(function(){
+  let client=null;
+  let connectionChannel=null;
+  let reconnectTimer=null;
+  let online=true;
+  let loadingCount=0;
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+
+  function showLoading(text){
+    loadingCount++;
+    const node=el("vybeeV12Loader");
+    const label=el("vybeeV12LoaderText");
+    if(label)label.textContent=text||"Carregando...";
+    node?.classList.add("on");
+  }
+  function hideLoading(){
+    loadingCount=Math.max(0,loadingCount-1);
+    if(!loadingCount)el("vybeeV12Loader")?.classList.remove("on");
+  }
+
+  function setConnection(state,text){
+    const bar=el("vybeeV12ConnectionBar");
+    if(!bar)return;
+    bar.classList.toggle("off",state==="off");
+    bar.classList.toggle("warn",state==="warn");
+    bar.textContent=
+      state==="off"?"🔴 Sem conexão":
+      state==="warn"?"🟡 Reconectando...":
+      "🟢 "+(text||"Conectado");
+    if(state==="ok"){
+      bar.classList.add("on");
+      setTimeout(()=>bar.classList.remove("on"),1700);
+    }else{
+      bar.classList.add("on");
+    }
+  }
+
+  async function reconnect(){
+    if(!client)return;
+    setConnection("warn");
+    try{
+      if(connectionChannel){
+        try{await client.removeChannel(connectionChannel)}catch(_){}
+      }
+      connectionChannel=client.channel(
+        "vybee-connection-"+(user()?.id||"guest")+"-"+Date.now()
+      );
+      connectionChannel.subscribe(status=>{
+        if(status==="SUBSCRIBED"){
+          online=true;
+          setConnection("ok","Reconectado");
+        }else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){
+          online=false;
+          setConnection("off");
+        }
+      });
+    }catch(_){
+      online=false;
+      setConnection("off");
+    }
+  }
+
+  function setupConnection(){
+    client=sb();
+    if(!client)return;
+    connectionChannel=client.channel(
+      "vybee-connection-"+(user()?.id||"guest")
+    );
+    connectionChannel.subscribe(status=>{
+      if(status==="SUBSCRIBED"){
+        online=true;
+        setConnection("ok","Conectado");
+      }
+      if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){
+        online=false;
+        setConnection("off");
+        scheduleReconnect();
+      }
+    });
+
+    window.addEventListener("online",()=>{
+      online=true;
+      clearTimeout(reconnectTimer);
+      reconnect();
+    });
+    window.addEventListener("offline",()=>{
+      online=false;
+      setConnection("off");
+    });
+  }
+
+  function scheduleReconnect(){
+    clearTimeout(reconnectTimer);
+    reconnectTimer=setTimeout(reconnect,2500);
+  }
+
+  function installErrorBoundary(){
+    window.addEventListener("error",event=>{
+      console.error("VYBEE runtime error:",event.error||event.message);
+      setConnection("warn","Verifique a conexão");
+    });
+    window.addEventListener("unhandledrejection",event=>{
+      console.error("VYBEE promise error:",event.reason);
+      setConnection("warn","Alguma ação não foi concluída");
+    });
+  }
+
+  function closeQuick(){
+    el("vybeeV12QuickPanel")?.classList.remove("on");
+  }
+  function toggleQuick(){
+    el("vybeeV12QuickPanel")?.classList.toggle("on");
+  }
+
+  function runQuick(action){
+    closeQuick();
+    if(action==="home")return window.vybeeOpenDashboard?.();
+    if(action==="friends")return window.vybeeOpenSocialFriends?.();
+    if(action==="messages")return window.vybeeRenderDirectMessages?.();
+    if(action==="communities")
+      return document.querySelector('[data-home-nav="communities"]')?.click();
+    if(action==="notifications")
+      return window.vybeeRenderNotificationsPage?.();
+    if(action==="profile")
+      return window.vybeeOpenProfileEditor?.();
+  }
+
+  function addSafeNavigation(){
+    document.querySelectorAll("[data-home-nav]").forEach(btn=>{
+      if(btn.dataset.v12Safe)return;
+      btn.dataset.v12Safe="1";
+      btn.addEventListener("click",()=>closeQuick());
+    });
+  }
+
+  function installLoadingHooks(){
+    /*
+     * O monitor não substitui os loaders de cada módulo.
+     * Ele apenas fornece uma camada global para futuras chamadas.
+     */
+    window.vybeeBeginLoading=showLoading;
+    window.vybeeEndLoading=hideLoading;
+  }
+
+  function installOfflineProtection(){
+    document.addEventListener("submit",event=>{
+      if(!navigator.onLine){
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        setConnection("off");
+      }
+    },true);
+
+    document.addEventListener("click",event=>{
+      if(!navigator.onLine){
+        const interactive=event.target.closest?.(
+          "button,a,[role=button]"
+        );
+        if(interactive && !interactive.closest("#vybeeV12QuickPanel")){
+          setConnection("off");
+        }
+      }
+    },true);
+  }
+
+  function bind(){
+    el("vybeeV12QuickButton")?.addEventListener("click",toggleQuick);
+    el("vybeeV12QuickPanel")?.addEventListener("click",event=>{
+      const button=event.target.closest?.("[data-v12-quick]");
+      if(button)runQuick(button.dataset.v12Quick);
+    });
+    document.addEventListener("click",event=>{
+      const panel=el("vybeeV12QuickPanel");
+      const trigger=el("vybeeV12QuickButton");
+      if(panel?.classList.contains("on") &&
+         !panel.contains(event.target) &&
+         event.target!==trigger){
+        closeQuick();
+      }
+    });
+    document.addEventListener("keydown",event=>{
+      if(event.key==="Escape")closeQuick();
+      if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="r"){
+        /*
+         * Mantém Ctrl+R/F5 como recarregamento normal; não interfere.
+         */
+      }
+    });
+
+    addSafeNavigation();
+    installLoadingHooks();
+    installOfflineProtection();
+  }
+
+  function wait(){
+    if(sb()&&user()){
+      bind();
+      setupConnection();
+      installErrorBoundary();
+      return;
+    }
+    setTimeout(wait,600);
+  }
+  wait();
+
+  window.vybeeIsOnline=()=>online;
+  window.vybeeShowGlobalLoading=showLoading;
+  window.vybeeHideGlobalLoading=hideLoading;
 })();
 </script>
 
