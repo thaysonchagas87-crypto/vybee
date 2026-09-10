@@ -3266,110 +3266,131 @@ body.vybee-modern-home-active > .app > footer{
 </style>
 
 
-<style id="vybee-channel-manager-style">
-.vybee-channel-manager{
-  position:fixed;
-  inset:0;
-  z-index:420;
-  display:none;
-  place-items:center;
-  padding:16px;
-  background:#000e;
+<style id="vybee-modern-chat-style">
+.vybee-chat-page{
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  min-height:58vh;
+  border:1px solid #252c31;
+  border-radius:14px;
+  background:#0a0d0e;
+  overflow:hidden;
 }
-.vybee-channel-manager.on{display:grid}
-.vybee-channel-box{
-  width:min(760px,100%);
-  max-height:88vh;
-  overflow:auto;
-  background:#0b0f10;
-  border:1px solid #2b3338;
-  border-radius:18px;
-  box-shadow:0 30px 100px #000d;
-}
-.vybee-channel-head{
+.vybee-chat-page-head{
   display:flex;
   align-items:center;
-  gap:11px;
-  padding:16px 18px;
-  border-bottom:1px solid #20262b;
+  gap:10px;
+  padding:12px 14px;
+  border-bottom:1px solid #22282d;
+  background:#0e1112;
 }
-.vybee-channel-head h2{margin:0;font-size:17px}
-.vybee-channel-head p{margin:3px 0 0;color:#737c83;font-size:9px}
-.vybee-channel-close{margin-left:auto}
-.vybee-channel-body{padding:16px 18px 20px}
-.vybee-channel-form{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 150px;
-  gap:8px;
-}
-.vybee-channel-form input,
-.vybee-channel-form select{
-  width:100%;
-  box-sizing:border-box;
-  padding:10px;
-  border:1px solid #2a3136;
+.vybee-chat-page-channel{
+  width:34px;height:34px;
+  display:grid;place-items:center;
   border-radius:9px;
-  background:#101415;
+  background:#171b1e;
+  color:#fff;
+  font-size:14px;
+}
+.vybee-chat-page-head-main{min-width:0;flex:1}
+.vybee-chat-page-head-main strong{
+  display:block;font-size:12px;
+}
+.vybee-chat-page-head-main span{
+  display:block;margin-top:2px;color:#717a81;font-size:8px;
+}
+.vybee-chat-page-messages{
+  min-height:0;
+  overflow:auto;
+  padding:12px 14px;
+  display:grid;
+  align-content:start;
+  gap:4px;
+}
+.vybee-chat-message{
+  display:flex;
+  gap:9px;
+  padding:7px 5px;
+  border-radius:9px;
+}
+.vybee-chat-message:hover{background:#0f1314}
+.vybee-chat-avatar{
+  width:29px;height:29px;flex:0 0 29px;
+  display:grid;place-items:center;
+  border-radius:50%;
+  background:#181d20;
+  font-size:12px;
+}
+.vybee-chat-message-main{min-width:0;flex:1}
+.vybee-chat-message-meta{
+  display:flex;
+  align-items:baseline;
+  gap:7px;
+  flex-wrap:wrap;
+}
+.vybee-chat-message-meta strong{
+  font-size:10px;
+}
+.vybee-chat-message-meta span{
+  color:#5f686f;
+  font-size:7px;
+}
+.vybee-chat-message-text{
+  margin-top:3px;
+  white-space:pre-wrap;
+  word-break:break-word;
+  color:#d7dcdf;
+  font-size:10px;
+  line-height:1.45;
+}
+.vybee-chat-system{
+  padding:13px;
+  border:1px dashed #2a3136;
+  border-radius:10px;
+  color:#727b82;
+  text-align:center;
+  font-size:9px;
+}
+.vybee-chat-composer{
+  display:flex;
+  gap:8px;
+  padding:10px;
+  border-top:1px solid #22282d;
+  background:#0e1112;
+}
+.vybee-chat-input{
+  flex:1;
+  min-width:0;
+  padding:10px 11px;
+  border:1px solid #2b3338;
+  border-radius:9px;
+  background:#141819;
   color:#fff;
   outline:none;
+  font-family:inherit;
+  font-size:10px;
 }
-.vybee-channel-create{
+.vybee-chat-input:focus{border-color:#53ff1a}
+.vybee-chat-send{
+  min-width:42px;
   border:1px solid #39ff14;
   background:#39ff14;
   color:#071006;
   border-radius:9px;
-  padding:9px 10px;
   cursor:pointer;
+  font-size:12px;
   font-weight:900;
-  font-size:9px;
 }
-.vybee-channel-status{
-  margin-top:8px;
-  min-height:15px;
-  color:#7d868c;
-  font-size:9px;
+.vybee-chat-typing{
+  height:0;
+  overflow:hidden;
+  color:#687178;
+  font-size:8px;
+  padding:0 14px;
+  background:#0e1112;
 }
-.vybee-channel-list{
-  display:grid;
-  gap:8px;
-  margin-top:12px;
-}
-.vybee-channel-row{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  padding:10px;
-  border:1px solid #242a2f;
-  border-radius:11px;
-  background:#101415;
-}
-.vybee-channel-icon{
-  width:31px;height:31px;display:grid;place-items:center;
-  border-radius:9px;background:#181d20;
-}
-.vybee-channel-main{min-width:0;flex:1}
-.vybee-channel-main strong{display:block;font-size:10px}
-.vybee-channel-main span{display:block;margin-top:2px;color:#707a81;font-size:8px}
-.vybee-channel-actions{
-  display:flex;
-  gap:5px;
-}
-.vybee-channel-actions button{
-  border:1px solid #2b3237;
-  background:#171b1e;
-  color:#fff;
-  border-radius:8px;
-  padding:6px 8px;
-  cursor:pointer;
-  font-size:9px;
-}
-.vybee-channel-actions button:hover{border-color:#39ff14}
-.vybee-channel-actions .danger:hover{
-  border-color:#ff4d4d;
-  background:#241214;
-}
-@media(max-width:700px){
-  .vybee-channel-form{grid-template-columns:1fr}
+.vybee-chat-typing.on{
+  height:16px;
 }
 </style>
 
@@ -16996,60 +17017,17 @@ if(requestedLive){
 </script>
 
 
-<div class="vybee-channel-manager" id="vybeeChannelManager">
-  <div class="vybee-channel-box">
-    <div class="vybee-channel-head">
-      <div>
-        <h2 id="vybeeChannelManagerTitle">⚙️ Canais</h2>
-        <p>Crie, edite e remova canais de texto e voz.</p>
-      </div>
-      <button type="button" class="btn vybee-channel-close" id="vybeeChannelManagerClose">✕</button>
-    </div>
-
-    <div class="vybee-channel-body">
-      <div class="vybee-channel-form">
-        <input
-          id="vybeeChannelName"
-          maxlength="50"
-          placeholder="Nome do canal"
-        >
-
-        <select id="vybeeChannelType">
-          <option value="text">💬 Texto</option>
-          <option value="voice">🎙️ Voz</option>
-        </select>
-      </div>
-
-      <div style="display:flex;justify-content:flex-end;margin-top:8px">
-        <button
-          type="button"
-          class="vybee-channel-create"
-          id="vybeeChannelSave"
-        >➕ Criar canal</button>
-      </div>
-
-      <div id="vybeeChannelStatus" class="vybee-channel-status"></div>
-
-      <div class="section" style="margin-top:15px">
-        CANAIS DA COMUNIDADE
-      </div>
-
-      <div id="vybeeChannelList" class="vybee-channel-list">
-        <div class="vybee-community-empty">Carregando...</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<script id="vybee-channel-manager-controller">
+<script id="vybee-modern-chat-controller">
 (function(){
-  let community=null;
-  let editingId=null;
+  let currentCommunity=null;
+  let currentChannel=null;
+  let channelSubscription=null;
+  let lastRows=[];
+  let sendBusy=false;
 
   function sb(){return window.vybeeSupabase||null}
   function user(){return window.vybeeCurrentUser||null}
-  function el(id){return document.getElementById(id)}
+
   function esc(v){
     return String(v??"")
       .replaceAll("&","&amp;")
@@ -17059,333 +17037,517 @@ if(requestedLive){
       .replaceAll("'","&#039;");
   }
 
-  function openManager(c){
-    if(!c||!user()) return;
-
-    community=c;
-    editingId=null;
-
-    el("vybeeChannelManagerTitle").textContent=
-      "⚙️ Canais • "+(c.name||"Comunidade");
-
-    el("vybeeChannelSave").textContent=
-      "➕ Criar canal";
-
-    el("vybeeChannelName").value="";
-    el("vybeeChannelType").value="text";
-    el("vybeeChannelStatus").textContent="";
-
-    el("vybeeChannelManager").classList.add("on");
-
-    loadChannels();
+  function el(id){
+    return document.getElementById(id);
   }
 
-  function closeManager(){
-    el("vybeeChannelManager")?.classList.remove("on");
-    community=null;
-    editingId=null;
-  }
-
-  async function loadChannels(){
-    const client=sb();
-    const list=el("vybeeChannelList");
-
-    if(!client||!community||!list) return;
-
-    try{
-      const {data,error}=
-        await client
-          .from("channels")
-          .select(
-            "id,name,channel_type,position,community_id"
-          )
-          .eq(
-            "community_id",
-            community.id
-          )
-          .order(
-            "position",
-            {ascending:true}
-          );
-
-      if(error) throw error;
-
-      if(!data?.length){
-        list.innerHTML=
-          '<div class="vybee-community-empty">Nenhum canal criado.</div>';
-        return;
+  function formatTime(value){
+    const d=new Date(value);
+    if(Number.isNaN(d.getTime())) return "";
+    return d.toLocaleTimeString(
+      "pt-BR",
+      {
+        hour:"2-digit",
+        minute:"2-digit"
       }
+    );
+  }
 
-      list.innerHTML=
-        data.map(
-          channel=>`
-            <div class="vybee-channel-row">
-              <div class="vybee-channel-icon">
-                ${channel.channel_type==="voice"?"🎙️":"💬"}
+  async function profileMap(ids){
+    const client=sb();
+    if(!client||!ids.length) return new Map();
+
+    const {data}=await client
+      .from("profiles")
+      .select("id,display_name,username")
+      .in("id",ids);
+
+    return new Map(
+      (data||[]).map(
+        p=>[p.id,p]
+      )
+    );
+  }
+
+  async function renderRows(rows){
+    const box=el(
+      "vybeeModernChatMessages"
+    );
+
+    if(!box) return;
+
+    lastRows=rows||[];
+
+    if(!rows?.length){
+      box.innerHTML=
+        `<div class="vybee-chat-system">
+          🐝 Nenhuma mensagem ainda. Seja o primeiro a falar!
+        </div>`;
+      return;
+    }
+
+    const ids=[
+      ...new Set(
+        rows
+          .map(row=>row.user_id)
+          .filter(Boolean)
+      )
+    ];
+
+    const profiles=
+      await profileMap(ids);
+
+    box.innerHTML=
+      rows
+        .map(
+          row=>{
+            const profile=
+              profiles.get(
+                row.user_id
+              );
+
+            const name=
+              row.user_id===user()?.id
+                ? "Você"
+                : (
+                    profile?.display_name ||
+                    profile?.username ||
+                    "Usuário"
+                  );
+
+            return `
+              <div
+                class="vybee-chat-message"
+                data-message-id="${esc(row.id)}"
+              >
+                <div class="vybee-chat-avatar">👤</div>
+
+                <div class="vybee-chat-message-main">
+                  <div class="vybee-chat-message-meta">
+                    <strong>${esc(name)}</strong>
+                    <span>${esc(formatTime(row.created_at))}</span>
+                  </div>
+
+                  <div class="vybee-chat-message-text">${esc(row.content)}</div>
+                </div>
               </div>
-
-              <div class="vybee-channel-main">
-                <strong>${esc(channel.name)}</strong>
-                <span>${channel.channel_type==="voice"?"Sala de voz":"Canal de texto"} • posição ${Number(channel.position||0)}</span>
-              </div>
-
-              <div class="vybee-channel-actions">
-                <button
-                  type="button"
-                  data-channel-edit="${esc(channel.id)}"
-                >Editar</button>
-
-                <button
-                  type="button"
-                  class="danger"
-                  data-channel-delete="${esc(channel.id)}"
-                >Excluir</button>
-              </div>
-            </div>
-          `
-        ).join("");
-
-      list
-        .querySelectorAll("[data-channel-edit]")
-        .forEach(
-          button=>{
-            button.addEventListener(
-              "click",
-              ()=>{
-                const row=data.find(
-                  c=>String(c.id)===
-                    String(button.dataset.channelEdit)
-                );
-
-                if(!row) return;
-
-                editingId=row.id;
-
-                el("vybeeChannelName").value=
-                  row.name||"";
-
-                el("vybeeChannelType").value=
-                  row.channel_type||"text";
-
-                el("vybeeChannelSave").textContent=
-                  "💾 Salvar alterações";
-              }
-            );
+            `;
           }
-        );
+        )
+        .join("");
 
-      list
-        .querySelectorAll("[data-channel-delete]")
-        .forEach(
-          button=>{
-            button.addEventListener(
-              "click",
-              ()=>deleteChannel(
-                button.dataset.channelDelete
-              )
-            );
-          }
-        );
+    box.scrollTop=
+      box.scrollHeight;
+  }
 
-    }catch(error){
+  async function load(){
+    const client=sb();
+
+    if(
+      !client||
+      !currentChannel
+    ) return;
+
+    const box=el(
+      "vybeeModernChatMessages"
+    );
+
+    if(box){
+      box.innerHTML=
+        '<div class="vybee-chat-system">🔄 Carregando mensagens...</div>';
+    }
+
+    const {data,error}=
+      await client
+        .from("messages")
+        .select(
+          "id,user_id,content,created_at"
+        )
+        .eq(
+          "channel_id",
+          currentChannel.id
+        )
+        .order(
+          "created_at",
+          {ascending:true}
+        )
+        .limit(200);
+
+    if(error){
       console.error(
-        "VYBEE channel manager:",
+        "VYBEE modern chat load:",
         error
       );
 
-      list.innerHTML=
-        '<div class="vybee-community-empty">Não foi possível carregar os canais.</div>';
+      if(box){
+        box.innerHTML=
+          '<div class="vybee-chat-system">❌ Não foi possível carregar as mensagens.</div>';
+      }
+      return;
     }
+
+    await renderRows(
+      data||[]
+    );
   }
 
-  async function saveChannel(){
+  function subscribe(){
+    const client=sb();
+
+    if(channelSubscription){
+      try{
+        client.removeChannel(
+          channelSubscription
+        );
+      }catch(_){}
+      channelSubscription=null;
+    }
+
+    if(
+      !client||
+      !currentChannel
+    ) return;
+
+    channelSubscription=
+      client
+        .channel(
+          "vybee-modern-chat-" +
+          currentChannel.id +
+          "-" +
+          Date.now()
+        )
+        .on(
+          "postgres_changes",
+          {
+            event:"INSERT",
+            schema:"public",
+            table:"messages",
+            filter:
+              "channel_id=eq."+
+              currentChannel.id
+          },
+          async payload=>{
+            const row=
+              payload.new;
+
+            /*
+             * Não duplica uma mensagem que já entrou
+             * pelo realtime ou pelo envio local.
+             */
+            if(
+              lastRows.some(
+                item =>
+                  String(item.id) ===
+                  String(row.id)
+              )
+            ){
+              return;
+            }
+
+            lastRows.push(row);
+
+            const box=
+              el(
+                "vybeeModernChatMessages"
+              );
+
+            const profile=
+              row.user_id
+                ? await profileMap(
+                    [row.user_id]
+                  )
+                : new Map();
+
+            const p=
+              profile.get(
+                row.user_id
+              );
+
+            const name=
+              row.user_id===user()?.id
+                ? "Você"
+                : (
+                    p?.display_name ||
+                    p?.username ||
+                    "Usuário"
+                  );
+
+            if(box){
+              const empty=
+                box.querySelector(
+                  ".vybee-chat-system"
+                );
+
+              empty?.remove();
+
+              const node=
+                document.createElement(
+                  "div"
+                );
+
+              node.className=
+                "vybee-chat-message";
+
+              node.dataset.messageId=
+                row.id;
+
+              node.innerHTML=`
+                <div class="vybee-chat-avatar">👤</div>
+                <div class="vybee-chat-message-main">
+                  <div class="vybee-chat-message-meta">
+                    <strong>${esc(name)}</strong>
+                    <span>${esc(formatTime(row.created_at))}</span>
+                  </div>
+                  <div class="vybee-chat-message-text">${esc(row.content)}</div>
+                </div>
+              `;
+
+              box.appendChild(
+                node
+              );
+
+              box.scrollTop=
+                box.scrollHeight;
+            }
+
+            window.vybeeAddActivity?.({
+              id:
+                "modern-chat:"+row.id,
+              icon:"💬",
+              title:
+                name+
+                " enviou uma mensagem",
+              text:
+                "#"+
+                currentChannel.name
+            });
+          }
+        )
+        .subscribe();
+  }
+
+  async function send(){
     const client=sb();
     const current=user();
 
-    if(!client||!current||!community) return;
-
-    const name=
-      el("vybeeChannelName").value.trim();
-
-    const type=
-      el("vybeeChannelType").value;
-
-    const status=
-      el("vybeeChannelStatus");
-
-    if(name.length<1){
-      status.textContent=
-        "Digite um nome para o canal.";
-      return;
-    }
-
-    if(!["text","voice"].includes(type)){
-      status.textContent=
-        "Tipo de canal inválido.";
-      return;
-    }
-
-    status.textContent=
-      editingId
-        ? "Salvando..."
-        : "Criando...";
-
-    try{
-      if(editingId){
-        const {error}=
-          await client
-            .rpc(
-              "manage_community_channel",
-              {
-                p_channel_id:
-                  editingId,
-                p_action:
-                  "update",
-                p_name:
-                  name,
-                p_channel_type:
-                  type
-              }
-            );
-
-        if(error) throw error;
-
-        status.textContent=
-          "✅ Canal atualizado.";
-      }else{
-        const {error}=
-          await client
-            .rpc(
-              "manage_community_channel",
-              {
-                p_community_id:
-                  community.id,
-                p_action:
-                  "create",
-                p_name:
-                  name,
-                p_channel_type:
-                  type
-              }
-            );
-
-        if(error) throw error;
-
-        status.textContent=
-          "✅ Canal criado.";
-      }
-
-      editingId=null;
-
-      el("vybeeChannelName").value="";
-      el("vybeeChannelType").value="text";
-      el("vybeeChannelSave").textContent=
-        "➕ Criar canal";
-
-      await loadChannels();
-
-      if(
-        typeof window.vybeeOpenModernCommunity ===
-          "function"
-      ){
-        await window.vybeeOpenModernCommunity(
-          community
-        );
-      }
-
-    }catch(error){
-      console.error(
-        "VYBEE save channel:",
-        error
-      );
-
-      status.textContent=
-        "❌ Não foi possível salvar: "+
-        (error?.message||"verifique as permissões.");
-    }
-  }
-
-  async function deleteChannel(id){
-    const client=sb();
-
-    if(!client||!id) return;
-
     if(
-      !window.confirm(
-        "Excluir este canal? As mensagens relacionadas podem deixar de estar disponíveis."
-      )
+      sendBusy||
+      !client||
+      !current||
+      !currentChannel
     ){
       return;
     }
 
+    const input=
+      el("vybeeModernChatInput");
+
+    const value=
+      input?.value.trim();
+
+    if(!value) return;
+
+    if(
+      window.vybeeIsChatMuted?.()
+    ){
+      toast(
+        "🔇 Você está silenciado nesta comunidade."
+      );
+      return;
+    }
+
+    sendBusy=true;
+
+    const button=
+      el("vybeeModernChatSend");
+
+    if(button){
+      button.disabled=true;
+      button.textContent="…";
+    }
+
     try{
       const {error}=
-        await client.rpc(
-          "manage_community_channel",
-          {
-            p_channel_id:
-              id,
-            p_action:
-              "delete",
-            p_name:
-              null,
-            p_channel_type:
-              null
-          }
-        );
+        await client
+          .from("messages")
+          .insert({
+            channel_id:
+              currentChannel.id,
+            user_id:
+              current.id,
+            content:
+              value
+          });
 
       if(error) throw error;
 
-      el("vybeeChannelStatus").textContent=
-        "✅ Canal excluído.";
-
-      await loadChannels();
+      input.value="";
 
     }catch(error){
       console.error(
-        "VYBEE delete channel:",
+        "VYBEE modern chat send:",
         error
       );
 
-      el("vybeeChannelStatus").textContent=
-        "❌ Não foi possível excluir o canal.";
+      toast(
+        error?.message ||
+        "Não foi possível enviar."
+      );
+
+    }finally{
+      sendBusy=false;
+
+      if(button){
+        button.disabled=false;
+        button.textContent="➤";
+      }
+
+      input?.focus();
     }
   }
 
-  function bind(){
-    el("vybeeChannelManagerClose")
-      ?.addEventListener(
-        "click",
-        closeManager
+  async function open(
+    community,
+    channel
+  ){
+    if(
+      !community||
+      !channel||
+      !user()
+    ){
+      return;
+    }
+
+    currentCommunity=
+      community;
+
+    currentChannel=
+      channel;
+
+    const page=
+      document.getElementById(
+        "vybeeModernPage"
       );
 
-    el("vybeeChannelSave")
-      ?.addEventListener(
-        "click",
-        saveChannel
+    if(!page) return;
+
+    const safeCommunity=
+      esc(
+        community.name||
+        "Comunidade"
       );
 
-    el("vybeeChannelManager")
-      ?.addEventListener(
-        "click",
-        event=>{
-          if(
-            event.target.id ===
-            "vybeeChannelManager"
-          ){
-            closeManager();
-          }
+    const safeChannel=
+      esc(
+        channel.name||
+        "geral"
+      );
+
+    page.innerHTML=`
+      <div class="vybee-modern-page-head">
+        <div>
+          <h2>${safeCommunity}</h2>
+          <p>💬 # ${safeChannel}</p>
+        </div>
+
+        <button
+          type="button"
+          class="vybee-modern-page-button"
+          id="vybeeModernBackCommunity"
+        >← Comunidade</button>
+      </div>
+
+      <div class="vybee-chat-page">
+        <div class="vybee-chat-page-head">
+          <div class="vybee-chat-page-channel">#</div>
+
+          <div class="vybee-chat-page-head-main">
+            <strong># ${safeChannel}</strong>
+            <span>Canal de texto • mensagens em tempo real</span>
+          </div>
+        </div>
+
+        <div
+          id="vybeeModernChatMessages"
+          class="vybee-chat-page-messages"
+        ></div>
+
+        <div
+          id="vybeeModernChatTyping"
+          class="vybee-chat-typing"
+        >Digitando...</div>
+
+        <form
+          id="vybeeModernChatForm"
+          class="vybee-chat-composer"
+        >
+          <input
+            id="vybeeModernChatInput"
+            class="vybee-chat-input"
+            maxlength="2000"
+            autocomplete="off"
+            placeholder="Mensagem em #${safeChannel}..."
+          >
+
+          <button
+            id="vybeeModernChatSend"
+            class="vybee-chat-send"
+            type="submit"
+          >➤</button>
+        </form>
+      </div>
+    `;
+
+    page.classList.add(
+      "on"
+    );
+
+    document.getElementById(
+      "vybeeModernBackCommunity"
+    )?.addEventListener(
+      "click",
+      () =>
+        window.vybeeOpenModernCommunity?.(
+          community
+        )
+    );
+
+    document.getElementById(
+      "vybeeModernChatForm"
+    )?.addEventListener(
+      "submit",
+      event=>{
+        event.preventDefault();
+        send();
+      }
+    );
+
+    document.getElementById(
+      "vybeeModernChatInput"
+    )?.addEventListener(
+      "keydown",
+      event=>{
+        if(
+          event.key==="Enter" &&
+          !event.shiftKey
+        ){
+          event.preventDefault();
+          send();
         }
-      );
+      }
+    );
+
+    await load();
+    subscribe();
+
+    document.getElementById(
+      "vybeeModernChatInput"
+    )?.focus();
   }
 
-  bind();
+  window.vybeeOpenModernChatChannel=
+    open;
 
-  window.vybeeOpenChannelManager=
-    openManager;
-
-  window.vybeeCloseChannelManager=
-    closeManager;
 })();
 </script>
 
