@@ -3640,6 +3640,125 @@ body.vybee-modern-home-active > .app > footer{
 }
 </style>
 
+<style id="vybee-channel-manager-style">
+.vybee-channel-manager{
+  position:fixed;
+  inset:0;
+  z-index:420;
+  display:none;
+  place-items:center;
+  padding:16px;
+  background:#000e;
+}
+.vybee-channel-manager.on{display:grid}
+.vybee-channel-box{
+  width:min(760px,100%);
+  max-height:88vh;
+  overflow:auto;
+  background:#0b0f10;
+  border:1px solid #2b3338;
+  border-radius:18px;
+  box-shadow:0 30px 100px #000d;
+}
+.vybee-channel-head{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:16px 18px;
+  border-bottom:1px solid #20262b;
+}
+.vybee-channel-head h2{margin:0;font-size:17px}
+.vybee-channel-head p{margin:3px 0 0;color:#737c83;font-size:9px}
+.vybee-channel-close{margin-left:auto}
+.vybee-channel-body{padding:16px 18px 20px}
+.vybee-channel-form{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 150px;
+  gap:8px;
+}
+.vybee-channel-form input,
+.vybee-channel-form select{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px;
+  border:1px solid #2a3136;
+  border-radius:9px;
+  background:#101415;
+  color:#fff;
+  outline:none;
+}
+.vybee-channel-create{
+  border:1px solid #39ff14;
+  background:#39ff14;
+  color:#071006;
+  border-radius:9px;
+  padding:9px 10px;
+  cursor:pointer;
+  font-weight:900;
+  font-size:9px;
+}
+.vybee-channel-status{
+  margin-top:8px;
+  min-height:15px;
+  color:#7d868c;
+  font-size:9px;
+}
+.vybee-channel-list{
+  display:grid;
+  gap:8px;
+  margin-top:12px;
+}
+.vybee-channel-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:10px;
+  border:1px solid #242a2f;
+  border-radius:11px;
+  background:#101415;
+}
+.vybee-channel-icon{
+  width:31px;height:31px;display:grid;place-items:center;
+  border-radius:9px;background:#181d20;
+}
+.vybee-channel-main{min-width:0;flex:1}
+.vybee-channel-main strong{display:block;font-size:10px}
+.vybee-channel-main span{display:block;margin-top:2px;color:#707a81;font-size:8px}
+.vybee-channel-actions{
+  display:flex;
+  gap:5px;
+}
+.vybee-channel-actions button{
+  border:1px solid #2b3237;
+  background:#171b1e;
+  color:#fff;
+  border-radius:8px;
+  padding:6px 8px;
+  cursor:pointer;
+  font-size:9px;
+}
+.vybee-channel-actions button:hover{border-color:#39ff14}
+.vybee-channel-actions .danger:hover{
+  border-color:#ff4d4d;
+  background:#241214;
+}
+@media(max-width:700px){
+  .vybee-channel-form{grid-template-columns:1fr}
+}
+</style>
+
+<style id="vybee-master-build-meta">
+html[data-vybee-build="master-v1"] body::after{
+  content:"";
+  position:fixed;
+  width:0;height:0;
+  overflow:hidden;
+}
+</style>
+<script>
+document.documentElement.dataset.vybeeBuild="master-v1";
+</script>
+
 </head>
 
 <body>
@@ -10923,6 +11042,29 @@ if(requestedLive){
 
       actions?.appendChild(
         manageBtn
+      );
+
+
+      const channelBtn =
+        document.createElement("button");
+
+      channelBtn.className =
+        "vybee-modern-page-button";
+
+      channelBtn.textContent =
+        "🎛️ Canais";
+
+      channelBtn.addEventListener(
+        "click",
+        () => {
+          window.vybeeOpenChannelManager?.(
+            community
+          );
+        }
+      );
+
+      actions?.appendChild(
+        channelBtn
       );
     }
 
@@ -19493,6 +19635,394 @@ if(requestedLive){
 })();
 </script>
 
+<div class="vybee-channel-manager" id="vybeeChannelManager">
+  <div class="vybee-channel-box">
+    <div class="vybee-channel-head">
+      <div>
+        <h2 id="vybeeChannelManagerTitle">⚙️ Canais</h2>
+        <p>Crie, edite e remova canais de texto e voz.</p>
+      </div>
+      <button type="button" class="btn vybee-channel-close" id="vybeeChannelManagerClose">✕</button>
+    </div>
+
+    <div class="vybee-channel-body">
+      <div class="vybee-channel-form">
+        <input
+          id="vybeeChannelName"
+          maxlength="50"
+          placeholder="Nome do canal"
+        >
+
+        <select id="vybeeChannelType">
+          <option value="text">💬 Texto</option>
+          <option value="voice">🎙️ Voz</option>
+        </select>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button
+          type="button"
+          class="vybee-channel-create"
+          id="vybeeChannelSave"
+        >➕ Criar canal</button>
+      </div>
+
+      <div id="vybeeChannelStatus" class="vybee-channel-status"></div>
+
+      <div class="section" style="margin-top:15px">
+        CANAIS DA COMUNIDADE
+      </div>
+
+      <div id="vybeeChannelList" class="vybee-channel-list">
+        <div class="vybee-community-empty">Carregando...</div>
+      </div>
+    </div>
+<script id="vybee-channel-manager-controller">
+(function(){
+  let community=null;
+  let editingId=null;
+
+  function sb(){return window.vybeeSupabase||null}
+  function user(){return window.vybeeCurrentUser||null}
+  function el(id){return document.getElementById(id)}
+  function esc(v){
+    return String(v??"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function openManager(c){
+    if(!c||!user()) return;
+
+    community=c;
+    editingId=null;
+
+    el("vybeeChannelManagerTitle").textContent=
+      "⚙️ Canais • "+(c.name||"Comunidade");
+
+    el("vybeeChannelSave").textContent=
+      "➕ Criar canal";
+
+    el("vybeeChannelName").value="";
+    el("vybeeChannelType").value="text";
+    el("vybeeChannelStatus").textContent="";
+
+    el("vybeeChannelManager").classList.add("on");
+
+    loadChannels();
+  }
+
+  function closeManager(){
+    el("vybeeChannelManager")?.classList.remove("on");
+    community=null;
+    editingId=null;
+  }
+
+  async function loadChannels(){
+    const client=sb();
+    const list=el("vybeeChannelList");
+
+    if(!client||!community||!list) return;
+
+    try{
+      const {data,error}=
+        await client
+          .from("channels")
+          .select(
+            "id,name,channel_type,position,community_id"
+          )
+          .eq(
+            "community_id",
+            community.id
+          )
+          .order(
+            "position",
+            {ascending:true}
+          );
+
+      if(error) throw error;
+
+      if(!data?.length){
+        list.innerHTML=
+          '<div class="vybee-community-empty">Nenhum canal criado.</div>';
+        return;
+      }
+
+      list.innerHTML=
+        data.map(
+          channel=>`
+            <div class="vybee-channel-row">
+              <div class="vybee-channel-icon">
+                ${channel.channel_type==="voice"?"🎙️":"💬"}
+              </div>
+
+              <div class="vybee-channel-main">
+                <strong>${esc(channel.name)}</strong>
+                <span>${channel.channel_type==="voice"?"Sala de voz":"Canal de texto"} • posição ${Number(channel.position||0)}</span>
+              </div>
+
+              <div class="vybee-channel-actions">
+                <button
+                  type="button"
+                  data-channel-edit="${esc(channel.id)}"
+                >Editar</button>
+
+                <button
+                  type="button"
+                  class="danger"
+                  data-channel-delete="${esc(channel.id)}"
+                >Excluir</button>
+              </div>
+            </div>
+          `
+        ).join("");
+
+      list
+        .querySelectorAll("[data-channel-edit]")
+        .forEach(
+          button=>{
+            button.addEventListener(
+              "click",
+              ()=>{
+                const row=data.find(
+                  c=>String(c.id)===
+                    String(button.dataset.channelEdit)
+                );
+
+                if(!row) return;
+
+                editingId=row.id;
+
+                el("vybeeChannelName").value=
+                  row.name||"";
+
+                el("vybeeChannelType").value=
+                  row.channel_type||"text";
+
+                el("vybeeChannelSave").textContent=
+                  "💾 Salvar alterações";
+              }
+            );
+          }
+        );
+
+      list
+        .querySelectorAll("[data-channel-delete]")
+        .forEach(
+          button=>{
+            button.addEventListener(
+              "click",
+              ()=>deleteChannel(
+                button.dataset.channelDelete
+              )
+            );
+          }
+        );
+
+    }catch(error){
+      console.error(
+        "VYBEE channel manager:",
+        error
+      );
+
+      list.innerHTML=
+        '<div class="vybee-community-empty">Não foi possível carregar os canais.</div>';
+    }
+  }
+
+  async function saveChannel(){
+    const client=sb();
+    const current=user();
+
+    if(!client||!current||!community) return;
+
+    const name=
+      el("vybeeChannelName").value.trim();
+
+    const type=
+      el("vybeeChannelType").value;
+
+    const status=
+      el("vybeeChannelStatus");
+
+    if(name.length<1){
+      status.textContent=
+        "Digite um nome para o canal.";
+      return;
+    }
+
+    if(!["text","voice"].includes(type)){
+      status.textContent=
+        "Tipo de canal inválido.";
+      return;
+    }
+
+    status.textContent=
+      editingId
+        ? "Salvando..."
+        : "Criando...";
+
+    try{
+      if(editingId){
+        const {error}=
+          await client
+            .rpc(
+              "manage_community_channel",
+              {
+                p_channel_id:
+                  editingId,
+                p_action:
+                  "update",
+                p_name:
+                  name,
+                p_channel_type:
+                  type
+              }
+            );
+
+        if(error) throw error;
+
+        status.textContent=
+          "✅ Canal atualizado.";
+      }else{
+        const {error}=
+          await client
+            .rpc(
+              "manage_community_channel",
+              {
+                p_community_id:
+                  community.id,
+                p_action:
+                  "create",
+                p_name:
+                  name,
+                p_channel_type:
+                  type
+              }
+            );
+
+        if(error) throw error;
+
+        status.textContent=
+          "✅ Canal criado.";
+      }
+
+      editingId=null;
+
+      el("vybeeChannelName").value="";
+      el("vybeeChannelType").value="text";
+      el("vybeeChannelSave").textContent=
+        "➕ Criar canal";
+
+      await loadChannels();
+
+      if(
+        typeof window.vybeeOpenModernCommunity ===
+          "function"
+      ){
+        await window.vybeeOpenModernCommunity(
+          community
+        );
+      }
+
+    }catch(error){
+      console.error(
+        "VYBEE save channel:",
+        error
+      );
+
+      status.textContent=
+        "❌ Não foi possível salvar: "+
+        (error?.message||"verifique as permissões.");
+    }
+  }
+
+  async function deleteChannel(id){
+    const client=sb();
+
+    if(!client||!id) return;
+
+    if(
+      !window.confirm(
+        "Excluir este canal? As mensagens relacionadas podem deixar de estar disponíveis."
+      )
+    ){
+      return;
+    }
+
+    try{
+      const {error}=
+        await client.rpc(
+          "manage_community_channel",
+          {
+            p_channel_id:
+              id,
+            p_action:
+              "delete",
+            p_name:
+              null,
+            p_channel_type:
+              null
+          }
+        );
+
+      if(error) throw error;
+
+      el("vybeeChannelStatus").textContent=
+        "✅ Canal excluído.";
+
+      await loadChannels();
+
+    }catch(error){
+      console.error(
+        "VYBEE delete channel:",
+        error
+      );
+
+      el("vybeeChannelStatus").textContent=
+        "❌ Não foi possível excluir o canal.";
+    }
+  }
+
+  function bind(){
+    el("vybeeChannelManagerClose")
+      ?.addEventListener(
+        "click",
+        closeManager
+      );
+
+    el("vybeeChannelSave")
+      ?.addEventListener(
+        "click",
+        saveChannel
+      );
+
+    el("vybeeChannelManager")
+      ?.addEventListener(
+        "click",
+        event=>{
+          if(
+            event.target.id ===
+            "vybeeChannelManager"
+          ){
+            closeManager();
+          }
+        }
+      );
+  }
+
+  bind();
+
+  window.vybeeOpenChannelManager=
+    openManager;
+
+  window.vybeeCloseChannelManager=
+    closeManager;
+})();
+</script>
 </body>
 
 </html>
